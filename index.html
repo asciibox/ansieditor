@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+    <title>ANSI editor</title>
+    <script src="scripts/ansi.js" type="text/javascript"></script>
+    <script src="scripts/shape.js" type="text/javascript"></script>
+    
+    <style type="text/css" media="screen">
+    div.centered {
+        margin: 0 auto;
+    }
+    </style>
+    <script>
+        var screenCharacterArray = Array();
+                
+        var ctx;
+        var cursorShown=false;
+        var ansimation;
+        var cursorPosX=1;
+        var cursorPosY=1;
+        var cursorShown=true;
+        var cursorInterval;
+        var characterWidth, characterHeight;
+        var insert=true;
+        var currentBackground=0;
+        var currentForeground=15;
+        
+        function updateCanvasSize() {
+            
+        }
+        function getImageWidth() {
+            return 80; // return parseInt(document.getElementById('imagewidth').value);
+        }
+        function getImageHeight() {
+            return 26; // return parseInt(document.getElementById('imageheight').value);
+        }
+        function getDisplayWidth() {
+            return 80; // return parseInt(document.getElementById('displaywidth').value);
+        }
+        function getDisplayHeight() {
+            return 26; // return parseInt(document.getElementById('displayheight').value);
+        }
+        
+        function initansicanvas() {
+                
+                ansicanvas = document.getElementById('ansi');
+                ansicanvas.addEventListener('mousedown', function(e) {
+                    var mouse = getMousePos(ansicanvas, e);
+                    var mx = mouse.x;
+                    var my = mouse.y;                    
+                    
+                    showCharacter();
+                    
+                    cursorPosX = Math.floor(mx / characterWidth)+1;
+                    cursorPosY = Math.floor(my / characterHeight)+1;
+                    
+                    redrawCursor();
+                    
+                }, true);
+      
+                cursorInterval = setInterval(function() { toggleCursor(); }, 500);
+        }
+        
+        function setANSICanvasSize() {
+            var displayWidth=getDisplayWidth();
+            var displayHeight=getDisplayHeight();
+            
+            for (var y = 1; y <= displayHeight; y++) 
+            {                    
+                    var xArray = Array();
+                    for (var x = 1; x <= displayWidth; x++) 
+                    {
+                     var data = Array();
+                     data[0]=32; // ascii code
+                     data[1]=15; // foreground color
+                     data[2]=0; // background color
+                     xArray[x]=data;
+                    }
+                    screenCharacterArray[y]=xArray;
+                    console.log("y:"+y+" length:"+screenCharacterArray[y].length);
+            }
+           
+        }
+        
+        function toggleCursor() {
+            cursorShown=!cursorShown;
+            ctx = document.getElementById("ansi").getContext("2d");
+            
+            if (cursorShown) {
+                
+            codepage.drawChar(ctx, insert==false ? 220 : 95, 15, 0, cursorPosX, cursorPosY, true); // shows cursor transparently
+            
+            } else {
+                showCharacter();
+            
+            }
+        }
+        
+        function redrawCursor() {
+            cursorShown=true;
+            clearInterval(cursorInterval);
+            codepage.drawChar(ctx, insert==false ? 220 : 95, 15, 0, cursorPosX, cursorPosY, true); // shows cursor transparently
+            cursorInterval = setInterval(function() { toggleCursor(); }, 500);
+        }
+        
+        function showCharacter() {
+            
+            var asciiCode = screenCharacterArray[cursorPosY][cursorPosX][0];
+            var foreground = screenCharacterArray[cursorPosY][cursorPosX][1];
+            var background = screenCharacterArray[cursorPosY][cursorPosX][2];
+            console.log("ascii:"+asciiCode+" fg:"+foreground+" bg:"+background);
+            codepage.drawChar(ctx, asciiCode, foreground, background, cursorPosX, cursorPosY);
+            
+        }
+        
+       function getMousePos(canvas, evt) {
+        var rect = canvas.getBoundingClientRect();
+        return {
+          x: evt.clientX - rect.left,
+          y: evt.clientY - rect.top
+        };
+    }
+    
+    function cursorMove() {
+        
+    }
+    
+   function handleKeyCode(keyCode,e) {
+                console.log(keyCode);
+                switch(keyCode){
+                    case 45 : // Toggle insert/overwrite
+                            insert=!insert;
+                            break;
+                    case 39 : // right
+                              showCharacter();
+                              if (cursorPosX<getDisplayWidth()) {
+                                  cursorPosX++;
+                                  redrawCursor();
+                              }
+                              return true;
+                              break;
+                          case 40 : // down
+                              showCharacter();
+                              if (cursorPosY<getDisplayHeight()) {
+                              cursorPosY++;
+                              redrawCursor();
+                              }
+                              return true;
+                              break;
+                          case 37: // left
+                              showCharacter();
+                              if (cursorPosX>1) {
+                              cursorPosX--;
+                              redrawCursor();
+                            }
+                            return true;
+                              break;
+                          case 38: // up
+                              showCharacter();
+                              if (cursorPosY>1) {
+                              cursorPosY--;
+                              redrawCursor();
+                            }
+                            return true;
+                              break;
+                          case 8:
+                              cursorPosX--;
+                              var currentPos = cursorPosX;
+                              
+                              while (currentPos < getDisplayWidth()) 
+                              {
+                                      var asciiCode = screenCharacterArray[cursorPosY][currentPos+1][0];
+                                      var fgcolor = screenCharacterArray[cursorPosY][currentPos+1][1];
+                                      var bgcolor = screenCharacterArray[cursorPosY][currentPos+1][2];
+                                      codepage.drawChar(ctx, asciiCode, fgcolor, bgcolor, currentPos, cursorPosY);
+                                      currentPos++;                                      
+                              }
+                              
+                              redrawCursor();
+                          return true;
+                          case 46 :
+                              var currentPos = cursorPosX;
+                              while (currentPos < getDisplayWidth()) 
+                              {
+                                      var asciiCode = screenCharacterArray[cursorPosY][currentPos+1][0];
+                                      var fgcolor = screenCharacterArray[cursorPosY][currentPos+1][1];
+                                      var bgcolor = screenCharacterArray[cursorPosY][currentPos+1][2];
+                                      codepage.drawChar(ctx, asciiCode, fgcolor, bgcolor, currentPos, cursorPosY);
+                                      currentPos++;
+                                      
+                              }
+                              return true;
+                            break;
+                          default : 
+                              
+                                  
+                                  console.log("KEYCODE:"+keyCode);
+                                if (insert==false) {
+                                    codepage.drawChar(ctx, keyCode, currentForeground, currentBackground, cursorPosX, cursorPosY);
+                                    if (cursorPosX<getDisplayWidth()) { cursorPosX++; }
+                                    redrawCursor();
+                                } else {
+                                    var currentPos=getDisplayWidth();
+                                    while (currentPos>cursorPosX) 
+                                    {
+                                      var asciiCode = screenCharacterArray[cursorPosY][currentPos-1][0];
+                                      var fgcolor = screenCharacterArray[cursorPosY][currentPos-1][1];
+                                      var bgcolor = screenCharacterArray[cursorPosY][currentPos-1][2];
+
+                                      codepage.drawChar(ctx, asciiCode, fgcolor, bgcolor, currentPos, cursorPosY);
+                                      currentPos--;
+                                      
+                                    }
+                                    codepage.drawChar(ctx, keyCode, currentForeground, currentBackground, cursorPosX, cursorPosY);
+                                    if (cursorPosX<getDisplayWidth()) { cursorPosX++; }
+                                    redrawCursor();
+                                }
+                           
+                              return true;
+                              break;
+                }
+                return false;
+   }
+   function registerKeyEventListener() { 
+		
+                document.body.addEventListener('keypress',
+                function(e)
+                {
+                    var keyCode = e.which;
+                    
+                    if ( (keyCode>=49) && (keyCode<=190) ) {
+                    
+                    if(window.handleKeyCode(keyCode,e)) e.preventDefault();
+                    
+                    }
+                    else {
+                        e.preventDefault();
+                    }
+                },
+                false);
+                
+                document.body.addEventListener('keydown',
+                function(e)
+                {
+                    var keyCode = e.keyCode;
+                    
+                    if ( ( (keyCode>=37) && (keyCode<49) ) || (keyCode>190) || (keyCode==8) ) {
+                        if(window.handleKeyCode(keyCode,e)) e.preventDefault();
+                    } 
+                },
+                false);
+                
+    }
+        
+    </script>
+</head>
+<body onload="registerKeyEventListener();initansicanvas();"> <!-- initboxcanvas(); -->
+    <!--
+    Image width: <input autocomplete="off" type="text" id="imagewidth" value="800">
+    Image height: <input autocomplete="off" type="text" id="imageheight" value="500">
+    Display width: <input autocomplete="off" type="text" id="displaywidth" value="80">
+    Display height: <input autocomplete="off" type="text" id="displayheight" value="50">
+    <br />
+	<canvas id="boxcanvas" width="800" height="500" style="border: 1px solid black;">
+        Your browser does not support canvas
+        </canvas>
+    --><div style="width: 640px" class="centered">
+        <canvas id="ansi" width=640 height=480></canvas>
+        <script type="text/javascript">
+            setANSICanvasSize();
+            
+            codepage = new Codepage("images/CP_437_8x16.png", function() {
+            
+            var interpreter, display, ctx, charactersatonce;
+
+            function drawChunk() {
+                if (interpreter.read(charactersatonce, display)) {
+             
+                ctx.drawImage(display.canvas, 0, 0);
+                } else {
+                 
+                    interpreter.reset();
+                    display.clearScreen();
+                    setTimeout(drawChunk, 5000);
+                }
+            }
+            
+            var width=80;
+            var height=26;
+
+            ctx = document.getElementById("ansi").getContext("2d");
+            display = new Display(width || 80, height || 26);
+            charactersatonce = 999999; //Math.floor((baud || 115200) / 8 / 100);
+            
+            interpreter = new Interpreter("rad-PIRANHA.ANS", drawChunk);
+            
+        });
+        </script>
+    </div>
+
+</body>
+</html>

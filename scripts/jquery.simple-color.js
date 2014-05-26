@@ -120,12 +120,12 @@
     // Option defaults
     options = $.extend({
       defaultColor:     this.attr('defaultColor') || '#FFF',
-      cellWidth:        this.attr('cellWidth') || 10,
-      cellHeight:       this.attr('cellHeight') || 10,
+      cellWidth:        this.attr('cellWidth') || 20,
+      cellHeight:       this.attr('cellHeight') || 20,
       cellMargin:       this.attr('cellMargin') || 1,
       boxWidth:         this.attr('boxWidth') || '115px',
       boxHeight:        this.attr('boxHeight') || '20px',
-      columns:          this.attr('columns') || 16,
+      columns:          this.attr('columns') || 10,
       insert:           this.attr('insert') || 'after',
       colors:           this.attr('colors') || defaultColors,
       displayColorCode: this.attr('displayColorCode') || false,

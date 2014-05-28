@@ -100,7 +100,8 @@
         }
         
         function initansicanvas() {
-                
+                setTimeout(function() { toggleCursor(true); }, 1000);
+             
                 ansicanvas = document.getElementById('ansi');
                 ansicanvas.addEventListener('mousedown', function(e) {
                     var mouse = getMousePos(ansicanvas, e);
@@ -115,8 +116,8 @@
                     redrawCursor();
                     
                 }, true);
-      
-                cursorInterval = setInterval(function() { toggleCursor(); }, 500);
+
+                
         }
         
         function setANSICanvasSize() {
@@ -140,27 +141,32 @@
            
         }
         
-        function toggleCursor() {
+        function toggleCursor(interval) {
+     
             cursorShown=!cursorShown;
             ctx = document.getElementById("ansi").getContext("2d");
             
             if (cursorShown) {
-                
+            // Depending on what cursor is active, shows character code 220 or character code 95
             codepage.drawChar(ctx, insert==false ? 220 : 95, 15, 0, cursorPosX, cursorPosY, true); // shows cursor transparently
             
             } else {
                 showCharacter();
-            
             }
+            
+            if ( (typeof(interval)!="undefined") && (interval==true) ) {
+                setTimeout(function() { toggleCursor(true); }, 500);
+            }
+            
         }
         
         function redrawCursor() {
             cursorShown=true;
-            clearInterval(cursorInterval);
+            //clearInterval(cursorInterval);
             ctx = document.getElementById("ansi").getContext("2d");
         
             codepage.drawChar(ctx, insert==false ? 220 : 95, 15, 0, cursorPosX, cursorPosY, true); // shows cursor transparently
-            cursorInterval = setInterval(function() { toggleCursor(); }, 500);
+            //cursorInterval = setInterval(function() { toggleCursor(); }, 500);
         }
         
         function showCharacter() {
@@ -171,7 +177,7 @@
             console.log("ascii:"+asciiCode+" fg:"+foreground+" bg:"+background);
             ctx = document.getElementById("ansi").getContext("2d");
      
-            codepage.drawChar(ctx, asciiCode, foreground, background, cursorPosX, cursorPosY);
+            codepage.drawChar(ctx, asciiCode, foreground, background, cursorPosX, cursorPosY, false);
             
         }
         
@@ -315,6 +321,7 @@
     }
     
     $(document).ready(function(){
+       
             $('.simple_color_kitchen_sink').simpleColor({
               boxHeight: 40,
               cellWidth: 40,
@@ -366,7 +373,7 @@
                  
                     interpreter.reset();
                     display.clearScreen();
-                    setTimeout(drawChunk, 5000);
+                    //setTimeout(drawChunk, 5000);
                 }
             }
             
@@ -385,5 +392,6 @@
  <input class='simple_color' value='#cc3333'/>
   <h3>Kitchen Sink</h3>
   <input class='simple_color_kitchen_sink' value='#993300'/>
+  <span onclick="insert=!insert;">toggle cursor</span>
 </body>
 </html>

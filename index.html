@@ -322,7 +322,7 @@
     
     $(document).ready(function(){
        
-            $('.simple_color_kitchen_sink').simpleColor({
+            $('#foreground_color').simpleColor({
               boxHeight: 40,
               cellWidth: 40,
               cellHeight: 20,
@@ -331,14 +331,41 @@
               displayColorCode: true,
               colors : ansicolors,
               livePreview: true,
+              // element is a html element
               onSelect: function(hex, element) {
-                alert("You selected #" + hex + " for input #" + element.attr('class'));
+             
+                for (var i = 0; i < ansicolors.length; i++) {
+                    if (ansicolors[i]==hex) {
+                        currentForeground=i;
+                    }
+                }
               },
               onCellEnter: function(hex, element) {
-                console.log("You just entered #" + hex + " for input #" + element.attr('class'));
               },
               onClose: function(element) {
-                alert("color chooser closed for input #" + element.attr('class'));
+              }
+            });
+            $('#background_color').simpleColor({
+              boxHeight: 40,
+              cellWidth: 40,
+              cellHeight: 20,
+              chooserCSS: { 'border': '1px solid #660033' },
+              displayCSS: { 'border': '1px solid red' },
+              displayColorCode: true,
+              colors : ansicolors,
+              livePreview: true,
+              // element is a html element
+              onSelect: function(hex, element) {
+             
+                for (var i = 0; i < ansicolors.length; i++) {
+                    if (ansicolors[i]==hex) {
+                        currentBackground=i;
+                    }
+                }
+              },
+              onCellEnter: function(hex, element) {
+              },
+              onClose: function(element) {
               }
             });
     });
@@ -389,9 +416,11 @@
         });
         </script>
     </div>
- <input class='simple_color' value='#cc3333'/>
-  <h3>Kitchen Sink</h3>
-  <input class='simple_color_kitchen_sink' value='#993300'/>
+  <h3>Foreground color</h3>
+  <input id='foreground_color' value='#993300'/>
+  <h3>Background color</h3>
+  <input id='background_color' value='#993300'/>
+  <br /><br />
   <span onclick="insert=!insert;">toggle cursor</span>
 </body>
 </html>

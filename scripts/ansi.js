@@ -25,9 +25,7 @@
  var yStart = 0;
 
 function Codepage(codepageUrl, callback) {
-        var COLORS, img, codepageImgs, backgroundImgs;
-
-        COLORS = [[0, 0, 0], [170, 0, 0], [0, 170, 0], [170, 85, 0], [0, 0, 170], [170, 0, 170], [0, 170, 170], [170, 170, 170], [85, 85, 85], [255, 85, 85], [85, 255, 85], [255, 255, 85], [85, 85, 255], [255, 85, 255], [85, 255, 255], [255, 255, 255]];
+        var COLORS, img, codepageImg;
 
         function createCanvas(width, height) {
             var newCanvas;
@@ -37,7 +35,7 @@ function Codepage(codepageUrl, callback) {
             return newCanvas;
         }
 
-        function colorCanvas(source, color, preserveAlpha) {
+        function copyCanvas(source, color, preserveAlpha) {
             var canvas, ctx, imageData, i;
             canvas = createCanvas(source.width, source.height);
             ctx = canvas.getContext("2d");
@@ -52,27 +50,30 @@ function Codepage(codepageUrl, callback) {
             ctx.putImageData(imageData, 0, 0);
             return canvas;
         }
+        
+        
 
         img = new Image();
         img.onload = function () {
-            var i, background;
-            characterWidth = img.width / 32;
-            
-            characterHeight = img.height / 8;
-            codepageImgs = [];
+            //var i, background;
+            characterWidth = 256/32; //img.width / 32;
+            characterHeight = 128/8; // img.height / 8;
+            /*codepageImgs = [];
             backgroundImgs = [];
             background = createCanvas(characterWidth, characterHeight);
             for (i = 0; i < COLORS.length; i++) {
-                codepageImgs[i] = colorCanvas(img, i, true);
-                backgroundImgs[i] = colorCanvas(background, i, false);
-            }
+                codepageImg = copyCanvas(img, i, true);
+                backgroundImg = colorCanvas(background, i, false);
+            }*/
+            codepageImg=img;
             callback();
         };
         img.src = codepageUrl;
+       
 
         function drawChar(ctx, asciiCode, foreground, background, x, y, transparent) {
             
-            //console.log(" drawChar:"+ctx+" asciiCode:"+asciiCode+" foreground:"+foreground+" background:"+background+" x:"+x+" y:"+y);
+            //console.log(" drawChar:"+ctx+" asciiCode:"+asciiCode+" foreground:"+foreground+" background:"+background+" x:"+x+" y:"+y+" characterWidth:"+characterWidth+" characterHeight: "+characterHeight);
             if (x>xStart) {
                 if (y>yStart) {
                         if ( (typeof(transparent)=="undefined") || (transparent==false) ) {
@@ -89,15 +90,36 @@ function Codepage(codepageUrl, callback) {
                         x = (x - 1) * characterWidth;
                         y = (y - 1) * characterHeight;
                         if ( (typeof(transparent)=="undefined") || (transparent==false) ) {
-                            ctx.drawImage(backgroundImgs[background], x, y);
+                            var xpos=background;
+                            while (xpos >= 16) xpos=xpos-16;
+                            var ypos = Math.floor(background/16);
+                        
+                        
+                            var myasciiCode=219;
+                            
+                            var myx = (myasciiCode % 32) * characterWidth+(xpos*256);
+                            var myy = Math.floor(myasciiCode / 32) * characterHeight + (ypos*128);
+                        
+                            ctx.drawImage(codepageImg, myx, myy, characterWidth, characterHeight, x, y, characterWidth, characterHeight);
                         }
-                        ctx.drawImage(codepageImgs[foreground], (asciiCode % 32) * characterWidth, Math.floor(asciiCode / 32) * characterHeight, characterWidth, characterHeight, x, y, characterWidth, characterHeight);
+                        
+                        var xpos=foreground;
+                        while (xpos >= 16) xpos=xpos-16;
+                        var ypos = Math.floor(foreground/16);
+                        
+                        
+                        var myx = (asciiCode % 32) * characterWidth+(xpos*256);
+                        var myy = Math.floor(asciiCode / 32) * characterHeight + (ypos*128);
+                        //console.log("xpos*256="+xpos*256+" myx:"+myx);
+                        //console.log("ypos*128="+ypos*128+" myy:"+myy);
+                        ctx.drawImage(codepageImg, myx, myy, characterWidth, characterHeight, x, y, characterWidth, characterHeight);
             }
             }
         }
 
         function generateDisplay(width, height) {
-            return colorCanvas(createCanvas(width * characterWidth, height * characterHeight), 0, false);
+            //alert("new canvas x: "+(width*characterWidth)+" y: "+(height*characterHeight));
+            return createCanvas(width * characterWidth, height * characterHeight);
         }
 
         function scrollDisplay(ctx, canvas) {

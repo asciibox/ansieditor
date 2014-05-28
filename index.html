@@ -38,8 +38,10 @@
     }
     </style>
     <script>
+        
         var screenCharacterArray = Array();
                 
+        var currentColor=15;
         var ctx;
         var cursorShown=false;
         var ansimation;
@@ -52,7 +54,7 @@
         var currentBackground=0;
         var currentForeground=15;
         
-        var ansiColors = [
+        var ansicolors = [
       '000000', 'cd0000', '00cd00', 'cdcd00', '1e90ff', 'cd00cd', '00cdcd', 'e5e5e5', '4c4c4c', 'ff0000',
       '00ff00', 'ffff00', '4682b4', 'ff00ff', '00ffff', 'FFFFFF', '000000', '00005F', '000087', '0000af', 
       '0000D7', '0000FF', '005F00', '005F5F', '005f87', '005faf', '005fd7', '005fff', '008700', '00875f', 
@@ -133,7 +135,7 @@
                      xArray[x]=data;
                     }
                     screenCharacterArray[y]=xArray;
-                    console.log("y:"+y+" length:"+screenCharacterArray[y].length);
+                    //console.log("y:"+y+" length:"+screenCharacterArray[y].length);
             }
            
         }
@@ -155,6 +157,8 @@
         function redrawCursor() {
             cursorShown=true;
             clearInterval(cursorInterval);
+            ctx = document.getElementById("ansi").getContext("2d");
+        
             codepage.drawChar(ctx, insert==false ? 220 : 95, 15, 0, cursorPosX, cursorPosY, true); // shows cursor transparently
             cursorInterval = setInterval(function() { toggleCursor(); }, 500);
         }
@@ -165,6 +169,8 @@
             var foreground = screenCharacterArray[cursorPosY][cursorPosX][1];
             var background = screenCharacterArray[cursorPosY][cursorPosX][2];
             console.log("ascii:"+asciiCode+" fg:"+foreground+" bg:"+background);
+            ctx = document.getElementById("ansi").getContext("2d");
+     
             codepage.drawChar(ctx, asciiCode, foreground, background, cursorPosX, cursorPosY);
             
         }
@@ -316,7 +322,7 @@
               chooserCSS: { 'border': '1px solid #660033' },
               displayCSS: { 'border': '1px solid red' },
               displayColorCode: true,
-              colors : ansiColors,
+              colors : ansicolors,
               livePreview: true,
               onSelect: function(hex, element) {
                 alert("You selected #" + hex + " for input #" + element.attr('class'));
@@ -333,7 +339,7 @@
         
     </script>
 </head>
-<body onload="registerKeyEventListener();initansicanvas();"> <!-- initboxcanvas(); -->
+<body onload="registerKeyEventListener();initansicanvas();" > <!-- initboxcanvas(); -->
     <!--
     Image width: <input autocomplete="off" type="text" id="imagewidth" value="800">
     Image height: <input autocomplete="off" type="text" id="imageheight" value="500">
@@ -347,8 +353,8 @@
         <canvas id="ansi" width=640 height=480></canvas>
         <script type="text/javascript">
             setANSICanvasSize();
-            
-            codepage = new Codepage("images/CP_437_8x16.png", function() {
+         
+            codepage = new Codepage("images/CO_437_8x16.png", function() {
             
             var interpreter, display, ctx, charactersatonce;
 

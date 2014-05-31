@@ -214,40 +214,164 @@
     
    function handleKeyCode(keyCode,e) {
                 console.log(keyCode);
+                
                 switch(keyCode){
-                    case 45 : // Toggle insert/overwrite
-                            insert=!insert;
+                    case 249 :
+                               executeKey(151); // high two becomes ( for french keyboard
+                        return true;
+                        break;
+                            
+                    case 178: executeKey(40); // high two becomes ( for french keyboard
+                        return true;
+                        break;
+                            
+                       case 224: executeKey(133); // a accent
+                             
+                
+                      return true;
+                        case 232: executeKey(138); // e accent
+                             
+                
+                      return true;
+                      break;
+                         case 231: executeKey(135); // ca
+                             
+                
+                      return true;
+                      break;
+            case 233: executeKey(130); // e accent
+                
+                      return true;
+                      break;
+            case 176 : 
+                            executeKey(167);
+                    return true;
+                    break;
+                     case 96 : // opening single quote - convert to standard single quote due to cursor right bug on single quote
+                            executeKey(39);
+                            return true;
+                            break;
+                    case 219 : // bracket right
+                            executeKey(93);
+                            return true;
+                            break;
+                        case 221: // bracket left
+                            executeKey(91);
+                            return true;
+                            break;
+                     case 220 : // UE or backslash
+                            if (e.shiftKey) { 
+                                executeKey(154);
+                            } else {
+                                executeKey(92);
+                            }
+                            return true;
+                            break;
+                             case 214 :
+                            executeKey(153);
+                            return true;
+                            break;
+                             case 196 :
+                            executeKey(142);
+                            return true;
+                            break;
+                    case 228 :
+                            executeKey(132);
+                            return true;
+                            break;
+                    case 246 :
+                            executeKey(148);
+                            return true;
+                            break;
+                        case 252 :
+                            executeKey(129);
+                            return true;
+                            break;
+                        case 191: 
+                            executeKey(47);
+                            return true;
+                            break;
+                    case 222: // single/double quote
+                            if (!e.shiftKey) { 
+                            executeKey(39);
+                            } else {
+                            executeKey(34); // double quote
+                            }
+                            return true;
+                            break;
+                    case 192 :
+                            executeKey(39);
+                            return true;
+                            break;
+                    case 48 : 
+                            if (!e.shiftKey) { 
+                                executeKey(48);
+                            } else {
+                                executeKey(61);
+                            }
+                            return true;
+                            break;
+                        case 223: // sz
+                            executeKey(225);
+                            break;
+                    case 13 : 
+                            showCharacter();
+                            cursorPosX=1;
+                            if (cursorPosY<getDisplayHeight()) {
+                              cursorPosY++;
+                            }
+                            redrawCursor();
+                            break;
+                        case 180 : // single quote above sz
+                            executeKey(39);
+                            return true;
                             break;
                     case 39 : // right
+                            if (!e.shiftKey) { 
                               showCharacter();
                               if (cursorPosX<getDisplayWidth()) {
                                   cursorPosX++;
                                   redrawCursor();
                               }
+                              } else {
+                                        executeKey(39);
+                              }
                               return true;
                               break;
                           case 40 : // down
+                              if (!e.shiftKey) { 
                               showCharacter();
                               if (cursorPosY<getDisplayHeight()) {
                               cursorPosY++;
                               redrawCursor();
                               }
+                              } else {
+                              executeKey(40);
+                              }
                               return true;
                               break;
-                          case 37: // left
+                          case 37: // left, %
+                              if (!e.shiftKey) { 
                               showCharacter();
                               if (cursorPosX>1) {
                               cursorPosX--;
                               redrawCursor();
                             }
+                              } else {
+                                  executeKey(37);
+                              }
                             return true;
                               break;
                           case 38: // up
+                               if (!e.shiftKey) { 
                               showCharacter();
                               if (cursorPosY>1) {
                               cursorPosY--;
                               redrawCursor();
                             }
+                               } else {
+                                   executeKey(38);
+                               }
                             return true;
                               break;
                           case 8:
@@ -265,24 +389,22 @@
                               
                               redrawCursor();
                           return true;
-                          case 46 :
-                              var currentPos = cursorPosX;
-                              while (currentPos < getDisplayWidth()) 
-                              {
-                                      var asciiCode = screenCharacterArray[cursorPosY][currentPos+1][0];
-                                      var fgcolor = screenCharacterArray[cursorPosY][currentPos+1][1];
-                                      var bgcolor = screenCharacterArray[cursorPosY][currentPos+1][2];
-                                      codepage.drawChar(ctx, asciiCode, fgcolor, bgcolor, currentPos, cursorPosY);
-                                      currentPos++;
-                                      
-                              }
-                              return true;
-                            break;
+                         
                           default : 
                               
                                   
-                                  console.log("KEYCODE:"+keyCode);
-                                if (insert==false) {
+                                 
+                                executeKey(keyCode);
+                           
+                              return true;
+                              break;
+                }
+                return false;
+   }
+   
+   function executeKey(keyCode) {
+       
+       if (insert==false) {
                                     codepage.drawChar(ctx, keyCode, currentForeground, currentBackground, cursorPosX, cursorPosY);
                                     if (cursorPosX<getDisplayWidth()) { cursorPosX++; }
                                     redrawCursor();
@@ -302,40 +424,23 @@
                                     if (cursorPosX<getDisplayWidth()) { cursorPosX++; }
                                     redrawCursor();
                                 }
-                           
-                              return true;
-                              break;
-                }
-                return false;
+       
    }
+   
    function registerKeyEventListener() { 
 		
                 document.body.addEventListener('keypress',
                 function(e)
                 {
                     var keyCode = e.which;
-                    
-                    if ( (keyCode>=49) && (keyCode<=190) ) {
-                    
+                 
                     if(window.handleKeyCode(keyCode,e)) e.preventDefault();
                     
-                    }
-                    else {
-                        e.preventDefault();
-                    }
+                
                 },
                 false);
                 
-                document.body.addEventListener('keydown',
-                function(e)
-                {
-                    var keyCode = e.keyCode;
-                    
-                    if ( ( (keyCode>=37) && (keyCode<49) ) || (keyCode>190) || (keyCode==8) || (keyCode==32) ) {
-                        if(window.handleKeyCode(keyCode,e)) e.preventDefault();
-                    } 
-                },
-                false);
+               
                 
     }
     

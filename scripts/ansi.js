@@ -23,6 +23,7 @@
 /*jslint browser: true, devel: true, plusplus: true */
  var xStart = 0;
  var yStart = 0;
+ 
 
 function Codepage(codepageUrl, callback) {
         var COLORS, img, codepageImg;

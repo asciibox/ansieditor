@@ -59,6 +59,7 @@
     </style>
     <script>
         var drawingMode = false;
+        var mouseDown =false;
         var width=160;
         var height=52;
         var screenCharacterArray = Array();
@@ -132,6 +133,7 @@
              
                 ansicanvas = document.getElementById('ansi');
                 ansicanvas.addEventListener('mousedown', function(e) {
+                    mouseDown=true;
                     var mouse = getMousePos(ansicanvas, e);
                     var mx = mouse.x;
                     var my = mouse.y;                    
@@ -140,17 +142,41 @@
                     
                     cursorPosX = Math.floor(mx / canvasCharacterWidth)+1;
                     cursorPosY = Math.floor(my / canvasCharacterHeight)+1;
-                    
+                    redrawCursor();
                    
                     console.log("drawing mode:"+drawingMode);
                     if (drawingMode) {
                         console.log("char:"+currentChar);
-                        codepage.drawChar(ctx, currentChar, currentForeground, currentBackground, cursorPosX, cursorPosY, true); // shows cursor transparently
+                        codepage.drawChar(ctx, currentChar, currentForeground, currentBackground, cursorPosX, cursorPosY, false); // false == update coordinate system
                     }
                     
-                     redrawCursor();
+                     
                     
                 }, true);
+                
+                ansicanvas.addEventListener('mouseup', function(e) {
+                   mouseDown=false; 
+                });
+                
+                ansicanvas.addEventListener('mousemove', function(e) {
+                   
+                   if (mouseDown==true) {
+                    
+                    var mouse = getMousePos(ansicanvas, e);
+                    var mx = mouse.x;
+                    var my = mouse.y;                    
+                    
+                    showCharacter();
+                    cursorPosX = Math.floor(mx / canvasCharacterWidth)+1;
+                    cursorPosY = Math.floor(my / canvasCharacterHeight)+1;
+                    redrawCursor();
+                   if (drawingMode==true) {
+                        codepage.drawChar(ctx, currentChar, currentForeground, currentBackground, cursorPosX, cursorPosY, false); // false == update coordinate system
+                    }
+                    
+                   }
+                   
+                });
 
                
         }
@@ -511,6 +537,28 @@
        
    }
    
+    function clearScreen() 
+    {
+       cursorPosX = 1;
+       cursorPosY=1;
+       redrawCursor();
+      
+       while (cursorPosY<=height) 
+       {
+        cursorPosX=1;
+        while (cursorPosX<=width) 
+        {
+               
+                codepage.drawChar(ctx, 32, currentForeground, currentBackground, cursorPosX, cursorPosY, false);
+                cursorPosX++;
+        }
+        cursorPosY++;
+       }
+       cursorPosX=1;
+       cursorPosY=1;
+       redrawCursor();
+    }
+   
    function registerKeyEventListener() { 
 		
                 document.body.addEventListener('keypress',
@@ -690,6 +738,7 @@
   <br /><br />
   <span onclick="insert=!insert;">toggle cursor</span><br />
   <span onclick="drawingMode=!drawingMode;">toggle drawing mode</span><br />
+  <span onclick="clearScreen();">clear screen</span><br />
   <span onclick="$('#popup').bPopup();">change width and height</span>
   
   <img src="images/ansimap.png" border="0" usemap="#ansimap">

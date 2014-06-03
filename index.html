@@ -154,6 +154,10 @@
                     
                 }, true);
                 
+                ansicanvas.addEventListener('mouseleave', function(e) {
+                    mouseDown=false;
+                });
+                
                 ansicanvas.addEventListener('mouseup', function(e) {
                    mouseDown=false; 
                 });

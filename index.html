@@ -58,6 +58,7 @@
     }
     </style>
     <script>
+        var drawingMode = false;
         var width=160;
         var height=52;
         var screenCharacterArray = Array();
@@ -140,7 +141,14 @@
                     cursorPosX = Math.floor(mx / canvasCharacterWidth)+1;
                     cursorPosY = Math.floor(my / canvasCharacterHeight)+1;
                     
-                    redrawCursor();
+                   
+                    console.log("drawing mode:"+drawingMode);
+                    if (drawingMode) {
+                        console.log("char:"+currentChar);
+                        codepage.drawChar(ctx, currentChar, currentForeground, currentBackground, cursorPosX, cursorPosY, true); // shows cursor transparently
+                    }
+                    
+                     redrawCursor();
                     
                 }, true);
 
@@ -245,7 +253,7 @@
                 keys[14] = [ 136, 137, 138, 130, 144, 140, 139, 141, 161, 158 ];
                 keys[15] = [ 147, 148, 149, 224, 167, 150, 129, 151, 163, 154 ];
                
-    
+                console.log("keyCode:"+keyCode);
                 if ( (keyCode>=48) && (keyCode<=57) )
                 {
                         if (keyCode==48) keyCode=9; else
@@ -368,49 +376,29 @@
                             return true;
                             break;
                     case 39 : // right
-                            if (!e.shiftKey) { 
-                              showCharacter();
-                              if (cursorPosX<getDisplayWidth()) {
-                                  cursorPosX++;
-                                  redrawCursor();
-                              }
-                              } else {
+                            if (e.shiftKey) { 
+                              
                                         executeKey(39);
                               }
                               return true;
                               break;
                           case 40 : // down
-                              if (!e.shiftKey) { 
-                              showCharacter();
-                              if (cursorPosY<getDisplayHeight()) {
-                              cursorPosY++;
-                              redrawCursor();
-                              }
-                              } else {
+                              if (e.shiftKey) { 
+                              
                               executeKey(40);
                               }
                               return true;
                               break;
                           case 37: // left, %
-                              if (!e.shiftKey) { 
-                              showCharacter();
-                              if (cursorPosX>1) {
-                              cursorPosX--;
-                              redrawCursor();
-                            }
-                              } else {
+                              if (e.shiftKey) { 
+                                
                                   executeKey(37);
                               }
                             return true;
                               break;
                           case 38: // up
-                               if (!e.shiftKey) { 
-                              showCharacter();
-                              if (cursorPosY>1) {
-                              cursorPosY--;
-                              redrawCursor();
-                            }
-                               } else {
+                               if (e.shiftKey) { 
+                              
                                    executeKey(38);
                                }
                             return true;
@@ -437,6 +425,61 @@
                                  
                                 executeKey(keyCode);
                            
+                              return true;
+                              break;
+                }
+                return false;
+   }
+   
+   
+   
+   function handleKeyCode2(keyCode,e) {
+             
+                
+                switch(keyCode){
+             
+                    case 39 : // right
+                            if (!e.shiftKey) { 
+                                showCharacter();
+                                if (cursorPosX<getDisplayWidth()) {
+                                    cursorPosX++;
+                                    redrawCursor();
+                                }
+                              }
+                              return true;
+                              break;
+                          case 40 : // down
+                              if (!e.shiftKey) {
+                                showCharacter();
+                                if (cursorPosY<getDisplayHeight()) {
+                                cursorPosY++;
+                                redrawCursor();
+                                }
+                              }
+                              return true;
+                              break;
+                          case 37: // left, %
+                              if (!e.shiftKey) { 
+                              showCharacter();
+                              if (cursorPosX>1) {
+                              cursorPosX--;
+                              redrawCursor();
+                            }
+                              }
+                            return true;
+                              break;
+                          case 38: // up
+                               if (!e.shiftKey) { 
+                              showCharacter();
+                              if (cursorPosY>1) {
+                                    cursorPosY--;
+                                    redrawCursor();
+                                }
+                               }
+                              
+                              break;
+                          default:
+                         
                               return true;
                               break;
                 }
@@ -473,9 +516,22 @@
                 document.body.addEventListener('keypress',
                 function(e)
                 {
+                    
                     var keyCode = e.which;
-                 
-                    if(window.handleKeyCode(keyCode,e)) e.preventDefault();
+                    if (keyCode!=0) {
+                        if(window.handleKeyCode(keyCode,e)) e.preventDefault();
+                    }
+                
+                },
+                false);
+                
+                document.body.addEventListener('keydown',
+                function(e)
+                {
+                    var keyCode = e.which;
+                    if ( (keyCode<=40) && (keyCode>=37) ) { 
+                        if(window.handleKeyCode2(keyCode,e)) e.preventDefault();
+                    }
                     
                 
                 },
@@ -633,6 +689,7 @@
   <input id='background_color' value='#993300'/>
   <br /><br />
   <span onclick="insert=!insert;">toggle cursor</span><br />
+  <span onclick="drawingMode=!drawingMode;">toggle drawing mode</span><br />
   <span onclick="$('#popup').bPopup();">change width and height</span>
   
   <img src="images/ansimap.png" border="0" usemap="#ansimap">

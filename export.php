@@ -14,11 +14,13 @@ function getRandomString($length = 10) {
 }
 
 function foreground($foreground) {
-    return chr(27)."[48;5;".$background."m";
+    
+   return chr(27)."[38;5;".$foreground."m";
 }
 
 function background($background) {
-    return chr(27)."[38;5;".$background."m";
+    return chr(27)."[48;5;".$background."m";
+     
 }
 
 $string=$_POST['value'];
@@ -27,23 +29,35 @@ $filename=getRandomString(8);
 
 $f=fopen("download/".$filename.".ans", "w");
 
-$currentForeground=999;
-$currentBackground=999;
+$currentForeground=15;
+$currentBackground=0;
 
 fwrite($f, foreground(15));
 fwrite($f, background(0));
 
-while (strlen($string)>0) {
+$pos=0;
+while ($pos<strlen($string)) {
     
-    $extract = substr($string, 0, 9);
-    $string=substr($string, 9);
-    $asciiCode=substr($extract, 0, 3);
-    $foreground=substr($extract, 3, 3);
-    $background=substr($extract, 6, 3);
+    $extract = substr($string, $pos, 6);
     
-    fwrite($f, chr($asciiCode));
-    if ($foreground!=$currentForeground) fwrite($f, foreground($foreground));
-    if ($background!=$currentBackground) fwrite($f, background($background));
+    if (strcmp($extract,"brklne")==0) {
+        fwrite($f, chr(10).chr(13));
+    } else {
+        $asciiCode=hexdec(substr($extract, 0, 2));
+        $foreground=hexdec(substr($extract, 2, 2));
+        $background=hexdec(substr($extract, 4, 2));
+        echo "writing ".$asciiCode." fg: ".$foreground." bg: ".$background;
+        
+        if ($foreground!=$currentForeground) fwrite($f, foreground($foreground));
+        if ($background!=$currentBackground) fwrite($f, background($background));
+        fwrite($f, chr($asciiCode));
+    
+      
+        $currentForeground=$foreground;
+        $currentBackground=$background;
+    }
+    
+    $pos=$pos+6;
     
 }
 

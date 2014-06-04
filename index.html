@@ -519,6 +519,7 @@
    function executeKey(keyCode) {
        
        if (insert==false) {
+        
                                     codepage.drawChar(ctx, keyCode, currentForeground, currentBackground, cursorPosX, cursorPosY);
                                     if (cursorPosX<getDisplayWidth()) { cursorPosX++; }
                                     redrawCursor();
@@ -534,6 +535,7 @@
                                       currentPos--;
                                       
                                     }
+                                    
                                     codepage.drawChar(ctx, keyCode, currentForeground, currentBackground, cursorPosX, cursorPosY);
                                     if (cursorPosX<getDisplayWidth()) { cursorPosX++; }
                                     redrawCursor();
@@ -610,6 +612,7 @@
                 for (var i = 0; i < ansicolors.length; i++) {
                     if (ansicolors[i]==hex) {
                         currentForeground=i;
+                        break;
                     }
                 }
               },
@@ -655,7 +658,6 @@
            
                 for (var x = 1; x < screenCharacterArray[y].length; x++) {
                 
-                    
                      
                      var charArray = screenCharacterArray[y][x];
                      asciiCode=charArray[0];
@@ -734,6 +736,9 @@
             resize_canvas();
         });
         
+        function d2h(d) {return d.toString(16);}
+function h2d(h) {return parseInt(h,16);} 
+        
       
         
        function myexport() {
@@ -745,28 +750,47 @@
 
                 while (cursorPosY<=height) 
                 {
+                 
                  cursorPosX=1;
-                 while (cursorPosX<=width) 
+                 
+                 var lineWidth=width;
+                 
+                 
+                 lineAsciiCode=screenCharacterArray[cursorPosY][lineWidth][0];
+                 lineBackground=screenCharacterArray[cursorPosY][lineWidth][2];
+                 
+                 while ( (lineAsciiCode==32) && (lineBackground==0) && (lineWidth>=1) ) 
+                 {
+                     lineAsciiCode=screenCharacterArray[cursorPosY][lineWidth][0];
+                     lineBackground=screenCharacterArray[cursorPosY][lineWidth][2];
+                     if (lineAsciiCode==32)
+                     lineWidth--;
+                 }
+                 
+                
+                 while (cursorPosX<=lineWidth) 
                  {
                         var charArray = screenCharacterArray[cursorPosY][cursorPosX];
 
-                        var asciiCode = charArray[0].toString();
-                        var foreground = charArray[1].toString();
-                        var background = charArray[2].toString();
+                        var asciiCode = String(d2h(charArray[0]));
+                        var foreground = String(d2h(charArray[1]));
+                        var background = String(d2h(charArray[2]));
+                   
+                        while (asciiCode.length<2) asciiCode="0"+asciiCode;
+                        while (foreground.length<2) foreground="0"+foreground;
+                        while (background.length<2) background="0"+background;
                         
-                        while (asciiCode.length<3) asciiCode="0"+asciiCode;
-                        while (foreground.length<3) foreground="0"+foreground;
-                        while (background.length<3) background="0"+background;
+                        
                         html+=asciiCode+foreground+background;
 
                         cursorPosX++;
                  }
-                 html+="newline";
+                 html+="brklne";
                  cursorPosY++;
                 }
                 cursorPosX=1;
                 cursorPosY=1;
-
+                
                 $.ajax({
                 url: 'export.php',
                 type: 'POST',

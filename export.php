@@ -46,14 +46,19 @@ while ($pos<strlen($string)) {
         $asciiCode=hexdec(substr($extract, 0, 2));
         $foreground=hexdec(substr($extract, 2, 2));
         $background=hexdec(substr($extract, 4, 2));
-        echo "writing ".$asciiCode." fg: ".$foreground." bg: ".$background;
         
-        if ($foreground!=$currentForeground) fwrite($f, foreground($foreground));
+        if ( ($currentBackground==0) && ($asciiCode==32) ) {
+            fwrite($f, foreground(0));
+            $currentForeground=0;
+        } else {
+            if ($foreground!=$currentForeground) fwrite($f, foreground($foreground));#
+            $currentForeground=$foreground;
+        }
         if ($background!=$currentBackground) fwrite($f, background($background));
+        
         fwrite($f, chr($asciiCode));
     
-      
-        $currentForeground=$foreground;
+        
         $currentBackground=$background;
     }
     

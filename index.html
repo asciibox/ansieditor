@@ -733,6 +733,50 @@
             interpreter = new Interpreter("rad-PIRANHA.ANS", drawChunk);
             resize_canvas();
         });
+        
+      
+        
+       function myexport() {
+       
+                cursorPosX = 1;
+                cursorPosY=1;
+
+                var html="";
+
+                while (cursorPosY<=height) 
+                {
+                 cursorPosX=1;
+                 while (cursorPosX<=width) 
+                 {
+                        var charArray = screenCharacterArray[cursorPosY][cursorPosX];
+
+                        var asciiCode = charArray[0].toString();
+                        var foreground = charArray[1].toString();
+                        var background = charArray[2].toString();
+                        
+                        while (asciiCode.length<3) asciiCode="0"+asciiCode;
+                        while (foreground.length<3) foreground="0"+foreground;
+                        while (background.length<3) background="0"+background;
+                        html+=asciiCode+foreground+background;
+
+                        cursorPosX++;
+                 }
+                 html+="newline";
+                 cursorPosY++;
+                }
+                cursorPosX=1;
+                cursorPosY=1;
+
+                $.ajax({
+                url: 'export.php',
+                type: 'POST',
+                data: { value: html },
+                success: function(result) {
+                    alert('the request was successfully sent to the server');
+                }
+                });
+            
+        }
         </script>
     </div>
   <h3>Foreground color</h3>
@@ -743,7 +787,10 @@
   <span onclick="insert=!insert;">toggle cursor</span><br />
   <span onclick="drawingMode=!drawingMode;">toggle drawing mode</span><br />
   <span onclick="clearScreen();">clear screen</span><br />
-  <span onclick="$('#popup').bPopup();">change width and height</span>
+  <span onclick="$('#popup').bPopup();">change width and height</span><br />
+  <span onclick="myexport();">export to xterm ansi</span>
+  
+  
   
   <img src="images/ansimap.png" border="0" usemap="#ansimap">
   <map id="ansimap" name="ansimap">
@@ -918,5 +965,6 @@
             <li><input type="button" value="OK"></li>
         </ul>
   </div
+  <textarea id="ansi"></textarea>
 </body>
 </html>

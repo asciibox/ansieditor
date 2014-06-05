@@ -111,6 +111,14 @@
             cursorPosY=y;
         }
         
+        function setCursorPosXNoDebug(x) {
+            cursorPosX=x;
+        }
+        
+        function setCursorPosYNoDebug(y) {
+            cursorPosY=y;
+        }
+        
         function initansicanvas() {
                 setTimeout(function() { toggleCursor(true); }, 1000);
              
@@ -400,9 +408,9 @@
                             break;
                     case 13 : 
                             showCharacter();
-                            cursorPosX=1;
+                            setCursorPosX(1);
                             if (cursorPosY<getDisplayHeight()) {
-                              cursorPosY++;
+                              setCursorPosY(cursorPosY+1);
                             }
                             redrawCursor();
                             break;
@@ -561,7 +569,7 @@
         {
                
                 codepage.drawChar(ctx, 219, currentBackground, 0, cursorPosX, cursorPosY, false);
-                cursorPosX++;
+                setCursorPosXNoDebug(cursorPosX+1);
         }
         setCursorPosY(cursorPosY+1);
        }

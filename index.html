@@ -132,16 +132,16 @@
                     <div class="colleft">
                     <h3>Editing</h3>
                             <ul>
-                                    <li><a href="#" onclick="insert=!insert;" title="toggle cursor">toggle cursor</a></li>
-                                    <li><a href="#" onclick="drawingMode=!drawingMode;" title="toggle drawing mode">toggle drawing mode</a></li>
-                                    <li><a href="#" onclick="clearScreen();" title="clear screen">clear screen</a></li>
+                                    <li><a href="#" onclick="insert=!insert; return false;" title="toggle cursor">toggle cursor</a></li>
+                                    <li><a href="#" onclick="drawingMode=!drawingMode; return false;" title="toggle drawing mode">toggle drawing mode</a></li>
+                                    <li><a href="#" onclick="clearScreen(); return false;" title="clear screen">clear screen</a></li>
                             </ul>
                     </div>
 
                     <div class="colright">
                             <h3>Other</h3>
                             <ul>
-                                    <li><a href="#" onclick="myexport();" title="export to xterm ANSI">export to xterm ANSI</a></li>
+                                    <li><a href="#" onclick="myexport(); return false;" title="export to xterm ANSI">export to xterm ANSI</a></li>
                                     <!--<li><a href="#" onclick="$('#popup').bPopup();" title="change width and height">change width and heght</a></li>-->
                                     
                             </ul>
@@ -183,7 +183,7 @@
       <area shape="rect" alt="c9" title="" coords="190,24,214,34" onclick="setD(202,3);" />
       <area shape="rect" alt="c0" title="" coords="216,24,238,34" onclick="setD(203,3);" />
       <area shape="rect" alt="d1" title="" coords="0,34,22,46" onclick="setD(251,4);" />
-      <area shape="rect" alt="d2" title="" coords="24,36,48,48" onclick="setD(184,4;" />
+      <area shape="rect" alt="d2" title="" coords="24,36,48,48" onclick="setD(184,4);" />
       <area shape="rect" alt="d3" title="" coords="46,36,72,48" onclick="setD(212,4);" />
       <area shape="rect" alt="d4" title="" coords="70,34,96,48" onclick="setD(190,4);" />
       <area shape="rect" alt="d5" title="" coords="94,36,120,48" onclick="setD(205,4);" />
@@ -362,34 +362,33 @@ function h2d(h) {return parseInt(h,16);}
         
        function myexport() {
        
-                cursorPosX = 1;
-                cursorPosY=1;
+                cursorY=1;
 
                 var html="";
 
-                while (cursorPosY<=height) 
+                while (cursorY<=height) 
                 {
                  
-                 cursorPosX=1;
+                 cursorX=1;
                  
                  var lineWidth=width;
                  
                  
-                 lineAsciiCode=screenCharacterArray[cursorPosY][lineWidth][0];
-                 lineBackground=screenCharacterArray[cursorPosY][lineWidth][2];
+                 lineAsciiCode=screenCharacterArray[cursorY][lineWidth][0];
+                 lineBackground=screenCharacterArray[cursorY][lineWidth][2];
                  
                  while ( (lineAsciiCode==32) && (lineBackground==0) && (lineWidth>=1) ) 
                  {
-                     lineAsciiCode=screenCharacterArray[cursorPosY][lineWidth][0];
-                     lineBackground=screenCharacterArray[cursorPosY][lineWidth][2];
+                     lineAsciiCode=screenCharacterArray[cursorY][lineWidth][0];
+                     lineBackground=screenCharacterArray[cursorY][lineWidth][2];
                      if (lineAsciiCode==32)
                      lineWidth--;
                  }
                  
                 
-                 while (cursorPosX<=lineWidth) 
+                 while (cursorX<=lineWidth) 
                  {
-                        var charArray = screenCharacterArray[cursorPosY][cursorPosX];
+                        var charArray = screenCharacterArray[cursorY][cursorX];
 
                         var asciiCode = String(d2h(charArray[0]));
                         var foreground = String(d2h(charArray[1]));
@@ -402,28 +401,36 @@ function h2d(h) {return parseInt(h,16);}
                         
                         html+=asciiCode+foreground+background;
 
-                        cursorPosX++;
+                        cursorX++;
                  }
                  html+="brklne";
-                 cursorPosY++;
+                 cursorY++;
                 }
-                cursorPosX=1;
-                cursorPosY=1;
+                
                 
                 $.ajax({
                 url: 'export.php',
                 type: 'POST',
+                dataType : 'json',
                 data: { value: html },
                 success: function(result) {
-                   
+                   $('#file').html(result.filename);
+                   $('#file').attr("href", "download/"+result.filename);
+                   $('#part1').css('display', 'inline');
+                   $('#part2').css('display', 'none');
+                   $('#popup').bPopup();
                 }
                 });
             
         }
         </script>
     </div>
-  
-  <div id="popup">
+  <div id="popup" class="popup">
+        <span id="part1">
+        <span class="button b-close"><span>X</span></span>
+        <a href="" target="_blank" id="file"></a>&nbsp;(right click - save as)
+        </span>
+        <span id="part2">
         <span class="button b-close"><span>X</span></span>
         <ul>
             <li class="left">Width:</li>
@@ -432,6 +439,8 @@ function h2d(h) {return parseInt(h,16);}
             <li class="right"><input type="text" value="45" /></li>
             <li><input type="button" value="OK"></li>
         </ul>
+        </span>
   </div>
+       
 </body>
 </html>

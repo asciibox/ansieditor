@@ -31,25 +31,13 @@
     <script src="scripts/shape.js" type="text/javascript"></script>
     <script src="scripts/jquery-1.9.1.min.js" type="text/javascript"></script>
     <script src="scripts/jquery.simple-color.js" type="text/javascript"></script>
+    <script src="scripts/jquery-ui-1.10.4.custom.js"></script>
     <script src="scripts/jquery.bpopup.js"></script>
+    <link rel="stylesheet" href="css/panel.css" type="text/css" media="screen" />
     <link href="css/style.css" rel="stylesheet">
+
     <style type="text/css" media="screen">
-        
-    li {
-    list-style-type: none;
-    width: 50%;
-    }
-
-    li.left {
-        float: left;
-        
-    }
-
-    li.right {
-        float: right;
-        
-    }
-
+   
     @media only screen and (max-width: 480px) {
         .left, .right {
             float: none;
@@ -58,6 +46,9 @@
     }
     </style>
     <script>
+        var waitingforDoubleclick = false;
+        var doubleclickInterval;
+        
         var drawingMode = false;
         var mouseDown =false;
         var width=160;
@@ -116,6 +107,26 @@
       '585858', '626262', '6c6c6c', '767676', '808080', '8a8a8a', '949494', '9e9e9e', 'a8a8a8', 'b2b2b2',
       'bcbcbc', 'c6c6c6', 'd0d0d0', 'e4e4e4', 'e4e4e4', 'eeeeee', 'ffffff', '000000', '000000', '000000'
     ];
+    
+     var keys = new Array();
+                keys[0] = [ 49, 50, 51, 52, 53, 54, 55, 56, 57, 48 ];
+                keys[1] = [ 218, 191, 192, 217, 196, 179, 195, 180, 193, 194 ];
+                keys[2] = [ 201, 187, 200, 188, 205, 186, 204, 185, 202, 203 ];
+                keys[3] = [ 251, 184, 212, 190, 205, 179, 198, 181, 207, 209 ];
+                keys[4] = [ 161, 183, 211, 135, 179, 186, 199, 182, 208, 144 ];
+                keys[5] = [ 197, 206, 139, 140, 232, 163, 155, 156, 153, 239 ];
+                keys[6] = [ 176, 177, 178, 219, 223, 219, 124, 141, 254, 250 ];
+                keys[7] = [ 001, 002, 003, 004, 005, 006, 196, 127, 014, 207 ];
+                keys[8] = [ 024, 025, 024, 025, 016, 017, 023, 023, 020, 021 ];
+                keys[9] = [ 174, 175, 061, 243, 169, 170, 253, 246, 171, 172 ];
+                keys[10] = [ 149, 241, 020, 021, 235, 157, 227, 167, 251, 252 ];
+                keys[11] = [ 162, 225, 147, 228, 230, 232, 235, 236, 237, 237 ];
+                keys[12] = [ 128, 135, 165, 164, 152, 159, 044, 249, 173, 168 ];
+                keys[13] = [ 131, 132, 133, 160, 248, 134, 142, 143, 145, 146 ];
+                
+   
+                keys[14] = [ 136, 137, 138, 130, 144, 140, 139, 141, 161, 158 ];
+                keys[15] = [ 147, 148, 149, 224, 167, 150, 129, 151, 163, 154 ];
         
         function updateCanvasSize() {
             
@@ -133,6 +144,17 @@
              
                 ansicanvas = document.getElementById('ansi');
                 ansicanvas.addEventListener('mousedown', function(e) {
+                    
+                    if (waitingforDoubleclick==false) {
+                        
+                        waitingforDoubleclick = true;
+                        clearTimeout(doubleclickInterval);
+                        doubleclickInterval = setTimeout(function() { waitingforDoubleclick=false; }, 400);
+                        
+                    } else {
+                        showHidePanel();
+                    }
+                    
                     mouseDown=true;
                     var mouse = getMousePos(ansicanvas, e);
                     var mx = mouse.x;
@@ -183,6 +205,17 @@
                 });
 
                
+        }
+        
+        function showHidePanel() {
+            if ($('#panel').css('display')!="block") {
+                         $(".panel").slideDown("slow", "easeOutBounce");
+                        } else
+                        {
+                         $(".panel").slideUp("slow", "easeOutBounce");
+                        }
+                        waitingforDoubleclick = false;
+                        clearTimeout(doubleclickInterval);
         }
         
         function setANSICanvasSize() {
@@ -263,25 +296,7 @@
    function handleKeyCode(keyCode,e) {
                 console.log(keyCode);
                 
-                var keys = new Array();
-                keys[0] = [ 49, 50, 51, 52, 53, 54, 55, 56, 57, 48 ];
-                keys[1] = [ 218, 191, 192, 217, 196, 179, 195, 180, 193, 194 ];
-                keys[2] = [ 201, 187, 200, 188, 205, 186, 204, 185, 202, 203 ];
-                keys[3] = [ 251, 184, 212, 190, 205, 179, 198, 181, 207, 209 ];
-                keys[4] = [ 161, 183, 211, 135, 179, 186, 199, 182, 208, 144 ];
-                keys[5] = [ 197, 206, 139, 140, 232, 163, 155, 156, 153, 239 ];
-                keys[6] = [ 176, 177, 178, 219, 223, 219, 124, 141, 254, 250 ];
-                keys[7] = [ 001, 002, 003, 004, 005, 006, 196, 127, 014, 207 ];
-                keys[8] = [ 024, 025, 024, 025, 016, 017, 023, 023, 020, 021 ];
-                keys[9] = [ 174, 175, 061, 243, 169, 170, 253, 246, 171, 172 ];
-                keys[10] = [ 149, 241, 020, 021, 235, 157, 227, 167, 251, 252 ];
-                keys[11] = [ 162, 225, 147, 228, 230, 232, 235, 236, 237, 237 ];
-                keys[12] = [ 128, 135, 165, 164, 152, 159, 044, 249, 173, 168 ];
-                keys[13] = [ 131, 132, 133, 160, 248, 134, 142, 143, 145, 146 ];
-                
-   
-                keys[14] = [ 136, 137, 138, 130, 144, 140, 139, 141, 161, 158 ];
-                keys[15] = [ 147, 148, 149, 224, 167, 150, 129, 151, 163, 154 ];
+               
                
                 console.log("keyCode:"+keyCode);
                 if ( (keyCode>=48) && (keyCode<=57) )
@@ -293,7 +308,7 @@
                    
                     return true;
                 }
-                
+              
                 switch(keyCode){
                     case 249 :
                                executeKey(151); // high two becomes ( for french keyboard
@@ -570,7 +585,7 @@
                 document.body.addEventListener('keypress',
                 function(e)
                 {
-                    
+                
                     var keyCode = e.which;
                     if (keyCode!=0) {
                         if(window.handleKeyCode(keyCode,e)) e.preventDefault();
@@ -583,6 +598,9 @@
                 function(e)
                 {
                     var keyCode = e.which;
+                    if (keyCode==27) {
+                        showHidePanel();
+                    } else
                     if ( (keyCode<=40) && (keyCode>=37) ) { 
                         if(window.handleKeyCode2(keyCode,e)) e.preventDefault();
                     }
@@ -697,123 +715,40 @@
         
     </script>
 </head>
-<body onload="registerKeyEventListener();initansicanvas();"> <!-- initboxcanvas(); -->
-    <!--
-    Image width: <input autocomplete="off" type="text" id="imagewidth" value="800">
-    Image height: <input autocomplete="off" type="text" id="imageheight" value="500">
-    Display width: <input autocomplete="off" type="text" id="displaywidth" value="80">
-    Display height: <input autocomplete="off" type="text" id="displayheight" value="50">
-    <br />
-	<canvas id="boxcanvas" width="800" height="500" style="border: 1px solid black;">
-        Your browser does not support canvas
-        </canvas>
-    --><div style="width: 640px" class="centered">
-        <canvas id="ansi" width=640 height=480></canvas>
-        <script type="text/javascript">
-             setANSICanvasSize();
-         
-            codepage = new Codepage("images/CO_437_8x16.png", function() {
-            
-            var interpreter, display, ctx, charactersatonce;
+<body onload="registerKeyEventListener();initansicanvas();initpanel();"> <!-- initboxcanvas(); -->
+    <div class="panel" id="panel">
+            <h3>Ansi editor</h3>
+            <p>This is an ansi editor made of HTML5 and canvas</p>
+            <p>The sourcecode is available on <a href="http://www.github.com/fanside/ansieditor" target="_blank">GitHub</a>. You can choose different charsets and show them by pressing 1-9, or you can paint a certain character with the mouse. You can also export the file to xterm ANSI.</p>
 
-            function drawChunk() {
-                if (interpreter.read(charactersatonce, display)) {
-             
-                ctx.drawImage(display.canvas, 0, 0);
-                } else {
-                 
-                    interpreter.reset();
-                    display.clearScreen();
-                    //setTimeout(drawChunk, 5000);
-                }
-            }
-
-            ctx = document.getElementById("ansi").getContext("2d");
-            display = new Display();
-            charactersatonce = 999999; //Math.floor((baud || 115200) / 8 / 100);
-            
-            interpreter = new Interpreter("rad-PIRANHA.ANS", drawChunk);
-            resize_canvas();
-        });
-        
-        function d2h(d) {return d.toString(16);}
-function h2d(h) {return parseInt(h,16);} 
-        
-      
-        
-       function myexport() {
-       
-                cursorPosX = 1;
-                cursorPosY=1;
-
-                var html="";
-
-                while (cursorPosY<=height) 
-                {
-                 
-                 cursorPosX=1;
-                 
-                 var lineWidth=width;
-                 
-                 
-                 lineAsciiCode=screenCharacterArray[cursorPosY][lineWidth][0];
-                 lineBackground=screenCharacterArray[cursorPosY][lineWidth][2];
-                 
-                 while ( (lineAsciiCode==32) && (lineBackground==0) && (lineWidth>=1) ) 
-                 {
-                     lineAsciiCode=screenCharacterArray[cursorPosY][lineWidth][0];
-                     lineBackground=screenCharacterArray[cursorPosY][lineWidth][2];
-                     if (lineAsciiCode==32)
-                     lineWidth--;
-                 }
-                 
-                
-                 while (cursorPosX<=lineWidth) 
-                 {
-                        var charArray = screenCharacterArray[cursorPosY][cursorPosX];
-
-                        var asciiCode = String(d2h(charArray[0]));
-                        var foreground = String(d2h(charArray[1]));
-                        var background = String(d2h(charArray[2]));
-                   
-                        while (asciiCode.length<2) asciiCode="0"+asciiCode;
-                        while (foreground.length<2) foreground="0"+foreground;
-                        while (background.length<2) background="0"+background;
-                        
-                        
-                        html+=asciiCode+foreground+background;
-
-                        cursorPosX++;
-                 }
-                 html+="brklne";
-                 cursorPosY++;
-                }
-                cursorPosX=1;
-                cursorPosY=1;
-                
-                $.ajax({
-                url: 'export.php',
-                type: 'POST',
-                data: { value: html },
-                success: function(result) {
-                    alert('the request was successfully sent to the server');
-                }
-                });
-            
-        }
-        </script>
-    </div>
-  <h3>Foreground color</h3>
+            <h3>A Little Something About Me</h3>
+            <p>My name's Oliver, I'm working for <a href="http://www.abox42.com" target="_blank">Abox42</a> in Karlsruhe and another project of mine is <a href="http://www.learntick.com" target="_blank">learntick.com.</a> Join me for development on Github!</p>
+            <div style="clear:both;"></div>
+            <h3>Foreground color</h3>
   <input id='foreground_color' value='#993300'/>
   <h3>Background color</h3>
   <input id='background_color' value='#993300'/>
-  <br /><br />
-  <span onclick="insert=!insert;">toggle cursor</span><br />
-  <span onclick="drawingMode=!drawingMode;">toggle drawing mode</span><br />
-  <span onclick="clearScreen();">clear screen</span><br />
-  <span onclick="$('#popup').bPopup();">change width and height</span><br />
-  <span onclick="myexport();">export to xterm ansi</span>
   
+  <div class="columns">
+                    <div class="colleft">
+                    <h3>Editing</h3>
+                            <ul>
+                                    <li><a href="#" onclick="insert=!insert;" title="toggle cursor">toggle cursor</a></li>
+                                    <li><a href="#" onclick="drawingMode=!drawingMode;" title="toggle drawing mode">toggle drawing mode</a></li>
+                                    <li><a href="#" onclick="clearScreen();" title="clear screen">clear screen</a></li>
+                            </ul>
+                    </div>
+
+                    <div class="colright">
+                            <h3>Other</h3>
+                            <ul>
+                                    <li><a href="#" onclick="myexport();" title="export to xterm ANSI">export to xterm ANSI</a></li>
+                                    <!--<li><a href="#" onclick="$('#popup').bPopup();" title="change width and height">change width and heght</a></li>-->
+                                    
+                            </ul>
+                    </div>
+            </div>
+            <div style="clear:both;"></div>
   
   
   <img src="images/ansimap.png" border="0" usemap="#ansimap">
@@ -979,6 +914,116 @@ function h2d(h) {return parseInt(h,16);}
       <area shape="rect" alt="o9" title="" coords="190,175,214,196" onclick="setD(163,16);" />
       <area shape="rect" alt="o0" title="" coords="216,175,238,196" onclick="setD(154,16);" />
   </map>
+            
+
+    </div>
+
+    <!--
+    Image width: <input autocomplete="off" type="text" id="imagewidth" value="800">
+    Image height: <input autocomplete="off" type="text" id="imageheight" value="500">
+    Display width: <input autocomplete="off" type="text" id="displaywidth" value="80">
+    Display height: <input autocomplete="off" type="text" id="displayheight" value="50">
+    <br />
+	<canvas id="boxcanvas" width="800" height="500" style="border: 1px solid black;">
+        Your browser does not support canvas
+        </canvas>
+    --><div style="width: 640px" class="centered">
+        <canvas id="ansi" width=640 height=480></canvas>
+        <script type="text/javascript">
+             setANSICanvasSize();
+         
+            codepage = new Codepage("images/CO_437_8x16.png", function() {
+            
+            var interpreter, display, ctx, charactersatonce;
+
+            function drawChunk() {
+                if (interpreter.read(charactersatonce, display)) {
+             
+                ctx.drawImage(display.canvas, 0, 0);
+                } else {
+                 
+                    interpreter.reset();
+                    display.clearScreen();
+                    //setTimeout(drawChunk, 5000);
+                }
+            }
+
+            ctx = document.getElementById("ansi").getContext("2d");
+            display = new Display();
+            charactersatonce = 999999; //Math.floor((baud || 115200) / 8 / 100);
+            
+            interpreter = new Interpreter("rad-PIRANHA.ANS", drawChunk);
+            resize_canvas();
+        });
+        
+        function d2h(d) {return d.toString(16);}
+function h2d(h) {return parseInt(h,16);} 
+        
+      
+        
+       function myexport() {
+       
+                cursorPosX = 1;
+                cursorPosY=1;
+
+                var html="";
+
+                while (cursorPosY<=height) 
+                {
+                 
+                 cursorPosX=1;
+                 
+                 var lineWidth=width;
+                 
+                 
+                 lineAsciiCode=screenCharacterArray[cursorPosY][lineWidth][0];
+                 lineBackground=screenCharacterArray[cursorPosY][lineWidth][2];
+                 
+                 while ( (lineAsciiCode==32) && (lineBackground==0) && (lineWidth>=1) ) 
+                 {
+                     lineAsciiCode=screenCharacterArray[cursorPosY][lineWidth][0];
+                     lineBackground=screenCharacterArray[cursorPosY][lineWidth][2];
+                     if (lineAsciiCode==32)
+                     lineWidth--;
+                 }
+                 
+                
+                 while (cursorPosX<=lineWidth) 
+                 {
+                        var charArray = screenCharacterArray[cursorPosY][cursorPosX];
+
+                        var asciiCode = String(d2h(charArray[0]));
+                        var foreground = String(d2h(charArray[1]));
+                        var background = String(d2h(charArray[2]));
+                   
+                        while (asciiCode.length<2) asciiCode="0"+asciiCode;
+                        while (foreground.length<2) foreground="0"+foreground;
+                        while (background.length<2) background="0"+background;
+                        
+                        
+                        html+=asciiCode+foreground+background;
+
+                        cursorPosX++;
+                 }
+                 html+="brklne";
+                 cursorPosY++;
+                }
+                cursorPosX=1;
+                cursorPosY=1;
+                
+                $.ajax({
+                url: 'export.php',
+                type: 'POST',
+                data: { value: html },
+                success: function(result) {
+                    alert('the request was successfully sent to the server');
+                }
+                });
+            
+        }
+        </script>
+    </div>
+  
   <div id="popup">
         <span class="button b-close"><span>X</span></span>
         <ul>
@@ -988,7 +1033,6 @@ function h2d(h) {return parseInt(h,16);}
             <li class="right"><input type="text" value="45" /></li>
             <li><input type="button" value="OK"></li>
         </ul>
-  </div
-  <textarea id="ansi"></textarea>
+  </div>
 </body>
 </html>

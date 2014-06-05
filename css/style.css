@@ -259,3 +259,7 @@ background-color:#2b91af;
 color:#fff;
 text-shadow:none;
 }
+
+.simpleColorCell {
+    z-index:999999 !important;
+}

@@ -228,6 +228,9 @@
           }
         });
 
+        if (options.onOpen) {
+            options.onOpen(element);
+          }
         // Use an existing chooser if there is one
         if (event.data.container.chooser) {
           event.data.container.chooser.toggle();

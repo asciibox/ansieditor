@@ -84,12 +84,31 @@
         function updateCanvasSize() {
             
         }
+        
+         function redrawCursor() {
+            cursorShown=true;
+            //clearInterval(cursorInterval);
+            ctx = document.getElementById("ansi").getContext("2d");
+        
+            codepage.drawChar(ctx, insert==false ? 220 : 95, 15, 0, cursorPosX, cursorPosY, true); // shows cursor transparently
+            //cursorInterval = setInterval(function() { toggleCursor(); }, 500);
+        }
        
         function getDisplayWidth() {
             return width; // return parseInt(document.getElementById('displaywidth').value);
         }
         function getDisplayHeight() {
             return height; // return parseInt(document.getElementById('displayheight').value);
+        }
+        
+        function setCursorPosX(x) {
+             console.log("setting x to "+x);
+            cursorPosX=x;
+        }
+        
+        function setCursorPosY(y) {
+            console.log("setting y to "+y);
+            cursorPosY=y;
         }
         
         function initansicanvas() {
@@ -109,15 +128,7 @@
                     }
                     
                     mouseDown=true;
-                    var mouse = getMousePos(ansicanvas, e);
-                    var mx = mouse.x;
-                    var my = mouse.y;                    
-                    
-                    showCharacter();
-                    
-                    cursorPosX = Math.floor(mx / canvasCharacterWidth)+1;
-                    cursorPosY = Math.floor(my / canvasCharacterHeight)+1;
-                    redrawCursor();
+                    mouseMove(ansicanvas, e);
                    
                     console.log("drawing mode:"+drawingMode);
                     if (drawingMode) {
@@ -128,6 +139,19 @@
                      
                     
                 }, true);
+                
+                document.getElementById('panel').addEventListener('mousedown', function(e) {
+                    if (waitingforDoubleclick==false) {
+                        waitingforDoubleclick = true;
+                        clearTimeout(doubleclickInterval);
+                        doubleclickInterval = setTimeout(function() { waitingforDoubleclick=false; }, 400);
+                    } else { // we can save us the work and clear the timeout
+                        hidePanel();
+                        waitingforDoubleclick = false;
+                        clearTimeout(doubleclickInterval);
+                    }
+                });
+                    
                 
                 ansicanvas.addEventListener('mouseleave', function(e) {
                     mouseDown=false;
@@ -141,14 +165,8 @@
                    
                    if (mouseDown==true) {
                     
-                    var mouse = getMousePos(ansicanvas, e);
-                    var mx = mouse.x;
-                    var my = mouse.y;                    
+                   mouseMove(ansicanvas,e);
                     
-                    showCharacter();
-                    cursorPosX = Math.floor(mx / canvasCharacterWidth)+1;
-                    cursorPosY = Math.floor(my / canvasCharacterHeight)+1;
-                    redrawCursor();
                    if (drawingMode==true) {
                         codepage.drawChar(ctx, currentChar, currentForeground, currentBackground, cursorPosX, cursorPosY, false); // false == update coordinate system
                     }
@@ -158,6 +176,27 @@
                 });
 
                
+        }
+        
+        function mouseMove(ansicanvas, e) {
+            
+            var mouse = getMousePos(ansicanvas, e);
+                    var mx = mouse.x;
+                    var my = mouse.y;                    
+                    
+                    showCharacter();
+                    
+                    myCursorPosX = Math.floor(mx / canvasCharacterWidth)+1;
+                    myCursorPosY = Math.floor(my / canvasCharacterHeight)+1;
+                    
+                    if (myCursorPosX>width) { console.log(myCursorPosX+" too far"); setCursorPosX(width); redrawCursor(); return; }
+                    if (myCursorPosY>height) { console.log(myCursorPosY+" too high"); setCursorPosY(height); redrawCursor(); return; }
+                    
+                    setCursorPosX(myCursorPosX);
+                    setCursorPosY(myCursorPosY);
+                    
+                    redrawCursor();
+            
         }
         
         function showPanel() {
@@ -218,21 +257,14 @@
             
         }
         
-        function redrawCursor() {
-            cursorShown=true;
-            //clearInterval(cursorInterval);
-            ctx = document.getElementById("ansi").getContext("2d");
-        
-            codepage.drawChar(ctx, insert==false ? 220 : 95, 15, 0, cursorPosX, cursorPosY, true); // shows cursor transparently
-            //cursorInterval = setInterval(function() { toggleCursor(); }, 500);
-        }
+       
         
         function showCharacter() {
-            
+            console.log("x:"+cursorPosX+" y: "+cursorPosY);
             var asciiCode = screenCharacterArray[cursorPosY][cursorPosX][0];
             var foreground = screenCharacterArray[cursorPosY][cursorPosX][1];
             var background = screenCharacterArray[cursorPosY][cursorPosX][2];
-            console.log("ascii:"+asciiCode+" fg:"+foreground+" bg:"+background);
+            
             ctx = document.getElementById("ansi").getContext("2d");
      
             codepage.drawChar(ctx, asciiCode, foreground, background, cursorPosX, cursorPosY, false);
@@ -407,7 +439,7 @@
                             return true;
                               break;
                           case 8:
-                              cursorPosX--;
+                              setCursorPosX(cursorPosX-1);
                               var currentPos = cursorPosX;
                               
                               while (currentPos < getDisplayWidth()) 
@@ -445,7 +477,7 @@
                             if (!e.shiftKey) { 
                                 showCharacter();
                                 if (cursorPosX<getDisplayWidth()) {
-                                    cursorPosX++;
+                                    setCursorPosX(cursorPosX+1);
                                     redrawCursor();
                                 }
                               }
@@ -465,7 +497,7 @@
                               if (!e.shiftKey) { 
                               showCharacter();
                               if (cursorPosX>1) {
-                              cursorPosX--;
+                              setCursorPosX(cursorPosX-1);
                               redrawCursor();
                             }
                               }
@@ -494,7 +526,7 @@
        if (insert==false) {
         
                                     codepage.drawChar(ctx, keyCode, currentForeground, currentBackground, cursorPosX, cursorPosY);
-                                    if (cursorPosX<getDisplayWidth()) { cursorPosX++; }
+                                    if (cursorPosX<getDisplayWidth()) { setCursorPosX(cursorPosX+1); }
                                     redrawCursor();
                                 } else {
                                     var currentPos=getDisplayWidth();
@@ -510,7 +542,7 @@
                                     }
                                     
                                     codepage.drawChar(ctx, keyCode, currentForeground, currentBackground, cursorPosX, cursorPosY);
-                                    if (cursorPosX<getDisplayWidth()) { cursorPosX++; }
+                                    if (cursorPosX<getDisplayWidth()) { setCursorPosX(cursorPosX+1); }
                                     redrawCursor();
                                 }
        
@@ -518,23 +550,23 @@
    
     function clearScreen() 
     {
-       cursorPosX = 1;
-       cursorPosY=1;
+       setCursorPosX(1);
+       setCursorPosY(1);
        redrawCursor();
       
        while (cursorPosY<=height) 
        {
-        cursorPosX=1;
+        setCursorPosX(1);
         while (cursorPosX<=width) 
         {
                
-                codepage.drawChar(ctx, 32, currentForeground, currentBackground, cursorPosX, cursorPosY, false);
+                codepage.drawChar(ctx, 219, currentBackground, 0, cursorPosX, cursorPosY, false);
                 cursorPosX++;
         }
-        cursorPosY++;
+        setCursorPosY(cursorPosY+1);
        }
-       cursorPosX=1;
-       cursorPosY=1;
+       setCursorPosX(1);
+       setCursorPosY(1);
        redrawCursor();
     }
    

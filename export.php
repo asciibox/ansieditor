@@ -41,7 +41,7 @@ while ($pos<strlen($string)) {
     $extract = substr($string, $pos, 6);
     
     if (strcmp($extract,"brklne")==0) {
-        fwrite($f, chr(10).chr(13));
+        fwrite($f, chr(13).chr(10));
     } else {
         $asciiCode=hexdec(substr($extract, 0, 2));
         $foreground=hexdec(substr($extract, 2, 2));

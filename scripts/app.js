@@ -129,7 +129,7 @@
                         hidePanel();
                         waitingforDoubleclick = true;
                         clearTimeout(doubleclickInterval);
-                        doubleclickInterval = setTimeout(function() { waitingforDoubleclick=false; }, 400);
+                        doubleclickInterval = setTimeout(function() { waitingforDoubleclick=false; }, 300);
                         
                     } else {
                         showPanel();
@@ -558,6 +558,7 @@
    
     function clearScreen() 
     {
+       if (confirm('Are you sure?')) {
        setCursorPosX(1);
        setCursorPosY(1);
        redrawCursor();
@@ -568,14 +569,27 @@
         while (cursorPosX<=width) 
         {
                
-                codepage.drawChar(ctx, 219, currentBackground, 0, cursorPosX, cursorPosY, false);
+                //codepage.drawChar(ctx, 32, 0, currentBackground, cursorPosX, cursorPosY, false);
+                var charArray = Array();
+                         charArray[0]=32;
+                         charArray[1]=currentForeground;
+                         charArray[2]=currentBackground;
+                         
+                screenCharacterArray[cursorPosY][cursorPosX]=charArray;
                 setCursorPosXNoDebug(cursorPosX+1);
+                
         }
         setCursorPosY(cursorPosY+1);
        }
        setCursorPosX(1);
        setCursorPosY(1);
+       var bgstring = "#"+ansicolors[currentBackground];
+      
+       ctx = document.getElementById("ansi").getContext("2d");
+       ctx.fillStyle = bgstring;
+       ctx.fillRect(0, 0, canvas.width, canvas.height);
        redrawCursor();
+        }
     }
    
    function registerKeyEventListener() { 
@@ -658,3 +672,72 @@
             return canvas;
         }
         
+        
+       function d2h(d) {return d.toString(16);}
+       function h2d(h) {return parseInt(h,16);} 
+        
+      
+        
+       function myexport() {
+       
+                cursorY=1;
+
+                var html="";
+
+                while (cursorY<=height) 
+                {
+                 
+                 cursorX=1;
+                 
+                 var lineWidth=width;
+                 
+                 
+                 lineAsciiCode=screenCharacterArray[cursorY][lineWidth][0];
+                 lineBackground=screenCharacterArray[cursorY][lineWidth][2];
+                 
+                 while ( (lineAsciiCode==32) && (lineBackground==0) && (lineWidth>=1) ) 
+                 {
+                     lineAsciiCode=screenCharacterArray[cursorY][lineWidth][0];
+                     lineBackground=screenCharacterArray[cursorY][lineWidth][2];
+                     if (lineAsciiCode==32)
+                     lineWidth--;
+                 }
+                 
+                
+                 while (cursorX<=lineWidth) 
+                 {
+                        var charArray = screenCharacterArray[cursorY][cursorX];
+
+                        var asciiCode = String(d2h(charArray[0]));
+                        var foreground = String(d2h(charArray[1]));
+                        var background = String(d2h(charArray[2]));
+                   
+                        while (asciiCode.length<2) asciiCode="0"+asciiCode;
+                        while (foreground.length<2) foreground="0"+foreground;
+                        while (background.length<2) background="0"+background;
+                        
+                        
+                        html+=asciiCode+foreground+background;
+
+                        cursorX++;
+                 }
+                 html+="brklne";
+                 cursorY++;
+                }
+                
+                
+                $.ajax({
+                url: 'export.php',
+                type: 'POST',
+                dataType : 'json',
+                data: { value: html },
+                success: function(result) {
+                   $('#file').html(result.filename);
+                   $('#file').attr("href", "download/"+result.filename);
+                   $('#part1').css('display', 'inline');
+                   $('#part2').css('display', 'none');
+                   $('#popup').bPopup();
+                }
+                });
+            
+        }

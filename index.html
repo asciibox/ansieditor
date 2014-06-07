@@ -45,11 +45,27 @@
             width: 100%;
         }
     }
+    body {
+        overflow:hidden;
+    }
     </style>
     <script>
-       
-    
+     function goodbye(e) {
+	if(!e) e = window.event;
+	//e.cancelBubble is supported by IE - this will kill the bubbling process.
+	e.cancelBubble = true;
+	e.returnValue = 'You sure you want to leave?'; //This is displayed on the dialog
+
+	//e.stopPropagation works in Firefox.
+	if (e.stopPropagation) {
+		e.stopPropagation();
+		e.preventDefault();
+	}
+}
+window.onbeforeunload=goodbye;
+  
     $(document).ready(function(){
+           
            
             $('#foreground_color').simpleColor({
               boxHeight: 40,
@@ -329,16 +345,16 @@
     --><div style="width: 640px" class="centered">
         <canvas id="ansi" width=640 height=480></canvas>
         <script type="text/javascript">
-             setANSICanvasSize();
+           
          
             codepage = new Codepage("images/CO_437_8x16.png", function() {
             
-            var interpreter, display, ctx, charactersatonce;
+            var interpreter, display, charactersatonce;
 
             function drawChunk() {
                 if (interpreter.read(charactersatonce, display)) {
              
-                ctx.drawImage(display.canvas, 0, 0);
+                globalContext.drawImage(display.canvas, 0, 0);
                 } else {
                  
                     interpreter.reset();
@@ -347,12 +363,14 @@
                 }
             }
 
-            ctx = document.getElementById("ansi").getContext("2d");
+            setCanvasSize(document.getElementById("ansi"));
+              setANSICanvasSize();
+            globalContext = document.getElementById("ansi").getContext("2d");
             display = new Display();
             charactersatonce = 999999; //Math.floor((baud || 115200) / 8 / 100);
-            
-            interpreter = new Interpreter("rad-PIRANHA.ANS", drawChunk);
-            resize_canvas();
+            doClearScreen(false);
+            interpreter = new Interpreter("test.ans", drawChunk);
+            //resize_canvas();
         });
         
    

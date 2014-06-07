@@ -138,6 +138,7 @@
                     }
                     
                     mouseDown=true;
+                    showCharacter();
                     mouseMove(ansicanvas, e);
                    
                     console.log("drawing mode:"+drawingMode);
@@ -210,9 +211,9 @@
         }
         
         function executeKey(keyCode) {
-       
+       showCharacter();
        if (insert==false) {
-        
+           
                                     codepage.drawChar(ctx, keyCode, currentForeground, currentBackground, cursorPosX, cursorPosY);
                                     if (cursorPosX<getDisplayWidth()-2) { setCursorPosX(cursorPosX+1); }
                                     redrawCursor();
@@ -221,9 +222,9 @@
                                     while (currentPos>cursorPosX) 
                                     {
                                     
-                                      var asciiCode = screenCharacterArray[cursorPosY][currentPos][0];
-                                      var fgcolor = screenCharacterArray[cursorPosY][currentPos][1];
-                                      var bgcolor = screenCharacterArray[cursorPosY][currentPos][2];
+                                      var asciiCode = screenCharacterArray[cursorPosY][currentPos-1][0];
+                                      var fgcolor = screenCharacterArray[cursorPosY][currentPos-1][1];
+                                      var bgcolor = screenCharacterArray[cursorPosY][currentPos-1][2];
 
                                       codepage.drawChar(ctx, asciiCode, fgcolor, bgcolor, currentPos, cursorPosY);
                                       currentPos--;
@@ -337,7 +338,7 @@
                    
                     return true;
                 }
-              
+             
                 switch(keyCode){
                     case 249 :
                                executeKey(151); // high two becomes ( for french keyboard
@@ -477,21 +478,23 @@
                                }
                             return true;
                               break;
-                          case 8:
+                          case 8: // backspace
                               setCursorPosX(cursorPosX-1);
                               var currentPos = cursorPosX;
                               
                               while (currentPos < getDisplayWidth()-1) 
                               {
-                                      var asciiCode = screenCharacterArray[cursorPosY-1][currentPos-1][0];
-                                      var fgcolor = screenCharacterArray[cursorPosY-1][currentPos-1][1];
-                                      var bgcolor = screenCharacterArray[cursorPosY-1][currentPos-1][2];
+                                      var asciiCode = screenCharacterArray[cursorPosY][currentPos+1][0];
+                                      var fgcolor = screenCharacterArray[cursorPosY][currentPos+1][1];
+                                      var bgcolor = screenCharacterArray[cursorPosY][currentPos+1][2];
                                       //alert("DC3");
                                       codepage.drawChar(ctx, asciiCode, fgcolor, bgcolor, currentPos, cursorPosY);
                                       currentPos++;                                      
                               }
                               
+                              
                               redrawCursor();
+                              
                           return true;
                          
                           default : 
@@ -552,6 +555,20 @@
                                 }
                                }
                               
+                              break;
+                          case 46:
+                          
+                              var currentPos = cursorPosX;
+                              
+                              while (currentPos < getDisplayWidth()-1) 
+                              {
+                                      var asciiCode = screenCharacterArray[cursorPosY][currentPos+1][0];
+                                      var fgcolor = screenCharacterArray[cursorPosY][currentPos+1][1];
+                                      var bgcolor = screenCharacterArray[cursorPosY][currentPos+1][2];
+                                      //alert("DC3");
+                                      codepage.drawChar(ctx, asciiCode, fgcolor, bgcolor, currentPos, cursorPosY);
+                                      currentPos++;                                      
+                              }
                               break;
                           default:
                          
@@ -625,13 +642,14 @@
                 function(e)
                 {
                     var keyCode = e.which;
+                   
                     if (keyCode==27) {
                          if ($('#panel').css('display')=="block") {
                             hidePanel(); } else {
                             showPanel();
                             }
                     } else
-                    if ( (keyCode<=40) && (keyCode>=37) ) { 
+                    if ( ( (keyCode<=40) && (keyCode>=37) ) || (keyCode==46) ) { 
                         if(window.handleKeyCode2(keyCode,e)) e.preventDefault();
                     }
                     

@@ -89,7 +89,7 @@
             cursorShown=true;
             
             ctx = document.getElementById("ansi").getContext("2d");
-            console.log("redrawCursor:"+cursorPosX);
+           
             codepage.drawChar(ctx, insert==false ? 220 : 95, 15, 0, cursorPosX, cursorPosY, true, cursorPosY); // shows cursor transparently
             clearTimeout(cursorInterval);
             cursorInterval = setTimeout(function() { toggleCursor(); }, 500);
@@ -103,12 +103,12 @@
         }
         
         function setCursorPosX(x) {
-             console.log("setting x to "+x);
+             
             cursorPosX=x;
         }
         
         function setCursorPosY(y) {
-            console.log("setting y to "+y);
+            
             cursorPosY=y;
         }
         
@@ -138,12 +138,11 @@
                     }
                     
                     mouseDown=true;
-                    showCharacter();
                     mouseMove(ansicanvas, e);
                    
-                    console.log("drawing mode:"+drawingMode);
+                    
                     if (drawingMode) {
-                        console.log("char:"+currentChar);
+                       
                         codepage.drawChar(ctx, currentChar, currentForeground, currentBackground, cursorPosX, cursorPosY, false); // false == update coordinate system
                     }
                     
@@ -211,9 +210,9 @@
         }
         
         function executeKey(keyCode) {
-       showCharacter();
+       
        if (insert==false) {
-           
+        
                                     codepage.drawChar(ctx, keyCode, currentForeground, currentBackground, cursorPosX, cursorPosY);
                                     if (cursorPosX<getDisplayWidth()-2) { setCursorPosX(cursorPosX+1); }
                                     redrawCursor();
@@ -222,10 +221,14 @@
                                     while (currentPos>cursorPosX) 
                                     {
                                     
+                                      if (typeof(screenCharacterArray[cursorPosY][currentPos-1])=="undefined") 
+                                      {
+                                          console.log("Error Y: "+currentPos+" X: "+(currentPos-1)+" is undefined");
+                                      }
                                       var asciiCode = screenCharacterArray[cursorPosY][currentPos-1][0];
                                       var fgcolor = screenCharacterArray[cursorPosY][currentPos-1][1];
                                       var bgcolor = screenCharacterArray[cursorPosY][currentPos-1][2];
-
+                                      
                                       codepage.drawChar(ctx, asciiCode, fgcolor, bgcolor, currentPos, cursorPosY);
                                       currentPos--;
                                       
@@ -306,7 +309,7 @@
             var asciiCode = screenCharacterArray[cursorPosY][cursorPosX][0];
             var foreground = screenCharacterArray[cursorPosY][cursorPosX][1];
             var background = screenCharacterArray[cursorPosY][cursorPosX][2];
-            
+           
             codepage.drawChar(globalContext, asciiCode, foreground, background, cursorPosX, cursorPosY, false);
             
         }
@@ -324,11 +327,11 @@
     }
     
    function handleKeyCode(keyCode,e) {
-                console.log(keyCode);
+              
                 
                
                
-                console.log("keyCode:"+keyCode);
+              
                 if ( (keyCode>=48) && (keyCode<=57) )
                 {
                         if (keyCode==48) keyCode=9; else
@@ -338,7 +341,7 @@
                    
                     return true;
                 }
-             
+              
                 switch(keyCode){
                     case 249 :
                                executeKey(151); // high two becomes ( for french keyboard
@@ -478,11 +481,12 @@
                                }
                             return true;
                               break;
-                          case 8: // backspace
+                          case 8:
+                             if (cursorPosX>0) {
                               setCursorPosX(cursorPosX-1);
                               var currentPos = cursorPosX;
                               
-                              while (currentPos < getDisplayWidth()-1) 
+                              while (currentPos < getDisplayWidth()-2) 
                               {
                                       var asciiCode = screenCharacterArray[cursorPosY][currentPos+1][0];
                                       var fgcolor = screenCharacterArray[cursorPosY][currentPos+1][1];
@@ -492,9 +496,10 @@
                                       currentPos++;                                      
                               }
                               
+                              codepage.drawChar(ctx, 32, 15, 0, getDisplayWidth()-2, cursorPosY);
                               
                               redrawCursor();
-                              
+                            }
                           return true;
                          
                           default : 
@@ -555,20 +560,6 @@
                                 }
                                }
                               
-                              break;
-                          case 46:
-                          
-                              var currentPos = cursorPosX;
-                              
-                              while (currentPos < getDisplayWidth()-1) 
-                              {
-                                      var asciiCode = screenCharacterArray[cursorPosY][currentPos+1][0];
-                                      var fgcolor = screenCharacterArray[cursorPosY][currentPos+1][1];
-                                      var bgcolor = screenCharacterArray[cursorPosY][currentPos+1][2];
-                                      //alert("DC3");
-                                      codepage.drawChar(ctx, asciiCode, fgcolor, bgcolor, currentPos, cursorPosY);
-                                      currentPos++;                                      
-                              }
                               break;
                           default:
                          
@@ -632,7 +623,8 @@
                 
                     var keyCode = e.which;
                     if (keyCode!=0) {
-                        if(window.handleKeyCode(keyCode,e)) e.preventDefault();
+                        e.preventDefault(); 
+                        window.handleKeyCode(keyCode,e);
                     }
                 
                 },
@@ -641,16 +633,18 @@
                 document.body.addEventListener('keydown',
                 function(e)
                 {
+                  
                     var keyCode = e.which;
-                   
+                     
                     if (keyCode==27) {
                          if ($('#panel').css('display')=="block") {
                             hidePanel(); } else {
                             showPanel();
                             }
                     } else
-                    if ( ( (keyCode<=40) && (keyCode>=37) ) || (keyCode==46) ) { 
-                        if(window.handleKeyCode2(keyCode,e)) e.preventDefault();
+                    if ( (keyCode<=40) && (keyCode>=37) ) { 
+                        e.preventDefault();
+                        window.handleKeyCode2(keyCode,e);
                     }
                     
                 
@@ -691,8 +685,12 @@
             var window_innerHeight = $(window).height()-30;
             var characterWidthPct= window_innerWidth/(width*8); // How often does the character fit into the width
             var characterHeightPct = window_innerHeight/(height*16);  // How often does the character fit into the height
-            canvas.width=Math.floor(width*8*characterWidthPct);
-            canvas.height=Math.floor(height*16*characterHeightPct);
+            
+            fullCanvasWidth=Math.floor(width*8*characterWidthPct);
+            fullCanvasHeight=Math.floor(width*8*characterHeightPct);
+            
+            canvas.width=fullCanvasWidth;
+            canvas.height=fullCanvasHeight;
             canvasCharacterWidth=Math.floor(8*characterWidthPct);
             canvasCharacterHeight=Math.floor(16*characterHeightPct);
            
@@ -716,9 +714,9 @@
                 while (cursorY+1<height) 
                 {
                  
-                 cursorX=0;
                  
-                 var lineWidth=width-2;
+                 
+                 var lineWidth=getDisplayWidth()-2;
                  
                  
                  lineAsciiCode=screenCharacterArray[cursorY][lineWidth][0];
@@ -732,8 +730,8 @@
                      lineWidth--;
                  }
                  
-                
-                 while (cursorX+1<lineWidth) 
+                 cursorX=0;
+                 while (cursorX<=lineWidth) 
                  {
                         var charArray = screenCharacterArray[cursorY][cursorX];
 

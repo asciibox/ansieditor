@@ -38,11 +38,12 @@ function Codepage(codepageUrl, callback) {
             return newCanvas;
         }
 
-        function copyCanvas(source, color, preserveAlpha) {
+        /*function copyCanvas(source, color, preserveAlpha) {
             var canvas, ctx, imageData, i;
             canvas = createCanvas(source.width, source.height);
             ctx = canvas.getContext("2d");
             ctx.drawImage(source, 0, 0);
+            
             imageData = ctx.getImageData(0, 0, source.width, source.height);
             for (i = 0; i < imageData.data.length; ++i) {
                 imageData.data[i++] = COLORS[color][0];
@@ -52,7 +53,7 @@ function Codepage(codepageUrl, callback) {
             }
             ctx.putImageData(imageData, 0, 0);
             return canvas;
-        }
+        }*/
         
         
 
@@ -77,10 +78,7 @@ function Codepage(codepageUrl, callback) {
        
 
         function drawChar(ctx, asciiCode, foreground, background, x, y, transparent) {
-           //if (Math.random()<0.1) alert("drawChar called with ascii:"+asciiCode+" fg:"+parseInt(foreground)+" bg:"+background);
-            //console.log(" drawChar:"+ctx+" asciiCode:"+asciiCode+" foreground:"+foreground+" background:"+background+" x:"+x+" y:"+y+" characterWidth:"+characterWidth+" characterHeight: "+characterHeight);
-            
-           
+           var originalX=x;
             if (x>=xStart-1) {
                 if (y>=yStart-1) {
                  
@@ -103,6 +101,7 @@ function Codepage(codepageUrl, callback) {
                         //alert("X:"+x+"Y:"+y);
                         if ( (typeof(transparent)=="undefined") || (transparent==false) ) {
                             var xpos=background;
+                           
                             while (xpos >= 16) xpos=xpos-16;
                             var ypos = Math.floor(background/16);
                         
@@ -113,7 +112,6 @@ function Codepage(codepageUrl, callback) {
                             var myy = Math.floor(myasciiCode / 32) * characterHeight + (ypos*128);
                         
                             //alert("1:myx="+myx+" myy="+myy+" x="+x+" y="+y+"CW1:"+characterHeight+" canvasCharacterHeight:"+canvasCharacterHeight);
-                           
                             ctx.drawImage(codepageImg, myx, myy, characterWidth, characterHeight, x, y, canvasCharacterWidth, canvasCharacterHeight);
                         }
                         
@@ -124,19 +122,15 @@ function Codepage(codepageUrl, callback) {
                         
                         var myx = (asciiCode % 32) * characterWidth+(xpos*256);
                         var myy = Math.floor(asciiCode / 32) * characterHeight + (ypos*128);
-                        //console.log("xpos*256="+xpos*256+" myx:"+myx);
-                        //console.log("ypos*128="+ypos*128+" myy:"+myy);
-                       //alert("realx:"+x+" realy:"+y+"myx:"+myx+"myy:"+myy);;
-                        //alert("2:myx="+myx+" myy="+myy+" x="+x+" y="+y+"CW1:"+characterHeight+" canvasCharacterHeight:"+canvasCharacterHeight);
-                        //alert("originaly:"+originaly+" y: "+y);
+                        //alert(myx+"/"+x);
                         ctx.drawImage(codepageImg, myx, myy, characterWidth, characterHeight, x, y, canvasCharacterWidth, canvasCharacterHeight);
             }
             }
         }
 
+        /** Creates an own instance of a canvas object with its own context **/
         function generateDisplay(width, height) {
-            //alert("new canvas x: "+(width*characterWidth)+" y: "+(height*characterHeight));
-            return createCanvas(width * characterWidth, height * characterHeight);
+            return createCanvas(fullCanvasWidth, fullCanvasHeight);
         }
 
         function scrollDisplay(ctx, canvas) {
@@ -151,10 +145,7 @@ function Codepage(codepageUrl, callback) {
     
     function Display() {
         var canvas, ctx, x, y, savedX, savedY, foreground, background, bold, inverse;
-
-     
-        width=getDisplayWidth();
-        height=getDisplayHeight();
+        
         canvas = codepage.generateDisplay(width, height);
         ctx = canvas.getContext("2d");
 
@@ -239,14 +230,14 @@ function Codepage(codepageUrl, callback) {
                 break;
             default:
                 if (!inverse) {
-                   
                     //alert("calling drawChar with ascii:"+asciiCode+"fg:"+foreground+" background:"+background+"x:"+x+"y:"+y);;
                     codepage.drawChar(ctx, asciiCode, bold ? foreground  : foreground, background, x++, y);
                     
                 } else {
                     //alert("inv ascii:"+asciiCode+"fg:"+foreground+" background:"+background);
                     //alert("calling drawChar with ascii:"+asciiCode+"fg:"+foreground+" background:"+background+"x:"+x+"y:"+y);;
-                    
+                  
+                  
                     codepage.drawChar(ctx, asciiCode, bold ? background + 8 : background, foreground, x++, y);
                 }
                 if (x === width + 1) { return newLine(); }
@@ -329,7 +320,11 @@ function Interpreter(url, callback) {
             }
 
             for (i = 0; i < mycharactersatonce; ++i) {
-
+               
+               ctx = document.getElementById("ansi").getContext("2d");
+               //alert(document.getElementById('ansi').width+"/"+display.canvas.width);
+                
+               
                 if (pos === buffer.length || buffer[pos] === 26) { return i; }
                 code = buffer[pos++];
                 if (escaped) {
@@ -367,8 +362,8 @@ function Interpreter(url, callback) {
                                 display.clearToEndOfLine();
                                 break;
                             case "m":
-                               
-                                for (j = 0; j < values.length; ++j) {
+                                var j = 0;
+                                while ( j < values.length ) {
                                     if (values[j] >= 30 && values[j] <= 37) {
                                         display.setForeground(values[j] - 30);
                                     } else if (values[j] >= 40 && values[j] <= 47) {
@@ -377,11 +372,16 @@ function Interpreter(url, callback) {
                                        // alert("bg:"+values);
                                         myvalues=String(values);
                                         //alert(myvalues.substring(5));
-                                        display.setBackground(myvalues.substring(5));
+                                        var color = myvalues.substring(5);
+                                        j=j+2;
+                                       
+                                        display.setBackground(color);
                                     } else if (values[j]==38) { // foreground, 256colors
                                         //alert("fg:"+values);
                                         myvalues=String(values);
-                                        display.setForeground(myvalues.substring(5));
+                                        var color = myvalues.substring(5);
+                                        j=j+2;
+                                        display.setForeground(color);
                                     } else {
                                         switch (values[j]) {
                                         case 0:
@@ -407,6 +407,8 @@ function Interpreter(url, callback) {
                                             break;
                                         }
                                     }
+                                    
+                                    j++;
                                 }
                                 break;
                             case "s":

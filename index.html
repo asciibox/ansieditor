@@ -158,7 +158,7 @@ window.onbeforeunload=goodbye;
                     globalContext = document.getElementById("ansi").getContext("2d");
                     display = new Display();
                     charactersatonce = 999999; //Math.floor((baud || 115200) / 8 / 100);
-                    doClearScreen(false);
+                    doClearScreen(true);
                     interpreter = new Interpreter("uploads/"+filename+".ans", drawChunk);
                     
                 },

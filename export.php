@@ -23,6 +23,10 @@ function background($background) {
      
 }
 
+if (!is_dir("download")) {
+    mkdir("download");
+}
+
 $string=$_POST['value'];
 
 $filename=getRandomString(8);

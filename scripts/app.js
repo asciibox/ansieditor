@@ -1,37 +1,63 @@
  
-     var waitingforDoubleclick = false;
+        /** used in connection with mouse click **/
+        var waitingforDoubleclick = false;
+        /** timer used for mouseclick **/
         var doubleclickInterval;
+        /** Canvas context obect **/
         var globalContext;
+        /** When we are drawing by using mouse clicks, this is set to true **/
         var drawingMode = false;
+        /** Set on mouse click, and evaluated in mousemove **/
         var mouseDown =false;
+        /** This is the general width and height, used globally to show the right coordinate system inside the canvas **/
         var width=160;
         var height=45;
+        /** This contains all characters. This is an array with three int values **/
+        /*
+        asciiCode = screenCharacterArray[cursorPosY][currentPos-1][0];
+        fgcolor = screenCharacterArray[cursorPosY][currentPos-1][1];
+        bgcolor = screenCharacterArray[cursorPosY][currentPos-1][2];
+        */
+ 
         var screenCharacterArray = Array();
                 
+        /** When changing the charset. Number one indicates characters from 1-9, other characters are ascii codes **/
         var currentCharset=1;
+        /** This is the character used when drawing **/
         var currentChar=216;
         
+        /** This is an image object, containing the image used when initializing the Codepage object, which has the parameter "images/CO_437_8x16.png" for setting this image **/
         var codepageImg;
+        /** Actual color. Can get changed by changing the foreground inside the panel with the colors **/
         var currentColor=15;
+        /** This is ctx = document.getElementById("ansi").getContext("2d"); and gets set at different positions. Should be all at one position **/
         var ctx;
-        var cursorShown=false;
+        
+        /** This is not used at the moment (shape.js) and should be used for dragging a small overview image (rectangular box) showing the complete ANSI image when it's too large **/
         var ansimation;
+        /** Cursor X and Y positions start at 0, when the cursor is at 1,1 **/
         var cursorPosX=0;
         var cursorPosY=0;
+        /** Used for toggling the cursor **/
         var cursorShown=true;
+        /** Timer used or displaying displaying the cursor in a certain time span, toggling from shown to not shown */
         var cursorInterval;
+        /** Depending on the screen size, this has a certain value of pixels **/
         var characterWidth, characterHeight;
+        /** Depending on what cursor mode is on: Insert or overwrite, whereby in this case different ascii charsets get used **/
         var insert=true;
+        /** Stores the current fore and background color **/
         var currentBackground=0;
         var currentForeground=15;
         
-        
+        /** This gets called when pressing on the blue window, and sets the character set as well as the ascii code for drawing **/
         function setD(asciiCode, drawingBox) {
         
             currentCharset=drawingBox;
             currentChar=asciiCode;
         }
         
+        /** This contains the ansi colors used in the color picker. No guarantee at all **/
         var ansicolors = [
       '000000', 'cd0000', '00cd00', 'cdcd00', '1e90ff', 'cd00cd', '00cdcd', 'e5e5e5', '4c4c4c', 'ff0000',
       '00ff00', 'ffff00', '4682b4', 'ff00ff', '00ffff', 'FFFFFF', '000000', '00005F', '000087', '0000af', 
@@ -61,6 +87,7 @@
       'bcbcbc', 'c6c6c6', 'd0d0d0', 'e4e4e4', 'e4e4e4', 'eeeeee', 'ffffff', '000000', '000000', '000000'
     ];
     
+    /** This contains the special characters when choosing one of the character blocks inside the blue window **/
      var keys = new Array();
                 keys[0] = [ 49, 50, 51, 52, 53, 54, 55, 56, 57, 48 ];
                 keys[1] = [ 218, 191, 192, 217, 196, 179, 195, 180, 193, 194 ];
@@ -80,6 +107,21 @@
    
                 keys[14] = [ 136, 137, 138, 130, 144, 140, 139, 141, 161, 158 ];
                 keys[15] = [ 147, 148, 149, 224, 167, 150, 129, 151, 163, 154 ];
+      /** Ansi interpreter, display and charactersatonce **/
+      var interpreter, display, charactersatonce;
+           function drawChunk() {
+               
+                if (interpreter.read(charactersatonce, display)) {
+                     globalContext = document.getElementById("ansi").getContext("2d");
+                    
+                     globalContext.drawImage(display.canvas, 0, 0);
+                } else {
+                 
+                    interpreter.reset();
+                    display.clearScreen();
+                    //setTimeout(drawChunk, 5000);
+                }
+            }
         
         function updateCanvasSize() {
             
@@ -126,6 +168,8 @@
                 ansicanvas = document.getElementById('ansi');
                 ansicanvas.addEventListener('mousedown', function(e) {
                     
+                    
+                    
                     if (waitingforDoubleclick==false) {
                         hidePanel();
                         waitingforDoubleclick = true;
@@ -140,7 +184,11 @@
                     mouseDown=true;
                     mouseMove(ansicanvas, e);
                    
-                    
+                   /* asciiCode = screenCharacterArray[cursorPosY][cursorPosX][0];
+                    fgcolor = screenCharacterArray[cursorPosY][cursorPosX][1];
+                    bgcolor = screenCharacterArray[cursorPosY][cursorPosX][2];
+                    console.log("asciiCode:"+asciiCode+" fgcolor:"+fgcolor+" bgcolor:"+bgcolor);
+                    */
                     if (drawingMode) {
                        
                         codepage.drawChar(ctx, currentChar, currentForeground, currentBackground, cursorPosX, cursorPosY, false); // false == update coordinate system
@@ -187,6 +235,8 @@
 
                
         }
+        
+        
         
         function mouseMove(ansicanvas, e) {
             
@@ -278,6 +328,7 @@
                     
                     //console.log("y:"+y+" length:"+screenCharacterArray[y].length);
             }
+
            $('body').attr('onresize', 'resize_canvas();');
             
         }

@@ -89,12 +89,14 @@ function Codepage(codepageUrl, callback) {
                          charArray[1]=foreground;
                          charArray[2]=background;
                         
+                        if (typeof(screenCharacterArray[y])=="undefined") {
+                            console.log("Error: Line "+y+" is undefined (out of range error)");
+                        } else
+                        if (typeof(screenCharacterArray[y][x])=="undefined") {
+                            console.log("Error: x value of ["+y+"]["+x+"] is undefined (out of range error)");
+                        } else
                          screenCharacterArray[y][x]=charArray;
                         }
-                        
-                        //x=x-xStart;
-                        //y=y-yStart;
-                        //alert(x+"/"+y+"/"+canvasCharacterWidth+"////"+canvasCharacterHeight);
                      
                         x = (x  ) * parseInt(canvasCharacterWidth);
                         y = (y ) * parseInt( canvasCharacterHeight );
@@ -432,6 +434,7 @@ function Interpreter(url, callback) {
                             return i + 1;
                         }
                     } else {
+                        //console.log("DRAWCHAR:"+code+"LEN:"+screenCharacterArray.length);
                        //alert("DC2");
                         if (display.drawChar(code)) {
                             return i + 1;

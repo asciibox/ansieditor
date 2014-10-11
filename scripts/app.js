@@ -250,7 +250,7 @@
                     myCursorPosY = Math.floor(my / canvasCharacterHeight);
                     
                     if (myCursorPosX>=getDisplayWidth()-1) { console.log(myCursorPosX+" too far"); setCursorPosX(getDisplayWidth()-2); redrawCursor(); return; }
-                    if (myCursorPosY>=getDisplayHeight()-1) { console.log(myCursorPosY+" too high"); setCursorPosY(getDisplayHeight()-2); redrawCursor(); return; }
+                    if (myCursorPosY>=getDisplayHeight()-1) { console.log(myCursorPosY+" too high"); setCursorPosY(getDisplayHeight()-1); redrawCursor(); return; }
                     
                     setCursorPosX(myCursorPosX);
                     setCursorPosY(myCursorPosY);
@@ -267,7 +267,7 @@
                                     if (cursorPosX<getDisplayWidth()-2) { setCursorPosX(cursorPosX+1); }
                                     redrawCursor();
                                 } else {
-                                    var currentPos=getDisplayWidth()-2;
+                                    var currentPos=getDisplayWidth()-1;
                                     while (currentPos>cursorPosX) 
                                     {
                                     
@@ -285,7 +285,7 @@
                                     }
                                     
                                     codepage.drawChar(ctx, keyCode, currentForeground, currentBackground, cursorPosX, cursorPosY);
-                                    if (cursorPosX<getDisplayWidth()-2) { setCursorPosX(cursorPosX+1); }
+                                    if (cursorPosX<getDisplayWidth()-1) { setCursorPosX(cursorPosX+1); }
                                     redrawCursor();
                                 }
        
@@ -313,10 +313,10 @@
             var displayWidth=getDisplayWidth()-1;
             var displayHeight=getDisplayHeight()-1;
             
-            for (var y = 0; y < displayHeight; y++) 
+            for (var y = 0; y <= displayHeight; y++) 
             {                    
                     var xArray = Array();
-                    for (var x = 0; x < displayWidth; x++) 
+                    for (var x = 0; x <= displayWidth; x++) 
                     {
                      var data = Array();
                      data[0]=32; // ascii code
@@ -495,7 +495,9 @@
                     case 13 : 
                             showCharacter();
                             setCursorPosX(0);
+                            console.log("getDisplayHeight:"+getDisplayHeight());
                             if (cursorPosY<getDisplayHeight()-1) {
+                                console.log("Y:"+cursorPosY);
                               setCursorPosY(cursorPosY+1);
                             }
                             redrawCursor();
@@ -532,12 +534,12 @@
                                }
                             return true;
                               break;
-                          case 8:
+                          case 8: // backspace
                              if (cursorPosX>0) {
                               setCursorPosX(cursorPosX-1);
                               var currentPos = cursorPosX;
                               
-                              while (currentPos < getDisplayWidth()-2) 
+                              while (currentPos < getDisplayWidth()-1) 
                               {
                                       var asciiCode = screenCharacterArray[cursorPosY][currentPos+1][0];
                                       var fgcolor = screenCharacterArray[cursorPosY][currentPos+1][1];
@@ -547,7 +549,7 @@
                                       currentPos++;                                      
                               }
                               
-                              codepage.drawChar(ctx, 32, 15, 0, getDisplayWidth()-2, cursorPosY);
+                              codepage.drawChar(ctx, 32, 15, 0, getDisplayWidth()-1, cursorPosY);
                               
                               redrawCursor();
                             }
@@ -575,7 +577,7 @@
                     case 39 : // cursor right
                             if (!e.shiftKey) { 
                                 showCharacter();
-                                if (cursorPosX<getDisplayWidth()-2) {
+                                if (cursorPosX<getDisplayWidth()-1) {
                                     setCursorPosX(cursorPosX+1);
                                     redrawCursor();
                                 }
@@ -585,7 +587,7 @@
                           case 40 : // cursor down
                               if (!e.shiftKey) {
                                 showCharacter();
-                                if (cursorPosY<getDisplayHeight()-2) {
+                                if (cursorPosY<getDisplayHeight()-1) {
                                 cursorPosY++;
                                 redrawCursor();
                                 }
@@ -639,7 +641,7 @@
                 while (cursorPosY+1<height) 
                 {
                  setCursorPosX(0);
-                 while (cursorPosX+1<width) 
+                 while (cursorPosX<width) 
                  {
 
                          var charArray = Array();

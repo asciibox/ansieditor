@@ -249,7 +249,7 @@
                     myCursorPosX = Math.floor(mx / canvasCharacterWidth);
                     myCursorPosY = Math.floor(my / canvasCharacterHeight);
                     
-                    if (myCursorPosX>=getDisplayWidth()-1) { console.log(myCursorPosX+" too far"); setCursorPosX(getDisplayWidth()-2); redrawCursor(); return; }
+                    if (myCursorPosX>=getDisplayWidth()-1) { console.log(myCursorPosX+" too far"); setCursorPosX(getDisplayWidth()-1); redrawCursor(); return; }
                     if (myCursorPosY>=getDisplayHeight()-1) { console.log(myCursorPosY+" too high"); setCursorPosY(getDisplayHeight()-1); redrawCursor(); return; }
                     
                     setCursorPosX(myCursorPosX);

@@ -18,6 +18,7 @@
         fgcolor = screenCharacterArray[cursorPosY][currentPos-1][1];
         bgcolor = screenCharacterArray[cursorPosY][currentPos-1][2];
         */
+       var hideTimer; // Gets used when toggling the color using CTRL-Cursor for clearing the currently shown color
  
         var screenCharacterArray = Array();
                 
@@ -353,14 +354,14 @@
             
         }
         
-       
+        
         
         function showCharacter() {
             
             var asciiCode = screenCharacterArray[cursorPosY][cursorPosX][0];
             var foreground = screenCharacterArray[cursorPosY][cursorPosX][1];
             var background = screenCharacterArray[cursorPosY][cursorPosX][2];
-           
+       
             codepage.drawChar(globalContext, asciiCode, foreground, background, cursorPosX, cursorPosY, false);
             
         }
@@ -377,6 +378,7 @@
         
     }
     
+   
    function handleKeyCode(keyCode,e) {
               
                 
@@ -392,7 +394,8 @@
                    
                     return true;
                 }
-              
+                clearTimeout(hideTimer);
+                codepage.overlay=null;
                 switch(keyCode){
                     case 249 :
                                executeKey(151); // high two becomes ( for french keyboard
@@ -571,46 +574,92 @@
    
    function handleKeyCode2(keyCode,e) {
              
-                
+                clearTimeout(hideTimer);
+                codepage.overlay=null;
                 switch(keyCode){
              
                     case 39 : // cursor right
-                            if (!e.shiftKey) { 
-                                showCharacter();
-                                if (cursorPosX<getDisplayWidth()-1) {
-                                    setCursorPosX(cursorPosX+1);
-                                    redrawCursor();
-                                }
-                              }
+                         if (!e.shiftKey) { 
+                                   if (!e.ctrlKey) {
+                                        showCharacter();
+                                            if (cursorPosX<getDisplayWidth()-1) {
+                                                setCursorPosX(cursorPosX+1);
+                                                redrawCursor();
+                                            }
+                                      } else {
+                                          if (currentBackground>0) currentBackground--; else currentBackground=255;
+                                          codepage.drawChar(ctx, 32, currentForeground, currentBackground, cursorPosX, cursorPosY, false, false); // do not store
+                                          codepage.overlay=new Array();
+                                          codepage.overlay[0]=32;
+                                          codepage.overlay[1]=currentForeground;
+                                          codepage.overlay[2]=currentBackground;
+                                          console.log("codepage.overlay:"+codepage.overlay);
+                                          hideTimer = setTimeout(function() { codepage.overlay=null; }, 1000);
+                                      }
+                                  }
                               return true;
                               break;
                           case 40 : // cursor down
                               if (!e.shiftKey) {
-                                showCharacter();
-                                if (cursorPosY<getDisplayHeight()-1) {
-                                cursorPosY++;
-                                redrawCursor();
-                                }
+                                  if (!e.ctrlKey) {
+                                        showCharacter();
+                                        if (cursorPosY<getDisplayHeight()-1) {
+                                        cursorPosY++;
+                                        redrawCursor();
+                                         }
+                                        } else {
+                                            if (currentForeground>0) currentForeground--; else currentForeground=255;
+                                            codepage.drawChar(ctx, 219, currentForeground, currentBackground, cursorPosX, cursorPosY, false, false); // do not store
+                                            codepage.overlay=new Array();
+                                            codepage.overlay[0]=219;
+                                            codepage.overlay[1]=currentForeground;
+                                            codepage.overlay[2]=currentBackground;
+                                            console.log("codepage.overlay:"+codepage.overlay);
+                                            hideTimer = setTimeout(function() { codepage.overlay=null; }, 1000);
+                                        }
+                               
                               }
                               return true;
                               break;
                           case 37: // cursor left, %
                               if (!e.shiftKey) { 
-                              showCharacter();
-                              if (cursorPosX>0) {
-                              setCursorPosX(cursorPosX-1);
-                              redrawCursor();
-                            }
+                                   if (!e.ctrlKey) {
+                                       showCharacter();
+                                        if (cursorPosX>0) {
+                                        setCursorPosX(cursorPosX-1);
+                                        redrawCursor();
+                                        }
+                                      } else {
+                                          if (currentBackground<255) currentBackground++; else currentBackground=0;
+                                          codepage.drawChar(ctx, 32, currentForeground, currentBackground, cursorPosX, cursorPosY, false, false); // do not store
+                                          codepage.overlay=new Array();
+                                          codepage.overlay[0]=32;
+                                          codepage.overlay[1]=currentForeground;
+                                          codepage.overlay[2]=currentBackground;
+                                          console.log("codepage.overlay:"+codepage.overlay);
+                                          hideTimer = setTimeout(function() { codepage.overlay=null; }, 1000);
+                                      }
                               }
                             return true;
                               break;
                           case 38: // cursor up
-                               if (!e.shiftKey) { 
-                              showCharacter();
-                              if (cursorPosY>0) {
-                                    cursorPosY--;
-                                    redrawCursor();
-                                }
+                               if (!e.shiftKey) {
+                                   if (!e.ctrlKey) {
+                                        showCharacter();
+                                        if (cursorPosY>0) {
+                                              cursorPosY--;
+                                              redrawCursor();
+                                          }
+                                      } else {
+                                          if (currentForeground<255) currentForeground++; else currentForeground=0;
+                                          codepage.drawChar(ctx, 219, currentForeground, currentBackground, cursorPosX, cursorPosY, false, false); // do not store
+                                          codepage.overlay=new Array();
+                                          codepage.overlay[0]=219;
+                                          codepage.overlay[1]=currentForeground;
+                                          codepage.overlay[2]=currentBackground;
+                                          console.log("codepage.overlay:"+codepage.overlay);
+                                          hideTimer = setTimeout(function() { codepage.overlay=null; }, 1000);
+                                      }
                                }
                               
                               break;
@@ -769,7 +818,7 @@
                  
                  
                  
-                 var lineWidth=getDisplayWidth()-2;
+                 var lineWidth=getDisplayWidth()-1;
                  
                  
                  lineAsciiCode=screenCharacterArray[cursorY][lineWidth][0];

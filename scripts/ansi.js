@@ -27,6 +27,7 @@
 
 function Codepage(codepageUrl, callback) {
         var COLORS, img, codepageImg;
+        var overlay=null;
 
         function createCanvas(width, height) {
             
@@ -77,26 +78,33 @@ function Codepage(codepageUrl, callback) {
         img.src = codepageUrl;
        
 
-        function drawChar(ctx, asciiCode, foreground, background, x, y, transparent) {
+        function drawChar(ctx, asciiCode, foreground, background, x, y, transparent, storeCharacter) {
            var originalX=x;
             if (x>=xStart-1) {
                 if (y>=yStart-1) {
                  
+                 
                         if ( (typeof(transparent)=="undefined") || (transparent==false) ) {
-                         
                          var charArray = Array();
+                         
                          charArray[0]=asciiCode;
                          charArray[1]=foreground;
                          charArray[2]=background;
                         
-                        if (typeof(screenCharacterArray[y])=="undefined") {
-                            console.log("Error: Line "+y+" is undefined (out of range error)");
-                        } else
-                        if (typeof(screenCharacterArray[y][x])=="undefined") {
-                            console.log("Error: x value of ["+y+"]["+x+"] is undefined (out of range error)");
-                        } else
-                         screenCharacterArray[y][x]=charArray;
+                            if (typeof(screenCharacterArray[y])=="undefined") {
+                                console.log("Error: Line "+y+" is undefined (out of range error)");
+                            } else
+                            if (typeof(screenCharacterArray[y][x])=="undefined") {
+                                console.log("Error: x value of ["+y+"]["+x+"] is undefined (out of range error)");
+                            } else if ( (typeof(storeCharacter)=="undefined") || (storeCharacter==true) ) {
+                                screenCharacterArray[y][x]=charArray;
+                            } 
                         }
+                         if (this.overlay!=null) {
+                                    asciiCode=this.overlay[0];
+                                    foreground=this.overlay[1];
+                                    background=this.overlay[2];
+                                }
                      
                         x = (x  ) * parseInt(canvasCharacterWidth);
                         y = (y ) * parseInt( canvasCharacterHeight );

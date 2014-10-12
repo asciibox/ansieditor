@@ -32,6 +32,7 @@
     <script src="scripts/jquery-1.9.1.min.js" type="text/javascript"></script>
     <script src="scripts/jquery.simple-color.js" type="text/javascript"></script>
     <script src="scripts/jquery-ui-1.10.4.custom.min.js"></script>
+    <script src="scripts/jquery.bpopup.js"></script>
     <script src="scripts/app.js"></script>
     <script src="fileuploader/fileuploader.js"></script>
     <link rel="stylesheet" href="css/panel.css" type="text/css" media="screen" />
@@ -151,8 +152,9 @@ window.onbeforeunload=goodbye;
                 // return false to cancel submit
                 onSubmit: function(id, fileName){},
                 onProgress: function(id, fileName, loaded, total){},
-                onComplete: function(id, fileName, responseJSON){
+                onComplete: function(id, fileName, responseJSON){ // The json looks like this: {"success":true,"filename":282806397}
                     $('.qq-upload-list').html('');
+                    
                     var filename=responseJSON.filename;
             
                     globalContext = document.getElementById("ansi").getContext("2d");

@@ -622,6 +622,7 @@
    {
        
        if (copyStartY < copyEndY) {
+          
            for (var y = copyStartY; y <= copyEndY; y++) {
        
             if (copyStartX < copyEndX) {
@@ -641,15 +642,17 @@
           }
       } else {
           
-          for (var y = copyEndY; y > copyStartY; y--) {
+          for (var y = copyStartY; y >= copyEndY; y--) {
        
           
            if (copyStartX < copyEndX) {
+              
                 for (var x = copyStartX; x <= copyEndX; x++) 
                 {
                         showOriginalCharacter(x, y);
                 }
             } else { // copyStartX > copyEndX
+               
                 for (var x = copyEndX; x <= copyStartX; x++) 
                 {
                         showOriginalCharacter(x, y);
@@ -984,7 +987,7 @@
                                                 if (cursorPosX == copyStartX) {
                                                   
                                                   console.log("cursorPosY:"+cursorPosY+" copyStartY:"+copyStartY);
-                                                     if (cursorPosY < copyStartY) {
+                                                     if (cursorPosY <= copyStartY) {
                                                         highlightCharacter(cursorPosX, cursorPosY);
                                                         highlightCharacter(cursorPosX, cursorPosY-1);
                                                      } else {
@@ -1015,6 +1018,7 @@
                                                    
                                                     if (cursorPosY <= copyStartY) 
                                                     {
+                                                        
                                                             for (var x = copyStartX; x < cursorPosX; x++) 
                                                             {
                                                                
@@ -1022,6 +1026,7 @@
                                                                 highlightCharacter(x, cursorPosY-1);
                                                             }
                                                      } else {
+                                                        
                                                             for (var x = copyStartX; x <= cursorPosX; x++) 
                                                             {
                                                                 showOriginalCharacter(x, cursorPosY);

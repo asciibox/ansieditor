@@ -54,6 +54,13 @@
         var copyMode=false;
         var copyStartX=0;
         var copyStartY=0;
+        var copyEndX=0;
+        var copyEndY=0;
+        
+        
+        var copyArray=Array();
+        var copyWidth=0;
+        var copyHeight=0;
         
         /** This gets called when pressing on the blue window, and sets the character set as well as the ascii code for drawing **/
         function setD(asciiCode, drawingBox) {
@@ -133,6 +140,7 @@
         }
         
          function redrawCursor() {
+             
             cursorShown=true;
             
             ctx = document.getElementById("ansi").getContext("2d");
@@ -339,17 +347,17 @@
         }
         
         function toggleCursor(interval) {
-     return;
+     
             cursorShown=!cursorShown;
             
             if (cursorShown) {
                
             // Depending on what cursor is active, shows character code 220 or character code 95
             console.log("copyMode:"+copyMode);
-            codepage.drawChar(globalContext, insert==false ? 220 : 95, 15, (copyMode == false) ? 0 : 15, cursorPosX, cursorPosY, true); // shows cursor transparently
+            codepage.drawChar(globalContext, insert==false ? 220 : 95, 15, (copyMode == false) ? 0 : 15, cursorPosX, cursorPosY, true, false); // shows cursor transparently
             
             } else {
-                showCharacter(); // see below
+                showCharacter(false); // see below
             }
             
             clearTimeout(cursorInterval);
@@ -383,13 +391,60 @@
         
     }
     
+    
+    function copySelectedContent() {
+        
+        copyArray=Array();
+        if (copyMode) {
+            
+            copyWidth=copyEndX-copyStartX+1;
+            copyHeight=copyEndY-copyStartY+1;
+            copyStartXBuffer=copyStartX;
+            copyStartYBuffer=copyStartY;
+            for (var y = 0; y < copyEndY-copyStartY+1; y++) 
+            {
+                    
+                    copyArray[y]=Array();
+                    for (var x = 0; x < copyEndX-copyStartX+1; x++) {
+                        
+                        copyArray[y][x]=screenCharacterArray[y+copyStartY][x+copyStartX];
+                    }
+            }
+        } else {
+            copyArray[0]=Array();
+            copyWidth=1;
+            copyHeight=1;
+            copyArray[0][0]=screenCharacterArray[cursorPosY][cursorPosX];
+        }
+        
+    }
+    
+    function pasteSelectedContent() {
+        
+      
+        for (var y = 0; y < copyHeight; y++) 
+            {
+                    for (var x = 0; x < copyWidth; x++) {
+                       
+                        var asciiCode = copyArray[y][x][0];
+                        
+                        var foreground = copyArray[y][x][1];
+                        var background = copyArray[y][x][2];
+                        codepage.drawChar(globalContext, asciiCode, foreground, background, cursorPosX+x, cursorPosY+y, false, true);
+                    }
+            }
+    }
+    
+    
    
    function handleKeyCode(keyCode,e) {
             
               
-               if ( (copyMode) && (!e.shiftKey) ) { 
+               if ( (copyMode) && (!e.shiftKey) ) {
+                   if ( (keyCode!=99) && (keyCode!=116) ) {
                         resetHighlighted();
                         copyMode=false;
+                        }
                     }
                
                 if ( (keyCode>=48) && (keyCode<=57) )
@@ -404,7 +459,7 @@
                 }
                 
                 
-                
+              
                 clearTimeout(hideTimer);
                 codepage.overlay=null;
                 switch(keyCode){
@@ -460,6 +515,12 @@
                             break;
                         case 99 : 
                             //CTRL-C
+                            copySelectedContent();
+                            
+                            break;
+                        case 118 : 
+                            //CTRL-C
+                            pasteSelectedContent();
                             
                             break;
                     case 219 : // bracket right
@@ -577,7 +638,7 @@
                                       var asciiCode = screenCharacterArray[cursorPosY][currentPos+1][0];
                                       var fgcolor = screenCharacterArray[cursorPosY][currentPos+1][1];
                                       var bgcolor = screenCharacterArray[cursorPosY][currentPos+1][2];
-                                      //alert("DC3");
+                                      
                                       codepage.drawChar(ctx, asciiCode, fgcolor, bgcolor, currentPos, cursorPosY);
                                       currentPos++;                                      
                               }
@@ -1152,7 +1213,7 @@
                      foreground=charArray[1];
                      background=charArray[2];
                     
-                    //alert("RESDRAW");
+                    
                      codepage.drawChar(ctx, asciiCode, foreground, background, x, y, false);
                      
                 }
@@ -1227,7 +1288,7 @@
                  html+="breakline";
                  cursorY++;
                 }
-                alert(html);
+                
                
                 $.ajax({
                 url: 'export.php',

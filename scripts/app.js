@@ -181,7 +181,10 @@
                 ansicanvas = document.getElementById('ansi');
                 ansicanvas.addEventListener('mousedown', function(e) {
                     
-                    
+                      if ( (copyMode) ) {
+                        resetHighlighted();
+                        copyMode=false;
+                    }
                     
                     if (waitingforDoubleclick==false) {
                         hidePanel();
@@ -212,6 +215,8 @@
                 }, true);
                 
                 document.getElementById('panel').addEventListener('mousedown', function(e) {
+                   
+                    
                     if (waitingforDoubleclick==false) {
                         waitingforDoubleclick = true;
                         clearTimeout(doubleclickInterval);
@@ -235,6 +240,7 @@
                 ansicanvas.addEventListener('mousemove', function(e) {
                    
                    if (mouseDown==true) {
+                    
                     
                    mouseMove(ansicanvas,e);
                     
@@ -1271,18 +1277,18 @@
                  while (cursorX<=lineWidth)
                  {
                             var charArray = screenCharacterArray[cursorY][cursorX];
+                            if (typeof(charArray[0])!="undefined") {
+                                    var asciiCode = charArray[0].toString();
+                                    while (asciiCode.length<3) asciiCode="0"+asciiCode;
 
-                            var asciiCode = charArray[0].toString();
-                            while (asciiCode.length<3) asciiCode="0"+asciiCode;
-                            
-                            var foreground = charArray[1].toString();
-                            while (foreground.length<3) foreground="0"+foreground;
-                            
-                            var background = charArray[2].toString();
-                            while (background.length<3) background="0"+background;
+                                    var foreground = charArray[1].toString();
+                                    while (foreground.length<3) foreground="0"+foreground;
+
+                                    var background = charArray[2].toString();
+                                    while (background.length<3) background="0"+background;
                              
-                            html+=asciiCode+foreground+background;
-
+                                    html+=asciiCode+foreground+background;
+                            }
                         cursorX++;
                  }
                  html+="breakline";

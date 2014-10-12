@@ -504,6 +504,8 @@
                      if (e.ctrlKey) {
                             alert(cursorPosX+"/"+cursorPosY);
                             break;
+                     } else {
+                          executeKey(112);
                      }
                 break;
                      case 96 : // opening single quote - convert to standard single quote due to cursor right bug on single quote
@@ -515,19 +517,25 @@
                                 var ascii = screenCharacterArray[cursorPosY][cursorPosX];
                                 alert("Color / Foreground color / Background color: "+ascii);
                             } else {
-                                executeKey();
+                                executeKey(97);
                             }
                             return true;
                             break;
                         case 99 : 
                             //CTRL-C
-                            copySelectedContent();
-                            
+                            if (e.ctrlKey) {
+                                copySelectedContent();
+                            } else {
+                                executeKey(99);
+                            }
                             break;
                         case 118 : 
                             //CTRL-C
+                             if (e.ctrlKey) {
                             pasteSelectedContent();
-                            
+                            } else {
+                                executeKey(118);
+                            }
                             break;
                     case 219 : // bracket right
                             executeKey(93);

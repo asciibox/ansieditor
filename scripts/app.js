@@ -51,6 +51,10 @@
         var currentBackground=0;
         var currentForeground=15;
         
+        var copyMode=false;
+        var copyStartX=0;
+        var copyStartY=0;
+        
         /** This gets called when pressing on the blue window, and sets the character set as well as the ascii code for drawing **/
         function setD(asciiCode, drawingBox) {
         
@@ -133,7 +137,7 @@
             
             ctx = document.getElementById("ansi").getContext("2d");
            
-            codepage.drawChar(ctx, insert==false ? 220 : 95, 15, 0, cursorPosX, cursorPosY, true, cursorPosY); // shows cursor transparently
+            codepage.drawChar(ctx, insert==false ? 220 : 95, 15, (copyMode==false) ? 0 : 15, cursorPosX, cursorPosY, true, cursorPosY); // shows cursor transparently
             clearTimeout(cursorInterval);
             cursorInterval = setTimeout(function() { toggleCursor(); }, 500);
         }
@@ -335,15 +339,14 @@
         }
         
         function toggleCursor(interval) {
-     
+     return;
             cursorShown=!cursorShown;
             
             if (cursorShown) {
                
             // Depending on what cursor is active, shows character code 220 or character code 95
-            
-            
-            codepage.drawChar(globalContext, insert==false ? 220 : 95, 15, 0, cursorPosX, cursorPosY, true); // shows cursor transparently
+            console.log("copyMode:"+copyMode);
+            codepage.drawChar(globalContext, insert==false ? 220 : 95, 15, (copyMode == false) ? 0 : 15, cursorPosX, cursorPosY, true); // shows cursor transparently
             
             } else {
                 showCharacter(); // see below
@@ -356,13 +359,15 @@
         
         
         
-        function showCharacter() {
+        function showCharacter(overwrite) {
+            
+            if (typeof(overwrite)=="undefined") overwrite=true;
             
             var asciiCode = screenCharacterArray[cursorPosY][cursorPosX][0];
             var foreground = screenCharacterArray[cursorPosY][cursorPosX][1];
             var background = screenCharacterArray[cursorPosY][cursorPosX][2];
        
-            codepage.drawChar(globalContext, asciiCode, foreground, background, cursorPosX, cursorPosY, false);
+            codepage.drawChar(globalContext, asciiCode, foreground, (copyMode == false) ? background : 15, cursorPosX, cursorPosY, false, overwrite);
             
         }
         
@@ -380,13 +385,16 @@
     
    
    function handleKeyCode(keyCode,e) {
+            
               
-                
+               if ( (copyMode) && (!e.shiftKey) ) { 
+                        resetHighlighted();
+                        copyMode=false;
+                    }
                
-               
-              
                 if ( (keyCode>=48) && (keyCode<=57) )
                 {
+                    
                         if (keyCode==48) keyCode=9; else
                         keyCode=keyCode-49;
                    
@@ -394,6 +402,9 @@
                    
                     return true;
                 }
+                
+                
+                
                 clearTimeout(hideTimer);
                 codepage.overlay=null;
                 switch(keyCode){
@@ -428,9 +439,28 @@
                             executeKey(167);
                     return true;
                     break;
+                case 112 : 
+                     if (e.ctrlKey) {
+                            alert(cursorPosX+"/"+cursorPosY);
+                            break;
+                     }
+                break;
                      case 96 : // opening single quote - convert to standard single quote due to cursor right bug on single quote
                             executeKey(39);
                             return true;
+                            break;
+                        case 97 : // CTRL-A
+                            if (e.ctrlKey) {
+                                var ascii = screenCharacterArray[cursorPosY][cursorPosX];
+                                alert("Color / Foreground color / Background color: "+ascii);
+                            } else {
+                                executeKey();
+                            }
+                            return true;
+                            break;
+                        case 99 : 
+                            //CTRL-C
+                            
                             break;
                     case 219 : // bracket right
                             executeKey(93);
@@ -571,18 +601,92 @@
    }
    
    
+   function highlightCharacter(myCursorPosX, myCursorPosY) {
+       
+       var asciiCode = screenCharacterArray[myCursorPosY][myCursorPosX][0];
+       var foreground = screenCharacterArray[myCursorPosY][myCursorPosX][1];
+       codepage.drawChar(ctx, asciiCode, foreground, 15, myCursorPosX, myCursorPosY, false, false); // do not store
+       
+   }
    
+    function showOriginalCharacter(myCursorPosX, myCursorPosY) {
+       
+       var asciiCode = screenCharacterArray[myCursorPosY][myCursorPosX][0];
+       var foreground = screenCharacterArray[myCursorPosY][myCursorPosX][1];
+       var background = screenCharacterArray[myCursorPosY][myCursorPosX][2];
+       codepage.drawChar(ctx, asciiCode, foreground, background, myCursorPosX, myCursorPosY, false, false); // do not store
+       
+   }
+   
+   function resetHighlighted() 
+   {
+       
+       if (copyStartY < copyEndY) {
+           for (var y = copyStartY; y <= copyEndY; y++) {
+       
+            if (copyStartX < copyEndX) {
+                for (var x = copyStartX; x <= copyEndX; x++) 
+                {
+                        showOriginalCharacter(x, y);
+                }
+            } else { // copyStartX > copyEndX
+                for (var x = copyEndX; x <= copyStartX; x++) 
+                {
+                        showOriginalCharacter(x, y);
+                }
+            }
+                
+                
+                
+          }
+      } else {
+          
+          for (var y = copyEndY; y > copyStartY; y--) {
+       
+          
+           if (copyStartX < copyEndX) {
+                for (var x = copyStartX; x <= copyEndX; x++) 
+                {
+                        showOriginalCharacter(x, y);
+                }
+            } else { // copyStartX > copyEndX
+                for (var x = copyEndX; x <= copyStartX; x++) 
+                {
+                        showOriginalCharacter(x, y);
+                }
+            }
+            
+           }
+          
+      }
+       
+   }
+   
+   /** This gets called due when a different event gets called **/
    function handleKeyCode2(keyCode,e) {
              
                 clearTimeout(hideTimer);
                 codepage.overlay=null;
+                
+                var doshowcharacter=true;
+                 if ( (copyMode) && (!e.shiftKey) ) { 
+                        copyMode=false;
+                        clearTimeout(cursorInterval);
+                        resetHighlighted();
+                        doshowcharacter=false;
+                        cursorInterval = setTimeout(function() { toggleCursor(); }, 500);
+                    
+                    }
+               
                 switch(keyCode){
-             
+                    
                     case 39 : // cursor right
+                         showCharacter(false);
                          if (!e.shiftKey) { 
                                    if (!e.ctrlKey) {
-                                        showCharacter();
+                                        
                                             if (cursorPosX<getDisplayWidth()-1) {
+                                                console.log("INCREASED");
                                                 setCursorPosX(cursorPosX+1);
                                                 redrawCursor();
                                             }
@@ -596,13 +700,83 @@
                                           console.log("codepage.overlay:"+codepage.overlay);
                                           hideTimer = setTimeout(function() { codepage.overlay=null; }, 1000);
                                       }
+                                  } else {
+                                          if (copyMode==false) {
+                                            copyMode=true;
+                                            copyStartX=cursorPosX;
+                                            copyStartY=cursorPosY;
+                                            copyEndX=cursorPosX;
+                                            copyEndY=cursorPosY;
+                                          }
+                                          if (cursorPosX<getDisplayWidth()-1) {
+                                          
+                                                copyEndX++;
+                                                
+                                                if (cursorPosX<copyStartX) { // The cursor is to the left of the copyStartX ([][][][][][]copyStartX)
+                                                   
+                                                    // currentPosX < copyStartX - show the original characters
+                                                   
+                                                        
+                                                        // currentPosX > copyStartX - move selection to the right (copyStartX[][][][][][][][[])
+                                                             for (var y = copyEndY; y >= copyStartY; y--) 
+                                                                {
+                                                                console.log("X:"+cursorPosX+" Y: "+y);
+                                                                highlightCharacter(cursorPosX+1, y);
+                                                                }
+                                                              
+                                                              if (copyStartY < copyEndY) {
+                                                              
+                                                                    for (var y = copyEndY; y >= copyStartY; y--) 
+                                                                    {
+                                                                            console.log("X:"+cursorPosX+" Y: "+y);
+                                                                            showOriginalCharacter(cursorPosX, y);
+                                                                    }
+                                                               
+                                                                } else {
+                                                                    
+                                                                     for (var y = copyStartY+1; y >= copyEndY-1; y--) 
+                                                                     {
+                                                                       console.log("X:"+cursorPosX+" Y: "+y);
+                                                                       showOriginalCharacter(cursorPosX, y);
+                                                                     }
+                                                                    
+                                                                }
+                                                    
+                                                } else {
+                                                   
+                                                   
+                                                            if (copyStartY < copyEndY) {
+                                                               
+                                                                    // currentPosX > copyStartX - move selection to the right (copyStartX[][][][][][][][[])
+                                                                    for (var y = copyStartY; y <= copyEndY; y++) 
+                                                                    {
+                                                                        highlightCharacter(cursorPosX, y);
+                                                                        highlightCharacter(cursorPosX+1, y);
+                                                                    }
+                                                            } else {
+                                                          
+                                                                    for (var y = copyStartY; y >= copyEndY; y--) 
+                                                                    {
+                                                                        highlightCharacter(cursorPosX, y);
+                                                                        highlightCharacter(cursorPosX+1, y);
+                                                                    }
+                                                            }
+                                                }
+                                                
+                                                setCursorPosX(cursorPosX+1);
+                                                redrawCursor();
+                                                
+                                            }
+                                          
+                                          
                                   }
                               return true;
                               break;
                           case 40 : // cursor down
+                              showCharacter(false);
                               if (!e.shiftKey) {
                                   if (!e.ctrlKey) {
-                                        showCharacter();
+                                        
                                         if (cursorPosY<getDisplayHeight()-1) {
                                         cursorPosY++;
                                         redrawCursor();
@@ -618,13 +792,81 @@
                                             hideTimer = setTimeout(function() { codepage.overlay=null; }, 1000);
                                         }
                                
+                              } else {
+                                          clearTimeout(cursorInterval);
+                                          
+                                          if (copyMode==false) {
+                                            copyMode=true;
+                                            copyStartX=cursorPosX;
+                                            copyStartY=cursorPosY;
+                                            copyEndX=cursorPosX;
+                                            copyEndY=cursorPosY;
+                                          }
+                                          if (cursorPosY<getDisplayHeight()-1) {
+                                                
+                                                copyEndY++;
+                                                
+                                                if (cursorPosX == copyStartX) {
+                                                    
+                                                  if (cursorPosY<copyStartY) 
+                                                  {
+                                                      
+                                                    showOriginalCharacter(cursorPosX-1, cursorPosY);
+                                                    showOriginalCharacter(cursorPosX, cursorPosY);
+                                                  } else {
+                                                     highlightCharacter(cursorPosX, cursorPosY);
+                                                     highlightCharacter(cursorPosX, cursorPosY+1);
+                                                  }
+                                                     
+                                                    
+                                                } else
+                                                if (cursorPosX <= copyStartX) { // (cursorPosX is to the left of copyEndX) [][][][][][][]copyEndX
+                                                  
+                                                  if (cursorPosY<copyStartY) 
+                                                  {
+
+                                                            for (var x = cursorPosX; x <= copyStartX; x++) 
+                                                            {
+                                                                showOriginalCharacter(x, cursorPosY);
+                                                               
+                                                            }
+                                                         
+                                                        } else { 
+                                                            for (var x = cursorPosX; x <= copyStartX; x++) 
+                                                            {
+                                                                highlightCharacter(x, cursorPosY);
+                                                                highlightCharacter(x, cursorPosY+1);
+                                                            }
+                                                        }
+                                                } else { // cursorPosX > copyEndX (cursorPosX is to the right of copyEndX) copyEndX[][][][][][][][][][]
+                                                 if (cursorPosY<copyStartY)
+                                                 {
+                                                            for (var x = copyStartX; x <= cursorPosX; x++) 
+                                                            {
+                                                                 showOriginalCharacter(x, cursorPosY);
+                                                            }
+                                                        } else {
+                                                             for (var x = copyStartX; x <= cursorPosX; x++) 
+                                                            {
+                                                               
+                                                                highlightCharacter(x, cursorPosY);
+                                                                highlightCharacter(x, cursorPosY+1);
+                                                            }
+                                                        }
+                                                }
+                                                setCursorPosY(cursorPosY+1);
+                                                highlightCharacter(cursorPosX, cursorPosY);
+                                                redrawCursor();
+                                                cursorInterval = setTimeout(function() { toggleCursor(); }, 500);
+                                            }
                               }
                               return true;
                               break;
                           case 37: // cursor left, %
-                              if (!e.shiftKey) { 
+                               showCharacter(false);
+                              if (!e.shiftKey) {
                                    if (!e.ctrlKey) {
-                                       showCharacter();
+                                      
                                         if (cursorPosX>0) {
                                         setCursorPosX(cursorPosX-1);
                                         redrawCursor();
@@ -639,13 +881,83 @@
                                           console.log("codepage.overlay:"+codepage.overlay);
                                           hideTimer = setTimeout(function() { codepage.overlay=null; }, 1000);
                                       }
+                              } else {
+                                 
+                                          clearTimeout(cursorInterval);
+                                          if (copyMode==false) {
+                                            copyMode=true;
+                                            copyStartX=cursorPosX;
+                                            copyStartY=cursorPosY;
+                                            copyEndX=cursorPosX;
+                                            copyEndY=cursorPosY;
+                                          }
+                                          if (cursorPosX>0) { // Only if we are not on the very left
+                                                
+                                                copyEndX--;
+                                                
+                                                if (cursorPosX > copyStartX) {
+                                                    
+                                                            if (copyEndY > copyStartY) {
+                                                                    
+                                                                    for (var y = copyEndY+1; y >= copyStartY-1; y--)
+                                                                    {
+                                                                        console.log("X:"+cursorPosX+" Y: "+y);
+                                                                        showOriginalCharacter(cursorPosX, y);
+                                                                    }
+                                                            } else {
+                                                               
+                                                                    for (var y = copyStartY+1; y >= copyEndY; y--)
+                                                                    {
+                                                                        console.log("X:"+cursorPosX+" Y: "+y);
+                                                                        showOriginalCharacter(cursorPosX, y);
+                                                                    }
+                                                            }
+                                                            
+                                                } else {
+                                                                if (copyEndY > copyStartY) {
+                                                            
+                                                                    for (var y = copyStartY; y < copyEndY; y++)
+                                                                    {
+                                                                        console.log("X:"+cursorPosX+" Y: "+y);
+                                                                        showOriginalCharacter(cursorPosX, y);
+                                                                    }
+                                                                    
+                                                                      for (var y = copyStartY; y < copyEndY; y++)
+                                                                        {
+                                                                            highlightCharacter(cursorPosX, y);   
+                                                                            highlightCharacter(cursorPosX-1, y);   
+                                                                        }
+                                                                
+                                                                } else {
+                                                                   /* for (var y = copyStartY; y > copyEndY; y--)
+                                                                    {
+                                                                        
+                                                                        showOriginalCharacter(cursorPosX, y);
+                                                                    }*/
+                                                                   
+                                                                      for (var y = copyStartY; y >= copyEndY; y--)
+                                                                        {
+                                                                            highlightCharacter(cursorPosX, y);   
+                                                                            highlightCharacter(cursorPosX-1, y);   
+                                                                        }
+                                                                    
+                                                  
+                                                                }
+                                                }
+                                                
+                                                setCursorPosX(cursorPosX-1);
+                                                highlightCharacter(cursorPosX, cursorPosY);   
+                                                cursorInterval = setTimeout(function() { toggleCursor(); }, 500);
+                                             
+                                            }
                               }
                             return true;
                               break;
                           case 38: // cursor up
+                               showCharacter(false);
                                if (!e.shiftKey) {
                                    if (!e.ctrlKey) {
-                                        showCharacter();
+                                       
                                         if (cursorPosY>0) {
                                               cursorPosY--;
                                               redrawCursor();
@@ -660,7 +972,68 @@
                                           console.log("codepage.overlay:"+codepage.overlay);
                                           hideTimer = setTimeout(function() { codepage.overlay=null; }, 1000);
                                       }
-                               }
+                               } else {
+                                          if (copyMode==false) {
+                                            copyMode=true;
+                                            copyStartX=cursorPosX;
+                                            copyStartY=cursorPosY;
+                                            copyEndX=cursorPosX;
+                                            copyEndY=cursorPosY;
+                                          }
+                                          if (cursorPosY>0) {
+                                                if (cursorPosX == copyStartX) {
+                                                  
+                                                  console.log("cursorPosY:"+cursorPosY+" copyStartY:"+copyStartY);
+                                                     if (cursorPosY < copyStartY) {
+                                                        highlightCharacter(cursorPosX, cursorPosY);
+                                                        highlightCharacter(cursorPosX, cursorPosY-1);
+                                                     } else {
+                                                         showOriginalCharacter(cursorPosX, cursorPosY);
+                                                     }
+                                                     
+                                                    
+                                                } else
+                                                if (cursorPosX <= copyStartX) { // (cursorPosX is to the left of copyEndX) [][][][][][][]copyEndX
+                                                    
+                                                    if (cursorPosY <= copyStartY) {
+                                                      
+                                                                    for (var x = cursorPosX; x <= copyStartX; x++) 
+                                                                    {
+                                                                        
+                                                                        highlightCharacter(x, cursorPosY);
+                                                                        highlightCharacter(x, cursorPosY-1);
+                                                                    }
+                                                        } else
+                                                        {
+                                                            
+                                                                    for (var x = cursorPosX; x <= copyStartX; x++) 
+                                                                    {
+                                                                        showOriginalCharacter(x, cursorPosY);
+                                                                    }
+                                                        }
+                                                } else { // cursorPosX > copyEndX (cursorPosX is to the right of copyEndX) copyEndX[][][][][][][][][][]
+                                                   
+                                                    if (cursorPosY <= copyStartY) 
+                                                    {
+                                                            for (var x = copyStartX; x < cursorPosX; x++) 
+                                                            {
+                                                               
+                                                                highlightCharacter(x, cursorPosY);
+                                                                highlightCharacter(x, cursorPosY-1);
+                                                            }
+                                                     } else {
+                                                            for (var x = copyStartX; x <= cursorPosX; x++) 
+                                                            {
+                                                                showOriginalCharacter(x, cursorPosY);
+                                                            }
+                                                     }
+                                                }
+                                                copyEndY--;
+                                                setCursorPosY(cursorPosY-1);
+                                                highlightCharacter(cursorPosX, cursorPosY);
+                                                redrawCursor();
+                                            }
+                              }
                               
                               break;
                           default:
@@ -815,11 +1188,7 @@
 
                 while (cursorY+1<height) 
                 {
-                 
-                 
-                 
                  var lineWidth=getDisplayWidth()-1;
-                 
                  
                  lineAsciiCode=screenCharacterArray[cursorY][lineWidth][0];
                  lineBackground=screenCharacterArray[cursorY][lineWidth][2];
@@ -833,28 +1202,28 @@
                  }
                  
                  cursorX=0;
-                 while (cursorX<=lineWidth) 
+                 while (cursorX<=lineWidth)
                  {
-                        var charArray = screenCharacterArray[cursorY][cursorX];
+                            var charArray = screenCharacterArray[cursorY][cursorX];
 
-                        var asciiCode = String(d2h(charArray[0]));
-                        var foreground = String(d2h(charArray[1]));
-                        var background = String(d2h(charArray[2]));
-                   
-                        while (asciiCode.length<2) asciiCode="0"+asciiCode;
-                        while (foreground.length<2) foreground="0"+foreground;
-                        while (background.length<2) background="0"+background;
-                        
-                        
-                        html+=asciiCode+foreground+background;
+                            var asciiCode = charArray[0].toString();
+                            while (asciiCode.length<3) asciiCode="0"+asciiCode;
+                            
+                            var foreground = charArray[1].toString();
+                            while (foreground.length<3) foreground="0"+foreground;
+                            
+                            var background = charArray[2].toString();
+                            while (background.length<3) background="0"+background;
+                             
+                            html+=asciiCode+foreground+background;
 
                         cursorX++;
                  }
-                 html+="brklne";
+                 html+="breakline";
                  cursorY++;
                 }
-                
-                
+                alert(html);
+               
                 $.ajax({
                 url: 'export.php',
                 type: 'POST',

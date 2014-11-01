@@ -23,7 +23,7 @@
         var screenCharacterArray = Array();
                 
         /** When changing the charset. Number one indicates characters from 1-9, other characters are ascii codes **/
-        var currentCharset=1;
+        var currentCharset=7;
         /** This is the character used when drawing **/
         var currentChar=216;
         
@@ -61,6 +61,12 @@
         var copyArray=Array();
         var copyWidth=0;
         var copyHeight=0;
+        
+        var undo = Array();
+        var redo = Array();
+        
+        
+        
         
         /** This gets called when pressing on the blue window, and sets the character set as well as the ascii code for drawing **/
         function setD(asciiCode, drawingBox) {
@@ -280,13 +286,30 @@
         
         function executeKey(keyCode) {
        
-       if (insert==false) {
-        
+        if (insert==false) {
+                                    var myascii = screenCharacterArray[cursorPosY][cursorPosX][0] ;
+                                    undo.push({ action : "overwrite", x : cursorPosX, y : cursorPosY, fgColor : screenCharacterArray[cursorPosY][cursorPosX][1], bgColor : screenCharacterArray[cursorPosY][cursorPosX][2], asciiCode : myascii});
+                                    
+                                  
                                     codepage.drawChar(ctx, keyCode, currentForeground, currentBackground, cursorPosX, cursorPosY);
                                     if (cursorPosX<getDisplayWidth()-2) { setCursorPosX(cursorPosX+1); }
                                     redrawCursor();
                                 } else {
-                                    var currentPos=getDisplayWidth()-1;
+                                    
+                                    undo.push({ action : "removeCharacter", x : cursorPosX, y : cursorPosY, rightsideAsciiCode : screenCharacterArray[cursorPosY][getDisplayWidth()-1][0], rightsideFGColor : screenCharacterArray[cursorPosY][getDisplayWidth()-1][1], rightsideBGColor : screenCharacterArray[cursorPosY][getDisplayWidth()-1][2]});
+                                   
+                                    moveAndDrawCharacters(keyCode);
+                                    codepage.drawChar(ctx, keyCode, currentForeground, currentBackground, cursorPosX, cursorPosY);
+                                    if (cursorPosX<getDisplayWidth()-1) { setCursorPosX(cursorPosX+1); }
+                                    redrawCursor();
+                                }
+       
+   }
+   
+   
+   function moveAndDrawCharacters(keyCode) {
+       
+       var currentPos=getDisplayWidth()-1;
                                     while (currentPos>cursorPosX) 
                                     {
                                     
@@ -295,18 +318,15 @@
                                           console.log("Error Y: "+currentPos+" X: "+(currentPos-1)+" is undefined");
                                       }
                                       var asciiCode = screenCharacterArray[cursorPosY][currentPos-1][0];
-                                      var fgcolor = screenCharacterArray[cursorPosY][currentPos-1][1];
-                                      var bgcolor = screenCharacterArray[cursorPosY][currentPos-1][2];
+                                      var fgColor = screenCharacterArray[cursorPosY][currentPos-1][1];
+                                      var bgColor = screenCharacterArray[cursorPosY][currentPos-1][2];
                                       
-                                      codepage.drawChar(ctx, asciiCode, fgcolor, bgcolor, currentPos, cursorPosY);
+                                      codepage.drawChar(ctx, asciiCode, fgColor, bgColor, currentPos, cursorPosY);
                                       currentPos--;
                                       
                                     }
                                     
-                                    codepage.drawChar(ctx, keyCode, currentForeground, currentBackground, cursorPosX, cursorPosY);
-                                    if (cursorPosX<getDisplayWidth()-1) { setCursorPosX(cursorPosX+1); }
-                                    redrawCursor();
-                                }
+                                   
        
    }
         
@@ -403,6 +423,17 @@
         copyArray=Array();
         if (copyMode) {
             
+            if (copyEndY<copyStartY) {
+                var buffer = copyStartY;
+                copyStartY=copyEndY;
+                copyEndY=buffer;
+            } 
+            if (copyEndX < copyStartX) {
+                var buffer = copyStartX;
+                copyStartX = copyEndX;
+                copyEndX = buffer;
+            }
+            
             copyWidth=copyEndX-copyStartX+1;
             copyHeight=copyEndY-copyStartY+1;
             copyStartXBuffer=copyStartX;
@@ -444,8 +475,8 @@
     
    
    function handleKeyCode(keyCode,e) {
+          
             
-              
                if ( (copyMode) && (!e.shiftKey) ) {
                    if ( (keyCode!=99) && (keyCode!=116) ) {
                         resetHighlighted();
@@ -469,6 +500,89 @@
                 clearTimeout(hideTimer);
                 codepage.overlay=null;
                 switch(keyCode){
+                    
+           case 121 : 
+                     if (e.ctrlKey) {
+                         if (redo.length==0) return;
+                         var myredo = redo.pop();
+                         
+                         if (myredo.action=="insert") {
+                             
+                             var asciiCode = myredo.asciiArray[0];
+                             var fgColor = myredo.asciiArray[1];
+                             var bgColor = myredo.asciiArray[2];
+                             
+                             showCharacter(false);
+                             setCursorPosX(myredo.x+1);
+                             setCursorPosY(myredo.y);
+                             
+                             moveAndDrawCharacters(keyCode);
+                             codepage.drawChar(ctx, asciiCode, fgColor, bgColor, myredo.x, myredo.y);
+                             
+                         } else { // overwrite
+                             
+                             var asciiCode = myredo.asciiArray[0];
+                             var fgColor = myredo.asciiArray[1];
+                             var bgColor = myredo.asciiArray[2];
+                             showCharacter(false)
+                             codepage.drawChar(ctx, asciiCode, fgColor, bgColor, myredo.x, myredo.y);
+                             setCursorPosX(myredo.x+1);
+                             setCursorPosY(myredo.y);
+                         }
+                         
+                         
+                     } else {
+                          executeKey(121);
+                     }
+                    break;
+                case 122 : 
+               // Z / CTRL-Z
+                    if (e.ctrlKey) {
+                        if (undo.length==0) return;
+                            var myundo = undo.pop();
+                            var originalCharacter = screenCharacterArray[myundo.y][myundo.x];
+                               
+                            if (myundo.action=="removeCharacter") {
+                                
+                              // A character was previously inserted. We now need to remove that character.
+                               var currentPosX = myundo.x;
+                               var currentPosY = myundo.y;
+                              
+                               while (currentPosX < getDisplayWidth()-1) 
+                               {
+                                        var asciiCode = screenCharacterArray[currentPosY][currentPosX+1][0];
+                                        var fgColor = screenCharacterArray[currentPosY][currentPosX+1][1];
+                                        var bgColor = screenCharacterArray[currentPosY][currentPosX+1][2];
+
+                                        codepage.drawChar(ctx, asciiCode, fgColor, bgColor, currentPosX, currentPosY);
+                                        currentPosX++;                                      
+                               }
+                              
+                               codepage.drawChar(ctx, myundo.rightsideAsciiCode, myundo.rightsideFGColor, myundo.rightsideBGColor, getDisplayWidth()-1, currentPosY);
+                               showCharacter(false);
+                               setCursorPosX(myundo.x);
+                               setCursorPosY(myundo.y);
+                               
+                               redo.push({ action : "insert", asciiArray : originalCharacter, x : myundo.x, y : myundo.y });
+                               
+                            } else
+                            if (myundo.action=="overwrite") {
+                                
+                                codepage.drawChar(ctx, myundo.asciiCode, myundo.fgColor, myundo.bgColor, myundo.x, myundo.y);
+                                
+                                showCharacter(false);
+                                setCursorPosX(myundo.x);
+                                setCursorPosY(myundo.y);
+                                redo.push({ action : "overwrite", asciiArray : originalCharacter, x : myundo.x, y : myundo.y });
+                            }
+                            break;
+                     } else {
+                          executeKey(122);
+                     }
+                    
+                    return true;
+                    break;
+                    
                     case 249 :
                                executeKey(151); // high two becomes ( for french keyboard
                         return true;

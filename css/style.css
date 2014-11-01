@@ -206,13 +206,13 @@ min-height:250px;
 }
 
 #popup2 iframe {
-background:url(loader.gif) center center no-repeat;
+/*background:url(loader.gif) center center no-repeat;*/
 min-height:240px;
 min-width:450px;
 }
 
 .loading {
-background:url(loader.gif) center center no-repeat;
+/*background:url(loader.gif) center center no-repeat;*/
 }
 
 .bMulti p {

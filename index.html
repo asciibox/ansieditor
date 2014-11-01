@@ -39,6 +39,10 @@
     <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
     <link rel="stylesheet" href="fileuploader/fileuploader.css" type="text/css" media="screen" />
 
+   
+    <script src="music/mediaelement/mediaelement-and-player.min.js"></script>
+    <link rel="stylesheet" href="music/mediaelement/mediaelementplayer.css" />
+   
     <style type="text/css" media="screen">
    
     @media only screen and (max-width: 480px) {
@@ -52,6 +56,7 @@
     }
     </style>
     <script>
+        var currentSong=0;
         var JAVASCRIPT_TEXT_DROP_HERE_TO_UPLOAD="Drop files here to upload";
         var JAVASCRIPT_TEXT_UPLOAD_A_FILE="Upload a file"; 
         var JAVASCRIPT_TEXT_CANCEL="Cancel";
@@ -78,8 +83,40 @@
 window.onbeforeunload=goodbye;
   
     $(document).ready(function(){
+        
+        
+          $.ajax({
+                url: 'music/get_urls.php',
+                type: 'GET',
+                success: function(result) {
+                    
+                    $('#panel').append(result);
+                   
+                    player = new MediaElementPlayer('#mp3', {audioWidth:280, success: function(mediaElement) {
+                           
+                           
+                            mediaElement.addEventListener('ended', function() {
            
-           
+                                   var src = $('#allsongs ').find("li").eq(currentSong).attr('src');
+                                 
+
+                                    $('#mp3').attr('src', src);
+                                    player.play();
+                                    currentSong++;
+                                    if (currentSong>=$('#allsongs').find("li").length) currentSong=1;
+
+                            });
+                    } });
+                
+                    currentSong++;
+                    player.play();
+                    
+                    
+                        $('.mejs-time-total').unbind('mouseenter');
+                }
+                });
+        
+       
             $('#foreground_color').simpleColor({
               boxHeight: 40,
               cellWidth: 40,
@@ -444,6 +481,6 @@ window.onbeforeunload=goodbye;
         </ul>
         </span>
   </div>
-       
+      
 </body>
 </html>

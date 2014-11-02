@@ -764,6 +764,7 @@
                             return true;
                               break;
                           case 8: // backspace
+                              
                              if (cursorPosX>0) {
                               setCursorPosX(cursorPosX-1);
                               var currentPos = cursorPosX;
@@ -1300,8 +1301,10 @@
                 {
                 
                     var keyCode = e.which;
+                   
                     if (keyCode!=0) {
                         e.preventDefault(); 
+                        
                         window.handleKeyCode(keyCode,e);
                     }
                 
@@ -1311,9 +1314,9 @@
                 document.body.addEventListener('keydown',
                 function(e)
                 {
-                  
+                 
                     var keyCode = e.which;
-                     
+                  
 					if (keyCode == 17) {
                         ctrlKey=true;
                     } else
@@ -1326,6 +1329,9 @@
                     if ( (keyCode<=40) && (keyCode>=37) ) { 
                         e.preventDefault();
                         window.handleKeyCode2(keyCode,e);
+                    } else if (keyCode==8) {
+                        e.preventDefault();
+                        window.handleKeyCode(keyCode, e);
                     }
                     
                 

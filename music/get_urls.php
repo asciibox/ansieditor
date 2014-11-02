@@ -63,17 +63,13 @@ include("set_your_keys.php");
   }
       $filename=$_GET['filename'];
   
-		$random=rand(0,2);
-		$random2=rand(0,2);
-		if ($random!=0) {
-			$first="80s_Computer.mp3";
-		} else {
-			$first='Positive_Promp.mp3';
-		}
+		$random=rand(0,1);
+		
+			
 		if ($random==0) {
-		 $music = array($first, "IndaClub_short.mp3", "ThisIsTheEighties.mp3", "phonedrone.mp3", "80s_Linn_Groove.mp3","Spanish_Fire.mp3");
+		 $music = array("The_eye_of_Ra.mp3", 'Positive_Promo.mp3', "IndaClub_short.mp3", "ThisIsTheEighties_Short.mp3", "phonedrone.mp3", "80s_Linn_Groove.mp3","Spanish_Fire.mp3");
 		} else {
-		 $music = array($first, "IndaClub_short.mp3", "ThisIsTheEighties.mp3", "Up_and_about_main_SHORT.mp3", "80s_Linn_Groove.mp3", "Spanish_Fire.mp3");
+		 $music = array('Positive_Promo.mp3', "Up_and_about_main_SHORT.mp3", "ThisIsTheEighties_Short.mp3", "IndaClub_short.mp3", "Spanish_Fire.mp3","The_eye_of_Ra.mp3", "80s_Linn_Groove.mp3");
 		}
       
         $html="<ul id='allsongs'>";

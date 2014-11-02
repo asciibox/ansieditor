@@ -187,6 +187,7 @@
 
       // Absolutely positioned child elements now 'work'.
 			container.css('position', 'relative');
+                        container.css('z-index', '99999');
 
       // Create the color display box
       var defaultColor = (this.value && this.value != '') ? this.value : options.defaultColor;

@@ -66,7 +66,7 @@
         var redo = Array();
         
         
-        
+        var ctrlKey=false;
         
         /** This gets called when pressing on the blue window, and sets the character set as well as the ascii code for drawing **/
         function setD(asciiCode, drawingBox) {
@@ -261,7 +261,7 @@
                
         }
         
-        
+        /** This gets called whenever the mouse moves and the left mouse button is getting keeped pressed  **/
         
         function mouseMove(ansicanvas, e) {
             
@@ -284,8 +284,9 @@
             
         }
         
+		 /** This gets called from handleKeyCode **/
         function executeKey(keyCode) {
-       
+       showCharacter(false); 
         if (insert==false) {
                                     var myascii = screenCharacterArray[cursorPosY][cursorPosX][0] ;
                                     undo.push({ action : "overwrite", x : cursorPosX, y : cursorPosY, fgColor : screenCharacterArray[cursorPosY][cursorPosX][1], bgColor : screenCharacterArray[cursorPosY][cursorPosX][2], asciiCode : myascii});
@@ -306,7 +307,7 @@
        
    }
    
-   
+   /** CTRL-C - buffer functionality - called when pressing CTRL-V **/
    function moveAndDrawCharacters(keyCode) {
        
        var currentPos=getDisplayWidth()-1;
@@ -330,6 +331,7 @@
        
    }
         
+		 /** This is the panel with the information about how to use this application **/
         function showPanel() {
          
             if ($('#panel').css('display')!="block") {
@@ -340,6 +342,7 @@
                         clearTimeout(doubleclickInterval);
         }
         
+		/** This hides the panel **/
         function hidePanel() {
             if ($('#panel').css('display')=="block") {
                  $(".panel").slideUp("slow", "easeOutBounce");
@@ -348,6 +351,7 @@
             clearTimeout(doubleclickInterval);
         }
         
+		/* This creates a new screenCharacterArray in which the colors and codes get stored, by default color white and space (32) **/
         function setANSICanvasSize() {
             var displayWidth=getDisplayWidth()-1;
             var displayHeight=getDisplayHeight()-1;
@@ -372,6 +376,7 @@
             
         }
         
+		/** This gets called to switch the cursor between insert and overwrite mode **/
         function toggleCursor(interval) {
      
             cursorShown=!cursorShown;
@@ -392,6 +397,7 @@
         }
         
         
+		/** Shows the character at the current position. Might get called from toggleCursor to hide the cursor **/
         
         function showCharacter(overwrite) {
             
@@ -417,7 +423,7 @@
         
     }
     
-    
+    /** This gets called when pressing CTRL-C **/
     function copySelectedContent() {
         
         copyArray=Array();
@@ -456,6 +462,7 @@
         
     }
     
+	/** This gets called when pressing CTRL-V **/
     function pasteSelectedContent() {
         
       
@@ -473,7 +480,7 @@
     }
     
     
-   
+    /** This converts to keycodes to real characters. Language dependency included. Calls executeKey to show the keys in effect **/
    function handleKeyCode(keyCode,e) {
           
             
@@ -502,7 +509,7 @@
                 switch(keyCode){
                     
            case 121 : 
-                     if (e.ctrlKey) {
+                     if (ctrlKey) { // this is not e.ctrlKey
                          if (redo.length==0) return;
                          var myredo = redo.pop();
                          
@@ -1247,6 +1254,7 @@
         }
     }
     
+	/** This clears the screen by putting spaces with the current foreground and background color on the screen **/
     function doClearScreen(resetCharacters) {
         
        setCursorPosX(0);
@@ -1284,6 +1292,7 @@
         
     }
    
+   /** This registers a key event listener, so entering something in the browser has functionality **/
    function registerKeyEventListener() { 
 		
                 document.body.addEventListener('keypress',
@@ -1305,6 +1314,9 @@
                   
                     var keyCode = e.which;
                      
+					if (keyCode == 17) {
+                        ctrlKey=true;
+                    } else
                     if (keyCode==27) {
                          if ($('#panel').css('display')=="block") {
                             hidePanel(); } else {
@@ -1324,6 +1336,7 @@
                 
     }
         
+		/** This is getting called whenever the user resizes the canvas, to show always the same amount of characters, just with a different width and height **/
         function resize_canvas(){
             
             canvas = document.getElementById("ansi");
@@ -1367,11 +1380,7 @@
         } 
         
       
-        
-        
-       function d2h(d) {return d.toString(16);}
-       function h2d(h) {return parseInt(h,16);} 
-        
+       /** This is getting called when saving the ANSI, and exports the asciis by saving the decimal values of the screen into a file **/
       
         
        function myexport() {

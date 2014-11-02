@@ -80,6 +80,7 @@ function Codepage(codepageUrl, callback) {
 
         function drawChar(ctx, asciiCode, foreground, background, x, y, transparent, storeCharacter) {
            var originalX=x;
+           // This is just some information used when scrolling is implemented
             if (x>=xStart-1) {
                 if (y>=yStart-1) {
                  
@@ -108,19 +109,20 @@ function Codepage(codepageUrl, callback) {
                      
                         x = (x  ) * parseInt(canvasCharacterWidth);
                         y = (y ) * parseInt( canvasCharacterHeight );
-                        //alert("X:"+x+"Y:"+y);
                         if ( (typeof(transparent)=="undefined") || (transparent==false) ) {
                             var xpos=background;
                            
                             while (xpos >= 16) xpos=xpos-16;
+                            // This calculates the position of the block of the image, which has the same characters over and over again with different backgrounds, regarding the y position
+                            //console.log(Math.random()+"background:"+background);
                             var ypos = Math.floor(background/16);
-                        
-                        
+                            ///console.log(Math.random()+"ypos:"+ypos);
+                          
                             var myasciiCode=219;
                             
                             var myx = (myasciiCode % 32) * characterWidth+(xpos*256);
                             var myy = Math.floor(myasciiCode / 32) * characterHeight + (ypos*128);
-                        
+                           
                             //alert("1:myx="+myx+" myy="+myy+" x="+x+" y="+y+"CW1:"+characterHeight+" canvasCharacterHeight:"+canvasCharacterHeight);
                             ctx.drawImage(codepageImg, myx, myy, characterWidth, characterHeight, x, y, canvasCharacterWidth, canvasCharacterHeight);
                         }

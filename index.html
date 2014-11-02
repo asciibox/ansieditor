@@ -460,7 +460,43 @@ window.onbeforeunload=goodbye;
             display = new Display();
             charactersatonce = 999999; //Math.floor((baud || 115200) / 8 / 100);
             doClearScreen(false);
-            interpreter = new Interpreter("test.ans", drawChunk);
+            
+            if (localStorage["ansicanvas"]) 
+            {
+                
+                if (confirm('Do you want to continue to work on your current drawing?')) {
+                var currentPosY=1;
+               
+                var screenCharacterArray=JSON.parse(localStorage["ansicanvas"]);
+               
+                while (currentPosY<getDisplayHeight()-1) 
+                                    {
+                                        var currentPosX=1;
+                                        while (currentPosX<getDisplayWidth()-1) 
+                                        {
+
+                                         if (typeof(screenCharacterArray[currentPosY][currentPosX-1])=="undefined") 
+                                         {
+                                             console.log("Error Y: "+currentPosY+" X: "+(currentPosX-1)+" is undefined");
+                                             break;
+                                        } else {
+                                                var asciiCode = screenCharacterArray[currentPosY][currentPosX-1][0];
+                                                var fgColor = screenCharacterArray[currentPosY][currentPosX-1][1];
+                                                var bgColor = screenCharacterArray[currentPosY][currentPosX-1][2];
+
+                                                codepage.drawChar(ctx, asciiCode, fgColor, bgColor, currentPosX, currentPosY);
+                                          }
+                                          currentPosX++;
+
+                                         }
+                                         currentPosY++;
+                                    }
+                  } else {
+                      interpreter = new Interpreter("test.ans", drawChunk);
+                  }
+            } else {
+                interpreter = new Interpreter("test.ans", drawChunk);
+            }
             //resize_canvas();
         });
         

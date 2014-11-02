@@ -304,6 +304,8 @@
                                     if (cursorPosX<getDisplayWidth()-1) { setCursorPosX(cursorPosX+1); }
                                     redrawCursor();
                                 }
+                                
+                                localStorage["ansicanvas"]=JSON.stringify(screenCharacterArray);
        
    }
    

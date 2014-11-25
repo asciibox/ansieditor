@@ -25,11 +25,11 @@ while ($pos<strlen($string)) {
         $foreground=substr($extract, 3, 3);
         $background=substr($extract, 6, 3);
         
-        while (strcmp(substr($foreground, 0, 1), "0")==0) 
+        while ( (strcmp(substr($foreground, 0, 1), "0")==0)  && (strlen($foreground)>1) ) 
         {
          $foreground=substr($foreground, 1);    
         }
-        while (strcmp(substr($background, 0, 1), "0")==0) 
+        while ( (strcmp(substr($background, 0, 1), "0")==0) && (strlen($background)>1) )
         {
          $background=substr($background, 1);    
         }

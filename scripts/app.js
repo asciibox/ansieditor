@@ -468,6 +468,7 @@
                         codepage.drawChar(globalContext, asciiCode, foreground, background, cursorPosX+x, cursorPosY+y, false, true);
                     }
             }
+            
     }
     
     
@@ -476,7 +477,7 @@
           
             
                if ( (copyMode) && (!e.shiftKey) ) {
-                   if ( (keyCode!=99) && (keyCode!=116) ) {
+                   if ( (keyCode!=99) && (keyCode!=116) && (keyCode!=120) ) {
                         resetHighlighted();
                         copyMode=false;
                         }
@@ -497,7 +498,29 @@
               
                 clearTimeout(hideTimer);
                 codepage.overlay=null;
+                
                 switch(keyCode){
+                    
+                    case 120 :  // CTRL-X
+					
+	                    if (ctrlKey) { // this is not e.ctrlKey
+	                    
+	                     if (copyMode) 
+	                     {
+	                     
+	                     	for (var x = 0; x < copyWidth; x++) {
+	                     		for (var y = 0; y < copyHeight; y++) 
+	                     		{
+	                     			codepage.drawChar(globalContext, 32, 15, 0, cursorPosX+x, cursorPosY+y, false, true);
+	                     		}
+	                     	}
+	                     }
+	                    } else {
+	                    
+	                    	executeKey(120);
+	                    
+	                    }
+                    break;
                     
            case 121 : 
                      if (ctrlKey) { // this is not e.ctrlKey
@@ -625,7 +648,7 @@
                             return true;
                             break;
                         case 97 : // CTRL-A
-                            if (e.ctrlKey) {
+                            if (ctrlKey) {
                                 var ascii = screenCharacterArray[cursorPosY][cursorPosX];
                                 alert("Color / Foreground color / Background color: "+ascii);
                             } else {
@@ -635,16 +658,16 @@
                             break;
                         case 99 : 
                             //CTRL-C
-                            if (e.ctrlKey) {
+                            if (ctrlKey) {
                                 copySelectedContent();
                             } else {
                                 executeKey(99);
                             }
                             break;
                         case 118 : 
-                            //CTRL-C
-                             if (e.ctrlKey) {
-                            pasteSelectedContent();
+                            //CTRL-V
+                             if (ctrlKey) {
+                            	pasteSelectedContent();
                             } else {
                                 executeKey(118);
                             }
@@ -860,7 +883,10 @@
                 codepage.overlay=null;
                 
                 var doshowcharacter=true;
+                
+                // Check if we need to leave the selection mode. This happens when a key gets pressed without the shift button being pressed.
                  if ( (copyMode) && (!e.shiftKey) ) { 
+                 
                         copyMode=false;
                         clearTimeout(cursorInterval);
                         resetHighlighted();
@@ -872,16 +898,17 @@
                 switch(keyCode){
                     
                     case 39 : // cursor right
+                    console.log("39 copyMode:"+copyMode);
                          showCharacter(false);
                          if (!e.shiftKey) { 
                                    if (!e.ctrlKey) {
-                                        
                                             if (cursorPosX<getDisplayWidth()-1) {
                                                 console.log("INCREASED");
                                                 setCursorPosX(cursorPosX+1);
                                                 redrawCursor();
                                             }
                                       } else {
+                                      
                                           if (currentBackground>0) currentBackground--; else currentBackground=255;
                                           codepage.drawChar(ctx, 32, currentForeground, currentBackground, cursorPosX, cursorPosY, false, false); // do not store
                                           codepage.overlay=new Array();
@@ -892,6 +919,7 @@
                                           hideTimer = setTimeout(function() { codepage.overlay=null; }, 1000);
                                       }
                                   } else {
+                                  		  // This gets called when the shift key is pressed and cursor right is pressed, so selection takes place
                                           if (copyMode==false) {
                                             copyMode=true;
                                             copyStartX=cursorPosX;

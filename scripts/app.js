@@ -127,19 +127,8 @@
                 keys[15] = [ 147, 148, 149, 224, 167, 150, 129, 151, 163, 154 ];
       /** Ansi interpreter, display and charactersatonce **/
       var interpreter, display, charactersatonce;
-           function drawChunk() {
-               
-                if (interpreter.read(charactersatonce, display)) {
-                     globalContext = document.getElementById("ansi").getContext("2d");
-                    
-                     globalContext.drawImage(display.canvas, 0, 0);
-                } else {
-                 
-                    interpreter.reset();
-                    display.clearScreen();
-                    //setTimeout(drawChunk, 5000);
-                }
-            }
+          
+                
         
         function updateCanvasSize() {
             

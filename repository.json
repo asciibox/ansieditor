@@ -1,0 +1,21 @@
+{
+    "name": "asciirocks",
+    "description": "",
+    "version": "0.0.1",
+    "main": "index.html",
+    "author": {
+        "name": "Oliver Bachmann",
+        "email": "obachmann@ymail.com"
+    },
+    "keywords": [],
+    "licenses": {
+        "type": "none"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/asciibox/asciirocks.git"
+    },
+    "bugs": {
+        "url": "https://github.com/asciibox/asciirocks/issues"
+    }
+}

@@ -1,6 +1,6 @@
 {
     "name": "asciirocks",
-    "description": "",
+    "description": "ascii ansi editor",
     "version": "0.0.1",
     "main": "index.html",
     "author": {
@@ -13,9 +13,9 @@
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/asciibox/asciirocks.git"
+        "url": "git://github.com/asciibox/asciirocks.git"
     },
     "bugs": {
-        "url": "https://github.com/asciibox/asciirocks/issues"
+        "url": "git://github.com/asciibox/asciirocks/issues"
     }
 }

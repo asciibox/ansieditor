@@ -12,6 +12,7 @@
         /** This is the general width and height, used globally to show the right coordinate system inside the canvas **/
         var width=160;
         var height=45;
+        var resizeToScreen=false;
         /** This contains all characters. This is an array with three int values **/
         /*
         asciiCode = screenCharacterArray[cursorPosY][currentPos-1][0];
@@ -1386,24 +1387,41 @@
             }
         }
         
-        function setCanvasSize(canvas) {
+       function setCanvasSize(canvas) {
             
             var window_innerWidth = $(window).width()-30;
             var window_innerHeight = $(window).height()-30;
             var characterWidthPct= window_innerWidth/(width*8); // How often does the character fit into the width
             var characterHeightPct = window_innerHeight/(height*16);  // How often does the character fit into the height
             
-            fullCanvasWidth=Math.floor(width*8*characterWidthPct);
-            fullCanvasHeight=Math.floor(width*8*characterHeightPct);
+            if (resizeToScreen==false) {
             
-            canvas.width=fullCanvasWidth;
-            canvas.height=fullCanvasHeight;
-            canvasCharacterWidth=Math.floor(8*characterWidthPct);
-            canvasCharacterHeight=Math.floor(16*characterHeightPct);
+                fullCanvasWidth=Math.floor(width*8*characterWidthPct);
+                fullCanvasHeight=Math.floor(width*8*characterHeightPct);
+
+                canvas.width=fullCanvasWidth;
+                canvas.height=fullCanvasHeight;
+                canvasCharacterWidth=Math.floor(8*characterWidthPct);
+                canvasCharacterHeight=Math.floor(16*characterHeightPct);
+        
+            } else {
+            
+            
+                fullCanvasWidth=window_innerWidth; // Math.floor(width*8*characterWidthPct);
+                fullCanvasHeight=window_innerHeight; // Math.floor(width*8*characterHeightPct);
+
+                canvas.width=fullCanvasWidth;
+                canvas.height=fullCanvasHeight;
+
+                canvasCharacterWidth=window_innerWidth/width; // Math.floor(8*characterWidthPct);
+
+                canvasCharacterHeight=window_innerHeight / height; // Math.floor(16*characterHeightPct);
+           
+            
+            }
            
             
         } 
-        
       
        /** This is getting called when saving the ANSI, and exports the asciis by saving the decimal values of the screen into a file **/
       

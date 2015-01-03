@@ -211,7 +211,6 @@
                 }, true);
                 
                 document.getElementById('panel').addEventListener('mousedown', function(e) {
-                   
                     
                     if (waitingforDoubleclick==false) {
                         waitingforDoubleclick = true;
@@ -260,17 +259,29 @@
                     var my = mouse.y;                    
                     
                     showCharacter();
+
+					if (resizeToScreen==false)
+					{					
                     
-                    myCursorPosX = Math.floor(mx / canvasCharacterWidth);
-                    myCursorPosY = Math.floor(my / canvasCharacterHeight);
-                    
-                    if (myCursorPosX>=getDisplayWidth()-1) { console.log(myCursorPosX+" too far"); setCursorPosX(getDisplayWidth()-1); redrawCursor(); return; }
-                    if (myCursorPosY>=getDisplayHeight()-1) { console.log(myCursorPosY+" too high"); setCursorPosY(getDisplayHeight()-1); redrawCursor(); return; }
-                    
-                    setCursorPosX(myCursorPosX);
-                    setCursorPosY(myCursorPosY);
-                    
-                    redrawCursor();
+						myCursorPosX = Math.floor(mx / canvasCharacterWidth);
+						myCursorPosY = Math.floor(my / canvasCharacterHeight);
+
+					} else 
+					{
+						var window_innerWidth = (width*(canvasCharacterWidth));
+						var window_innerHeight = (height*(canvasCharacterHeight));
+
+						myCursorPosX = Math.floor((mx / window_innerWidth) * width);
+						myCursorPosY = Math.floor((my / window_innerHeight) * height);
+
+					}
+						if (myCursorPosX>=getDisplayWidth()-1) { console.log(myCursorPosX+" too far"); setCursorPosX(getDisplayWidth()-1); redrawCursor(); return; }
+						if (myCursorPosY>=getDisplayHeight()-1) { console.log(myCursorPosY+" too high"); setCursorPosY(getDisplayHeight()-1); redrawCursor(); return; }
+						
+						setCursorPosX(myCursorPosX);
+						setCursorPosY(myCursorPosY);
+						
+						redrawCursor();
             
         }
         
@@ -1406,16 +1417,14 @@
         
             } else {
             
-            
                 fullCanvasWidth=window_innerWidth; // Math.floor(width*8*characterWidthPct);
                 fullCanvasHeight=window_innerHeight; // Math.floor(width*8*characterHeightPct);
 
                 canvas.width=fullCanvasWidth;
                 canvas.height=fullCanvasHeight;
 
-                canvasCharacterWidth=window_innerWidth/width; // Math.floor(8*characterWidthPct);
-
-                canvasCharacterHeight=window_innerHeight / height; // Math.floor(16*characterHeightPct);
+                canvasCharacterWidth=Math.floor(window_innerWidth/width); // Math.floor(8*characterWidthPct);
+                canvasCharacterHeight=Math.floor(window_innerHeight / height); // Math.floor(16*characterHeightPct);
            
             
             }

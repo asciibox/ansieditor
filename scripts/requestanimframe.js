@@ -3,7 +3,7 @@ var bps=57600;
 var charsAtOnce=99999;
 if (bps==300) charsAtOnce=20; else if (bps==1200) charsAtOnce=80; else if (bps==2400) charsAtOnce=160; else if (bps==16800) charsAtOnce=6*160; else if (bps==19200) charsAtOnce=7*160; else if (bps==57600)  charsAtOnce=20*160;
 
-var globalBuffer="";
+var globalBuffer=new Uint8Array();
 var escapeCode="";
 var globalEscaped=false;
 var globalPos=0;

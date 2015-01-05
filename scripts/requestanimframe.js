@@ -1,3 +1,15 @@
+var bps=57600;
+
+var charsAtOnce=99999;
+if (bps==300) charsAtOnce=20; else if (bps==1200) charsAtOnce=80; else if (bps==2400) charsAtOnce=160; else if (bps==16800) charsAtOnce=6*160; else if (bps==19200) charsAtOnce=7*160; else if (bps==57600)  charsAtOnce=20*160;
+
+var globalBuffer="";
+var escapeCode="";
+var globalEscaped=false;
+var globalPos=0;
+// usage:
+// instead of setInterval(render, 16) ....
+
 
 // shim layer with setTimeout fallback
 window.requestAnimFrame = (function(){
@@ -9,14 +21,6 @@ window.requestAnimFrame = (function(){
           };
 })();
 
-
-
-var globalBuffer="";
-var escapeCode="";
-var globalEscaped=false;
-var globalPos=0;
-// usage:
-// instead of setInterval(render, 16) ....
 
 (function animloop(){
   requestAnimFrame(animloop);
@@ -95,7 +99,7 @@ function getValues() {
                                     } else if (values[j] >= 40 && values[j] <= 47) {
                                         globalDisplay.setBackground(values[j] - 40);
                                     } else if (values[j]==48) { // background, 256colors
-                                        console.log("bg:"+values);
+                                       // alert("bg:"+values);
                                         myvalues=String(values);
                                         //alert(myvalues.substring(5));
                                         var color = myvalues.substring(5);

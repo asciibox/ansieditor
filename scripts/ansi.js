@@ -166,6 +166,14 @@ function Codepage(codepageUrl, callback) {
             y = 0;
         }
 
+		function getPosX() {
+			return x; 
+		}
+
+		function getPosY() {
+				return y;
+		}
+
         function resetAttributes() {
             foreground = 7;
             background = 0;
@@ -287,6 +295,8 @@ function Codepage(codepageUrl, callback) {
             "canvas": canvas,
             "drawChar": drawChar,
             "savePosition": savePosition,
-            "restorePosition": restorePosition
+            "restorePosition": restorePosition,
+			"getPosX": getPosX,
+			"getPosY": getPosY
         };
     }

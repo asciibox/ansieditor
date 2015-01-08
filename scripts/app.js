@@ -136,14 +136,16 @@
         }
         
          function redrawCursor() {
-             
-            cursorShown=true;
+            
+            cursorShown=false;
             
             ctx = document.getElementById("ansi").getContext("2d");
            
             codepage.drawChar(ctx, insert==false ? 220 : 95, 15, (copyMode==false) ? 0 : 15, cursorPosX, cursorPosY, true, cursorPosY); // shows cursor transparently
             clearTimeout(cursorInterval);
-            cursorInterval = setTimeout(function() { toggleCursor(); }, 500);
+            cursorInterval = setInterval(function() { toggleCursor(); }, 10);
+			setTimeout(function() { clearTimeout(cursorInterval);  cursorShown=false; cursorInterval = setInterval(function() {  toggleCursor(); }, 500); }, 10);
+
         }
        
         function getDisplayWidth() {
@@ -394,8 +396,7 @@
                 showCharacter(false); // see below
             }
             
-            clearTimeout(cursorInterval);
-            cursorInterval = setTimeout(function() { toggleCursor(); }, 500);
+           
             
         }
         

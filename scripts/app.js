@@ -10,8 +10,12 @@
         /** Set on mouse click, and evaluated in mousemove **/
         var mouseDown =false;
         /** This is the general width and height, used globally to show the right coordinate system inside the canvas **/
-        var width=160;
-        var height=45;
+        var width=320;
+        var height=90;
+        
+        var visibleWidth = 160;
+        var visibleHeight = 45;
+        
         var resizeToScreen=false;
         /** This contains all characters. This is an array with three int values **/
         /*
@@ -129,7 +133,11 @@
       /** Ansi interpreter, display and charactersatonce **/
       var interpreter, display, charactersatonce;
           
-                
+        function showMenu() {
+            
+            
+            
+        }
         
         function updateCanvasSize() {
             
@@ -149,10 +157,10 @@
         }
        
         function getDisplayWidth() {
-            return width; // return parseInt(document.getElementById('displaywidth').value);
+            return visibleWidth; // return parseInt(document.getElementById('displaywidth').value);
         }
         function getDisplayHeight() {
-            return height; // return parseInt(document.getElementById('displayheight').value);
+            return visibleHeight; // return parseInt(document.getElementById('displayheight').value);
         }
         
         function setCursorPosX(x) {
@@ -270,11 +278,11 @@
 
 					} else 
 					{
-						var window_innerWidth = (width*(canvasCharacterWidth));
-						var window_innerHeight = (height*(canvasCharacterHeight));
+						var window_innerWidth = (visibleWidth*(canvasCharacterWidth));
+						var window_innerHeight = (visibleHeight*(canvasCharacterHeight));
 
-						myCursorPosX = Math.floor((mx / window_innerWidth) * width);
-						myCursorPosY = Math.floor((my / window_innerHeight) * height);
+						myCursorPosX = Math.floor((mx / window_innerWidth) * visibleWidth);
+						myCursorPosY = Math.floor((my / window_innerHeight) * visibleHeight);
 
 					}
 						if (myCursorPosX>=getDisplayWidth()-1) { console.log(myCursorPosX+" too far"); setCursorPosX(getDisplayWidth()-1); redrawCursor(); return; }
@@ -1295,10 +1303,10 @@
        
        if (resetCharacters) {
            redrawCursor();
-                while (cursorPosY+1<height) 
+                while (cursorPosY+1<visibleHeight) 
                 {
                  setCursorPosX(0);
-                 while (cursorPosX<width) 
+                 while (cursorPosX<visibleWidth) 
                  {
 
                          var charArray = Array();
@@ -1354,6 +1362,7 @@
                     } else
                     if (keyCode==27) {
                          if ($('#panel').css('display')=="block") {
+
                             hidePanel(); } else {
                             showPanel();
                             }
@@ -1403,13 +1412,13 @@
             
             var window_innerWidth = $(window).width()-30;
             var window_innerHeight = $(window).height()-30;
-            var characterWidthPct= window_innerWidth/(width*8); // How often does the character fit into the width
-            var characterHeightPct = window_innerHeight/(height*16);  // How often does the character fit into the height
+            var characterWidthPct= window_innerWidth/(visibleWidth*8); // How often does the character fit into the width
+            var characterHeightPct = window_innerHeight/(visibleHeight*16);  // How often does the character fit into the height
             
             if (resizeToScreen==false) {
             
-                fullCanvasWidth=Math.floor(width*8*characterWidthPct);
-                fullCanvasHeight=Math.floor(width*8*characterHeightPct);
+                fullCanvasWidth=Math.floor(visibleWidth*8*characterWidthPct);
+                fullCanvasHeight=Math.floor(visibleWidth*8*characterHeightPct);
 
                 canvas.width=fullCanvasWidth;
                 canvas.height=fullCanvasHeight;
@@ -1424,8 +1433,8 @@
                 canvas.width=fullCanvasWidth;
                 canvas.height=fullCanvasHeight;
 
-                canvasCharacterWidth=Math.floor(window_innerWidth/width); // Math.floor(8*characterWidthPct);
-                canvasCharacterHeight=Math.floor(window_innerHeight / height); // Math.floor(16*characterHeightPct);
+                canvasCharacterWidth=Math.floor(window_innerWidth/visibleWidth); // Math.floor(8*characterWidthPct);
+                canvasCharacterHeight=Math.floor(window_innerHeight / visibleHeight); // Math.floor(16*characterHeightPct);
            
             
             }

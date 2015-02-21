@@ -67,9 +67,9 @@ include("set_your_keys.php");
 		
 			
 		if ($random==0) {
-		 $music = array("The_eye_of_Ra.mp3", 'Positive_Promo.mp3', "IndaClub_short.mp3", "ThisIsTheEighties_Short.mp3", "phonedrone.mp3", "80s_Linn_Groove.mp3","Spanish_Fire.mp3");
+		 $music = array("The_eye_of_Ra.mp3", 'Positive_Promo.mp3', "IndaClub_short.mp3", "ThisIsTheEighties_Short.mp3", "phonedrone.mp3", "80s_Linn_Groove.mp3","Spanish_Fire.mp3", "Sexy_LFO.mp3", "disco_flair_aj.mp3");
 		} else {
-		 $music = array('Positive_Promo.mp3', "Up_and_about_main_SHORT.mp3", "ThisIsTheEighties_Short.mp3", "IndaClub_short.mp3", "Spanish_Fire.mp3","The_eye_of_Ra.mp3", "80s_Linn_Groove.mp3");
+		 $music = array('Positive_Promo.mp3', "Up_and_about_main_SHORT.mp3", "ThisIsTheEighties_Short.mp3", "IndaClub_short.mp3", "Spanish_Fire.mp3","The_eye_of_Ra.mp3", "80s_Linn_Groove.mp3", "Sexy_LFO.mp3", "disco_flair_aj.mp3");
 		}
       
         $html="<ul id='allsongs'>";

@@ -89,6 +89,77 @@ window.onbeforeunload=goodbye;
   
     $(document).ready(function(){
         
+        codepage = new Codepage("images/CO_437_8x16.png", function() {
+            
+            setCanvasSize(document.getElementById("ansi"));
+            setANSICanvasSize();
+              
+            globalContext = document.getElementById("ansi").getContext("2d");
+            display = new Display();
+            doClearScreen(false);
+            
+             var context = document.getElementById("ansi").getContext("2d");
+                
+                
+                
+                var scrollPosX = (visibleWidth-1  ) * parseInt(canvasCharacterWidth)-4;
+                var scrollPosY = 0;
+                var window_innerHeight = (visibleHeight*(canvasCharacterHeight));
+                var scrollBarHeight = (visibleHeight/totalVisibleHeight)*window_innerHeight;
+                scrollbarStartY = 0;
+                scrollbarStopY = scrollBarHeight;
+                
+                context.beginPath();
+                context.rect(scrollPosX, scrollPosY, 2*canvasCharacterWidth, scrollBarHeight);
+                context.fillStyle = 'yellow';
+                context.fill();
+                context.lineWidth = 7;
+                context.strokeStyle = 'black';
+                context.stroke();
+           
+            if (localStorage["ansicanvas"]) 
+            {
+                
+                if (confirm('Do you want to continue to work on your current drawing?')) {
+                var currentPosY=1;
+               
+                var screenCharacterArray=JSON.parse(localStorage["ansicanvas"]);
+               
+                while (currentPosY<getDisplayHeight()-1) 
+                                    {
+                                        var currentPosX=1;
+                                        
+                                        var maxWidth = getDisplayWidth()-1;
+                                        if (scrollbarY) maxWidth--;
+                                        
+                                        while (currentPosX<maxWidth)
+                                        {
+                                         if (typeof(screenCharacterArray[currentPosY][currentPosX-1])=="undefined") 
+                                         {
+                                             console.log("Error Y: "+currentPosY+" X: "+(currentPosX-1)+" is undefined");
+                                             break;
+                                        } else {
+                                                var asciiCode = screenCharacterArray[currentPosY][currentPosX-1][0];
+                                                var fgColor = screenCharacterArray[currentPosY][currentPosX-1][1];
+                                                var bgColor = screenCharacterArray[currentPosY][currentPosX-1][2];
+
+                                                codepage.drawChar(ctx, asciiCode, fgColor, bgColor, currentPosX, currentPosY);
+                                          }
+                                          currentPosX++;
+
+                                         }
+                                         currentPosY++;
+                                    }
+                  } else {
+                      interpreter = new Interpreter("test.ans", display);
+                  }
+            } else {
+                interpreter = new Interpreter("test.ans", display);
+            }
+            
+        });
+        
+        
         //resizeToScreen=true;
           $.ajax({
                 url: 'music/get_urls.php',
@@ -182,7 +253,6 @@ window.onbeforeunload=goodbye;
               }
             });
            registerKeyEventListener();initansicanvas();
-          
            var uploader = new qq.FileUploader({
                 // pass the dom node (ex. $(selector)[0] for jQuery users)
                 element: document.getElementById('file-uploader'),
@@ -453,58 +523,6 @@ window.onbeforeunload=goodbye;
         </canvas>
     --><div style="width: 640px" class="centered">
         <canvas id="ansi" width=640 height=480></canvas>
-        <script type="text/javascript">
-       
-            codepage = new Codepage("images/CO_437_8x16.png", function() {
-            
-            setCanvasSize(document.getElementById("ansi"));
-            setANSICanvasSize();
-              
-            globalContext = document.getElementById("ansi").getContext("2d");
-            display = new Display();
-            doClearScreen(false);
-            
-            if (localStorage["ansicanvas"]) 
-            {
-                
-                if (confirm('Do you want to continue to work on your current drawing?')) {
-                var currentPosY=1;
-               
-                var screenCharacterArray=JSON.parse(localStorage["ansicanvas"]);
-               
-                while (currentPosY<getDisplayHeight()-1) 
-                                    {
-                                        var currentPosX=1;
-                                        while (currentPosX<getDisplayWidth()-1) 
-                                        {
-
-                                         if (typeof(screenCharacterArray[currentPosY][currentPosX-1])=="undefined") 
-                                         {
-                                             console.log("Error Y: "+currentPosY+" X: "+(currentPosX-1)+" is undefined");
-                                             break;
-                                        } else {
-                                                var asciiCode = screenCharacterArray[currentPosY][currentPosX-1][0];
-                                                var fgColor = screenCharacterArray[currentPosY][currentPosX-1][1];
-                                                var bgColor = screenCharacterArray[currentPosY][currentPosX-1][2];
-
-                                                codepage.drawChar(ctx, asciiCode, fgColor, bgColor, currentPosX, currentPosY);
-                                          }
-                                          currentPosX++;
-
-                                         }
-                                         currentPosY++;
-                                    }
-                  } else {
-                      interpreter = new Interpreter("test.ans", display);
-                  }
-            } else {
-                interpreter = new Interpreter("test.ans", display);
-            }
-            //resize_canvas();
-        });
-        
-   
-        </script>
     </div>
   <div id="popup" class="popup">
         <span id="part1">

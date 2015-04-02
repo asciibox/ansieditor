@@ -1,4 +1,5 @@
- 
+        var scrollbarY = true;
+        var scrollbarX = false;
         /** used in connection with mouse click **/
         var waitingforDoubleclick = false;
         /** timer used for mouseclick **/
@@ -15,6 +16,11 @@
         
         var visibleWidth = 160;
         var visibleHeight = 45;
+        var totalVisibleWidth = 320;
+        var totalVisibleHeight=90;
+        var firstLine=0;
+        scrollbarStartY = 0;
+        scrollbarStopY = 0;
         
         var resizeToScreen=false;
         /** This contains all characters. This is an array with three int values **/
@@ -143,6 +149,7 @@
             
         }
         
+         // Shows the cursor, which is ascii code 220 or 95, depending on whether or not insert is on. Does nothing with the character in the background.
          function redrawCursor() {
             
             cursorShown=false;
@@ -161,6 +168,12 @@
         }
         function getDisplayHeight() {
             return visibleHeight; // return parseInt(document.getElementById('displayheight').value);
+        }
+        function getTotalDisplayWidth() {
+            return totalVisibleWidth; // return parseInt(document.getElementById('displaywidth').value);
+        }
+        function getTotalDisplayHeight() {
+            return totalVisibleHeight; // return parseInt(document.getElementById('displayheight').value);
         }
         
         function setCursorPosX(x) {
@@ -182,9 +195,11 @@
         }
         
         function initansicanvas() {
+            
                 setTimeout(function() { toggleCursor(true); }, 1000);
              
                 ansicanvas = document.getElementById('ansi');
+                
                 ansicanvas.addEventListener('mousedown', function(e) {
                     
                       if ( (copyMode) ) {
@@ -211,6 +226,8 @@
                     bgcolor = screenCharacterArray[cursorPosY][cursorPosX][2];
                     console.log("asciiCode:"+asciiCode+" fgcolor:"+fgcolor+" bgcolor:"+bgcolor);
                     */
+                  
+                   
                     if (drawingMode) {
                        
                         codepage.drawChar(ctx, currentChar, currentForeground, currentBackground, cursorPosX, cursorPosY, false); // false == update coordinate system
@@ -266,9 +283,10 @@
             
             var mouse = getMousePos(ansicanvas, e);
                     var mx = mouse.x;
-                    var my = mouse.y;                    
+                    var my = mouse.y;                
                     
-                    showCharacter();
+                   
+                                        showCharacter();
 
 					if (resizeToScreen==false)
 					{					
@@ -285,13 +303,24 @@
 						myCursorPosY = Math.floor((my / window_innerHeight) * visibleHeight);
 
 					}
-						if (myCursorPosX>=getDisplayWidth()-1) { console.log(myCursorPosX+" too far"); setCursorPosX(getDisplayWidth()-1); redrawCursor(); return; }
+                                                var maxWidth = getDisplayWidth()-1;
+                                                if (scrollbarY) maxWidth--;
+                                                if (myCursorPosX<=maxWidth) {
+                                                    
+                                                
+						//if (myCursorPosX>=getDisplayWidth()-1) { console.log(myCursorPosX+" too far"); setCursorPosX(getDisplayWidth()-1); redrawCursor(); return; }
 						if (myCursorPosY>=getDisplayHeight()-1) { console.log(myCursorPosY+" too high"); setCursorPosY(getDisplayHeight()-1); redrawCursor(); return; }
 						
-						setCursorPosX(myCursorPosX);
-						setCursorPosY(myCursorPosY);
-						
+                                               
+                                                    setCursorPosX(myCursorPosX);
+                                                    setCursorPosY(myCursorPosY);
+                                                } else {
+                                                    // Calculate scrollbar
+                                                    
+                                                }
 						redrawCursor();
+                                                
+                   
             
         }
         
@@ -299,19 +328,19 @@
         function executeKey(keyCode) {
        showCharacter(false); 
         if (insert==false) {
-                                    var myascii = screenCharacterArray[cursorPosY][cursorPosX][0] ;
+                                    var myascii = screenCharacterArray[cursorPosY+firstLine][cursorPosX][0] ;
                                     undo.push({ action : "overwrite", x : cursorPosX, y : cursorPosY, fgColor : screenCharacterArray[cursorPosY][cursorPosX][1], bgColor : screenCharacterArray[cursorPosY][cursorPosX][2], asciiCode : myascii});
                                     
                                   
-                                    codepage.drawChar(ctx, keyCode, currentForeground, currentBackground, cursorPosX, cursorPosY);
+                                    codepage.drawChar(ctx, keyCode, currentForeground, currentBackground, cursorPosX, cursorPosY, false, cursorPosY+firstLine);
                                     if (cursorPosX<getDisplayWidth()-2) { setCursorPosX(cursorPosX+1); }
                                     redrawCursor();
                                 } else {
                                     
-                                    undo.push({ action : "removeCharacter", x : cursorPosX, y : cursorPosY, rightsideAsciiCode : screenCharacterArray[cursorPosY][getDisplayWidth()-1][0], rightsideFGColor : screenCharacterArray[cursorPosY][getDisplayWidth()-1][1], rightsideBGColor : screenCharacterArray[cursorPosY][getDisplayWidth()-1][2]});
+                                    undo.push({ action : "removeCharacter", x : cursorPosX, y : cursorPosY, rightsideAsciiCode : screenCharacterArray[cursorPosY+firstLine][getDisplayWidth()-1][0], rightsideFGColor : screenCharacterArray[cursorPosY+firstLine][getDisplayWidth()-1][1], rightsideBGColor : screenCharacterArray[cursorPosY+firstLine][getDisplayWidth()-1][2]});
                                    
                                     moveAndDrawCharacters(keyCode);
-                                    codepage.drawChar(ctx, keyCode, currentForeground, currentBackground, cursorPosX, cursorPosY);
+                                    codepage.drawChar(ctx, keyCode, currentForeground, currentBackground, cursorPosX, cursorPosY, false, cursorPosY+firstLine);
                                     if (cursorPosX<getDisplayWidth()-1) { setCursorPosX(cursorPosX+1); }
                                     redrawCursor();
                                 }
@@ -327,13 +356,13 @@
                                     while (currentPos>cursorPosX) 
                                     {
                                     
-                                      if (typeof(screenCharacterArray[cursorPosY][currentPos-1])=="undefined") 
+                                      if (typeof(screenCharacterArray[cursorPosY+firstLine][currentPos-1])=="undefined") 
                                       {
                                           console.log("Error Y: "+currentPos+" X: "+(currentPos-1)+" is undefined");
                                       }
-                                      var asciiCode = screenCharacterArray[cursorPosY][currentPos-1][0];
-                                      var fgColor = screenCharacterArray[cursorPosY][currentPos-1][1];
-                                      var bgColor = screenCharacterArray[cursorPosY][currentPos-1][2];
+                                      var asciiCode = screenCharacterArray[cursorPosY+firstLine][currentPos-1][0];
+                                      var fgColor = screenCharacterArray[cursorPosY+firstLine][currentPos-1][1];
+                                      var bgColor = screenCharacterArray[cursorPosY+firstLine][currentPos-1][2];
                                       
                                       codepage.drawChar(ctx, asciiCode, fgColor, bgColor, currentPos, cursorPosY);
                                       currentPos--;
@@ -366,13 +395,13 @@
         
 		/* This creates a new screenCharacterArray in which the colors and codes get stored, by default color white and space (32) **/
         function setANSICanvasSize() {
-            var displayWidth=getDisplayWidth()-1;
-            var displayHeight=getDisplayHeight()-1;
+            var totalDisplayWidth=getTotalDisplayWidth();
+            var totalDisplayHeight=getTotalDisplayHeight();
             
-            for (var y = 0; y <= displayHeight; y++) 
+            for (var y = 0; y <= totalDisplayHeight; y++) // TODO if really 
             {                    
                     var xArray = Array();
-                    for (var x = 0; x <= displayWidth; x++) 
+                    for (var x = 0; x <= totalDisplayWidth; x++)  // TODO if really
                     {
                      var data = Array();
                      data[0]=32; // ascii code
@@ -415,9 +444,9 @@
             
             if (typeof(overwrite)=="undefined") overwrite=true;
             
-            var asciiCode = screenCharacterArray[cursorPosY][cursorPosX][0];
-            var foreground = screenCharacterArray[cursorPosY][cursorPosX][1];
-            var background = screenCharacterArray[cursorPosY][cursorPosX][2];
+            var asciiCode = screenCharacterArray[cursorPosY+firstLine][cursorPosX][0];
+            var foreground = screenCharacterArray[cursorPosY+firstLine][cursorPosX][1];
+            var background = screenCharacterArray[cursorPosY+firstLine][cursorPosX][2];
        
             codepage.drawChar(globalContext, asciiCode, foreground, (copyMode == false) ? background : 15, cursorPosX, cursorPosY, false, overwrite);
             
@@ -462,14 +491,14 @@
                     copyArray[y]=Array();
                     for (var x = 0; x < copyEndX-copyStartX+1; x++) {
                         
-                        copyArray[y][x]=screenCharacterArray[y+copyStartY][x+copyStartX];
+                        copyArray[y][x]=screenCharacterArray[y+copyStartY+firstLine][x+copyStartX];
                     }
             }
         } else {
             copyArray[0]=Array();
             copyWidth=1;
             copyHeight=1;
-            copyArray[0][0]=screenCharacterArray[cursorPosY][cursorPosX];
+            copyArray[0][0]=screenCharacterArray[cursorPosY+firstLine][cursorPosX];
         }
         
     }
@@ -486,7 +515,7 @@
                         
                         var foreground = copyArray[y][x][1];
                         var background = copyArray[y][x][2];
-                        codepage.drawChar(globalContext, asciiCode, foreground, background, cursorPosX+x, cursorPosY+y, false, true);
+                        codepage.drawChar(globalContext, asciiCode, foreground, background, cursorPosX+x, cursorPosY+y+firstLine, false, true);
                     }
             }
             
@@ -532,7 +561,7 @@
 	                     	for (var x = 0; x < copyWidth; x++) {
 	                     		for (var y = 0; y < copyHeight; y++) 
 	                     		{
-	                     			codepage.drawChar(globalContext, 32, 15, 0, cursorPosX+x, cursorPosY+y, false, true);
+	                     			codepage.drawChar(globalContext, 32, 15, 0, cursorPosX+x, cursorPosY+y+firstLine, false, true);
 	                     		}
 	                     	}
 	                     }
@@ -670,7 +699,7 @@
                             break;
                         case 97 : // CTRL-A
                             if (ctrlKey) {
-                                var ascii = screenCharacterArray[cursorPosY][cursorPosX];
+                                var ascii = screenCharacterArray[cursorPosY+firstLine][cursorPosX];
                                 alert("Color / Foreground color / Background color: "+ascii);
                             } else {
                                 executeKey(97);
@@ -760,9 +789,13 @@
                             showCharacter();
                             setCursorPosX(0);
                             console.log("getDisplayHeight:"+getDisplayHeight());
-                            if (cursorPosY<getDisplayHeight()-1) {
+                            if (cursorPosY+firstLine<getDisplayHeight()-1) {
                                 console.log("Y:"+cursorPosY);
-                              setCursorPosY(cursorPosY+1);
+                                setCursorPosY(cursorPosY+1);
+                            }
+                            var maxHeight = getDisplayHeight()-1;
+                            if (cursorPosY<maxHeight) {
+                                    scrollDown();
                             }
                             redrawCursor();
                             break;
@@ -835,17 +868,17 @@
    
    function highlightCharacter(myCursorPosX, myCursorPosY) {
        
-       var asciiCode = screenCharacterArray[myCursorPosY][myCursorPosX][0];
-       var foreground = screenCharacterArray[myCursorPosY][myCursorPosX][1];
+       var asciiCode = screenCharacterArray[myCursorPosY+firstLine][myCursorPosX][0];
+       var foreground = screenCharacterArray[myCursorPosY+firstLine][myCursorPosX][1];
        codepage.drawChar(ctx, asciiCode, foreground, 15, myCursorPosX, myCursorPosY, false, false); // do not store
        
    }
    
     function showOriginalCharacter(myCursorPosX, myCursorPosY) {
        
-       var asciiCode = screenCharacterArray[myCursorPosY][myCursorPosX][0];
-       var foreground = screenCharacterArray[myCursorPosY][myCursorPosX][1];
-       var background = screenCharacterArray[myCursorPosY][myCursorPosX][2];
+       var asciiCode = screenCharacterArray[myCursorPosY+firstLine][myCursorPosX][0];
+       var foreground = screenCharacterArray[myCursorPosY+firstLine][myCursorPosX][1];
+       var background = screenCharacterArray[myCursorPosY+firstLine][myCursorPosX][2];
        codepage.drawChar(ctx, asciiCode, foreground, background, myCursorPosX, myCursorPosY, false, false); // do not store
        
    }
@@ -897,6 +930,53 @@
        
    }
    
+   function drawLine(fromRealY, toCursorY) {
+       console.log("fromRealY:"+fromRealY+" toCursorY:"+toCursorY);
+       for (var x = 0; x < screenCharacterArray[fromRealY].length; x++) {
+           var charArray = screenCharacterArray[fromRealY][x];
+           asciiCode=charArray[0];
+           foreground=charArray[1];
+           background=charArray[2];
+           codepage.drawChar(ctx, asciiCode, foreground, background, x, toCursorY, false, false); // do not store
+       }
+   }
+   
+   function updateScrollbarY() {
+       
+   }
+   
+   function scrollDown() {
+       
+                                                firstLine++;
+                                                var startX = 0;
+                                                var startY = canvasCharacterHeight;
+                                                var window_innerWidth = ((visibleWidth)*(canvasCharacterWidth));
+						var window_innerHeight = (visibleHeight*(canvasCharacterHeight));
+
+                                                var screenWidth = canvasCharacterHeight;
+                                                
+                                                var imgData=ctx.getImageData(startX,startY,window_innerWidth-canvasCharacterWidth,window_innerHeight-canvasCharacterHeight);
+                                                ctx.putImageData(imgData,0,0);
+                                                
+                                                drawLine(visibleHeight+firstLine-1,visibleHeight-1);
+                                                
+                                                updateScrollbarY();
+       
+   }
+   
+   function scrollUp() {
+       
+                                              firstLine--;
+                                              var startX = 0;
+                                              var startY = 0;
+                                              var window_innerWidth = ((visibleWidth)*(canvasCharacterWidth));
+                                              var window_innerHeight = (visibleHeight*(canvasCharacterHeight));
+                                              var imgData=ctx.getImageData(startX,startY,window_innerWidth-canvasCharacterWidth,window_innerHeight-canvasCharacterHeight);
+                                              ctx.putImageData(imgData,0,canvasCharacterHeight);  
+                                              drawLine(firstLine, 0);
+   }
+   
+   
    /** This gets called due when a different event gets called **/
    function handleKeyCode2(keyCode,e) {
              
@@ -921,9 +1001,13 @@
                     case 39 : // cursor right
                     console.log("39 copyMode:"+copyMode);
                          showCharacter(false);
+                         var maxWidth = getDisplayWidth()-1;
+                         if (scrollbarY) maxWidth--;
                          if (!e.shiftKey) { 
                                    if (!e.ctrlKey) {
-                                            if (cursorPosX<getDisplayWidth()-1) {
+                                            
+                                       
+                                            if (cursorPosX<maxWidth) {
                                                 console.log("INCREASED");
                                                 setCursorPosX(cursorPosX+1);
                                                 redrawCursor();
@@ -948,7 +1032,7 @@
                                             copyEndX=cursorPosX;
                                             copyEndY=cursorPosY;
                                           }
-                                          if (cursorPosX<getDisplayWidth()-1) {
+                                          if (cursorPosX<maxWidth) {
                                           
                                                 copyEndX++;
                                                 
@@ -1017,10 +1101,18 @@
                               if (!e.shiftKey) {
                                   if (!e.ctrlKey) {
                                         
-                                        if (cursorPosY<getDisplayHeight()-1) {
+                                        var maxHeight = getDisplayHeight()-1;
+                                        if (scrollbarX) maxHeight--;
+                                        
+                                        if (cursorPosY<maxHeight) {
                                         cursorPosY++;
                                         redrawCursor();
                                          }
+                                         else if (cursorPosY+firstLine<totalVisibleHeight) {
+                                                // Scroll
+                                               scrollDown();
+                                                
+                                            }
                                         } else {
                                             if (currentForeground>0) currentForeground--; else currentForeground=255;
                                             codepage.drawChar(ctx, 219, currentForeground, currentBackground, cursorPosX, cursorPosY, false, false); // do not store
@@ -1098,7 +1190,7 @@
                                                 highlightCharacter(cursorPosX, cursorPosY);
                                                 redrawCursor();
                                                 cursorInterval = setTimeout(function() { toggleCursor(); }, 500);
-                                            }
+                                            } 
                               }
                               return true;
                               break;
@@ -1197,12 +1289,16 @@
                                showCharacter(false);
                                if (!e.shiftKey) {
                                    if (!e.ctrlKey) {
-                                       
                                         if (cursorPosY>0) {
+                                               // If the cursor is not at the very top, moves the cursor one up
                                               cursorPosY--;
                                               redrawCursor();
+                                          } else if (firstLine>0) {
+                                              // Scrolls if the cursor is at the very top
+                                              scrollUp();
                                           }
                                       } else {
+                                          // Changes the foreground color
                                           if (currentForeground<255) currentForeground++; else currentForeground=0;
                                           codepage.drawChar(ctx, 219, currentForeground, currentBackground, cursorPosX, cursorPosY, false, false); // do not store
                                           codepage.overlay=new Array();
@@ -1391,7 +1487,7 @@
             setCanvasSize(canvas);
             doClearScreen(false);
            
-            for (var y = 0; y < screenCharacterArray.length-1; y++) {
+            for (var y = firstLine; y < screenCharacterArray.length-1; y++) {
            
                 for (var x = 0; x < screenCharacterArray[y].length-1; x++) {
                 
@@ -1410,8 +1506,8 @@
         
        function setCanvasSize(canvas) {
             
-            var window_innerWidth = $(window).width()-30;
-            var window_innerHeight = $(window).height()-30;
+            var window_innerWidth = $(window).width();
+            var window_innerHeight = $(window).height();
             var characterWidthPct= window_innerWidth/(visibleWidth*8); // How often does the character fit into the width
             var characterHeightPct = window_innerHeight/(visibleHeight*16);  // How often does the character fit into the height
             
@@ -1447,7 +1543,7 @@
         
        function myexport() {
        
-                cursorY=0;
+                cursorY=firstLine;
 
                 var html="";
 

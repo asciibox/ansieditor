@@ -79,6 +79,13 @@ function Codepage(codepageUrl, callback) {
        
 
         function drawChar(ctx, asciiCode, foreground, background, x, y, transparent, storeCharacter) {
+            
+           var realY = y;
+           if (typeof(storeCharacter)=="number") {
+               realY = storeCharacter;
+               storeCharacter=true;
+           }
+            
            var originalX=x;
            // This is just some information used when scrolling is implemented
             if (x>=xStart-1) {
@@ -92,13 +99,13 @@ function Codepage(codepageUrl, callback) {
                          charArray[1]=foreground;
                          charArray[2]=background;
                         
-                            if (typeof(screenCharacterArray[y])=="undefined") {
+                            if (typeof(screenCharacterArray[realY])=="undefined") {
                                 console.log("Error: Line "+y+" is undefined (out of range error)");
                             } else
-                            if (typeof(screenCharacterArray[y][x])=="undefined") {
+                            if (typeof(screenCharacterArray[realY][x])=="undefined") {
                                 console.log("Error: x value of ["+y+"]["+x+"] is undefined (out of range error)");
                             } else if ( (typeof(storeCharacter)=="undefined") || (storeCharacter==true) ) {
-                                screenCharacterArray[y][x]=charArray;
+                                screenCharacterArray[realY][x]=charArray;
                             } 
                         }
                          if (this.overlay!=null) {

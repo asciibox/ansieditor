@@ -19,6 +19,7 @@
         var totalVisibleWidth = 320;
         var totalVisibleHeight=90;
         var firstLine=0;
+        var leftLine=0;
         scrollbarStartY = 0;
         scrollbarStopY = 0;
         
@@ -332,7 +333,7 @@
                                     undo.push({ action : "overwrite", x : cursorPosX, y : cursorPosY, fgColor : screenCharacterArray[cursorPosY][cursorPosX][1], bgColor : screenCharacterArray[cursorPosY][cursorPosX][2], asciiCode : myascii});
                                     
                                   
-                                    codepage.drawChar(ctx, keyCode, currentForeground, currentBackground, cursorPosX, cursorPosY, false, cursorPosY+firstLine);
+                                    codepage.drawChar(ctx, keyCode, currentForeground, currentBackground, cursorPosX, cursorPosY, false, cursorPosY+leftLine, cursorPosX+leftLine);
                                     if (cursorPosX<getDisplayWidth()-2) { setCursorPosX(cursorPosX+1); }
                                     redrawCursor();
                                 } else {
@@ -340,8 +341,9 @@
                                     undo.push({ action : "removeCharacter", x : cursorPosX, y : cursorPosY, rightsideAsciiCode : screenCharacterArray[cursorPosY+firstLine][getDisplayWidth()-1][0], rightsideFGColor : screenCharacterArray[cursorPosY+firstLine][getDisplayWidth()-1][1], rightsideBGColor : screenCharacterArray[cursorPosY+firstLine][getDisplayWidth()-1][2]});
                                    
                                     moveAndDrawCharacters(keyCode);
-                                    codepage.drawChar(ctx, keyCode, currentForeground, currentBackground, cursorPosX, cursorPosY, false, cursorPosY+firstLine);
-                                    if (cursorPosX<getDisplayWidth()-1) { setCursorPosX(cursorPosX+1); }
+                                    codepage.drawChar(ctx, keyCode, currentForeground, currentBackground, cursorPosX, cursorPosY, false, cursorPosY+firstLine, cursorPosX+leftLine);
+                                    if (cursorPosX<getDisplayWidth()-2) { setCursorPosX(cursorPosX+1); } else
+                                        if ((cursorPosX+leftLine)<getTotalDisplayWidth()-2) { scrollRight(); }
                                     redrawCursor();
                                 }
                                 
@@ -352,23 +354,35 @@
    /** CTRL-C - buffer functionality - called when pressing CTRL-V **/
    function moveAndDrawCharacters(keyCode) {
        
-       var currentPos=getDisplayWidth()-1;
-                                    while (currentPos>cursorPosX) 
-                                    {
-                                    
-                                      if (typeof(screenCharacterArray[cursorPosY+firstLine][currentPos-1])=="undefined") 
-                                      {
-                                          console.log("Error Y: "+currentPos+" X: "+(currentPos-1)+" is undefined");
-                                      }
-                                      var asciiCode = screenCharacterArray[cursorPosY+firstLine][currentPos-1][0];
-                                      var fgColor = screenCharacterArray[cursorPosY+firstLine][currentPos-1][1];
-                                      var bgColor = screenCharacterArray[cursorPosY+firstLine][currentPos-1][2];
-                                      
-                                      codepage.drawChar(ctx, asciiCode, fgColor, bgColor, currentPos, cursorPosY);
-                                      currentPos--;
-                                      
-                                    }
-                                    
+            var realY = Number(firstLine)+Number(cursorPosY);
+            var currentPos=getDisplayWidth()-2;
+                                            while (currentPos>cursorPosX) 
+                                            {
+
+                                            if (typeof(screenCharacterArray[cursorPosY+firstLine][currentPos-1+leftLine])=="undefined") 
+                                            {
+                                                console.log("Error Y: "+currentPos+" X: "+(currentPos-1)+" is undefined");
+                                                return;
+                                            }
+                                            var realX = Number(leftLine)+Number(currentPos);
+                                            var prevX = realX-1;
+                                            var asciiCode = screenCharacterArray[realY][prevX][0];
+                                            var fgColor = screenCharacterArray[realY][prevX][1];
+                                            var bgColor = screenCharacterArray[realY][prevX][2];
+
+
+                                            codepage.drawChar(ctx, asciiCode, fgColor, bgColor, currentPos, cursorPosY, false, realY, realX);
+                                            currentPos--;
+
+                                            }
+       
+       var currentPos = getTotalDisplayWidth()-1; // No left line
+       
+       while (currentPos>=getDisplayWidth()+leftLine-1) {
+          
+           screenCharacterArray[realY][currentPos]=screenCharacterArray[realY][currentPos-1];
+           currentPos--;
+       }
                                    
        
    }
@@ -444,9 +458,9 @@
             
             if (typeof(overwrite)=="undefined") overwrite=true;
             
-            var asciiCode = screenCharacterArray[cursorPosY+firstLine][cursorPosX][0];
-            var foreground = screenCharacterArray[cursorPosY+firstLine][cursorPosX][1];
-            var background = screenCharacterArray[cursorPosY+firstLine][cursorPosX][2];
+            var asciiCode = screenCharacterArray[cursorPosY+firstLine][cursorPosX+leftLine][0];
+            var foreground = screenCharacterArray[cursorPosY+firstLine][cursorPosX+leftLine][1];
+            var background = screenCharacterArray[cursorPosY+firstLine][cursorPosX+leftLine][2];
        
             codepage.drawChar(globalContext, asciiCode, foreground, (copyMode == false) ? background : 15, cursorPosX, cursorPosY, false, overwrite);
             
@@ -868,17 +882,17 @@
    
    function highlightCharacter(myCursorPosX, myCursorPosY) {
        
-       var asciiCode = screenCharacterArray[myCursorPosY+firstLine][myCursorPosX][0];
-       var foreground = screenCharacterArray[myCursorPosY+firstLine][myCursorPosX][1];
+       var asciiCode = screenCharacterArray[myCursorPosY+firstLine][myCursorPosX+leftLine][0];
+       var foreground = screenCharacterArray[myCursorPosY+firstLine][myCursorPosX+leftLine][1];
        codepage.drawChar(ctx, asciiCode, foreground, 15, myCursorPosX, myCursorPosY, false, false); // do not store
        
    }
    
     function showOriginalCharacter(myCursorPosX, myCursorPosY) {
        
-       var asciiCode = screenCharacterArray[myCursorPosY+firstLine][myCursorPosX][0];
-       var foreground = screenCharacterArray[myCursorPosY+firstLine][myCursorPosX][1];
-       var background = screenCharacterArray[myCursorPosY+firstLine][myCursorPosX][2];
+       var asciiCode = screenCharacterArray[myCursorPosY+firstLine][myCursorPosX+leftLine][0];
+       var foreground = screenCharacterArray[myCursorPosY+firstLine][myCursorPosX+leftLine][1];
+       var background = screenCharacterArray[myCursorPosY+firstLine][myCursorPosX+leftLine][2];
        codepage.drawChar(ctx, asciiCode, foreground, background, myCursorPosX, myCursorPosY, false, false); // do not store
        
    }
@@ -941,6 +955,17 @@
        }
    }
    
+   function drawVerticalLine(fromRealX, toCursorX) {
+       console.log("fromRealX:"+fromRealX+" toCursorX:"+toCursorX);
+       for (var y = 0; y < screenCharacterArray.length; y++) {
+           var charArray = screenCharacterArray[y][fromRealX];
+           asciiCode=charArray[0];
+           foreground=charArray[1];
+           background=charArray[2];
+           codepage.drawChar(ctx, asciiCode, foreground, background, toCursorX, y, false, false); // do not store
+       }
+   }
+   
    function updateScrollbarY() {
        
    }
@@ -976,6 +1001,36 @@
                                               drawLine(firstLine, 0);
    }
    
+   function scrollRight() {
+       
+                                             leftLine++;
+                                             var startX = canvasCharacterWidth;
+                                             
+                                             var window_innerWidth = ((visibleWidth)*(canvasCharacterWidth));
+                                             var window_innerHeight = (visibleHeight*(canvasCharacterHeight));
+                                             console.log("startX:"+startX+" window_innerWidth:"+window_innerWidth);
+                                             var imgData=ctx.getImageData(startX,0,window_innerWidth-startX-startX-1,window_innerHeight);
+                                             ctx.putImageData(imgData,0,0);  
+                                             drawVerticalLine(visibleWidth+leftLine,visibleWidth-2);
+       
+   }
+   
+   function scrollLeft() {
+       
+                                             leftLine--;
+                                             var startX = 0;
+                                             
+                                             var window_innerWidth = ((visibleWidth)*(canvasCharacterWidth));
+                                             var window_innerHeight = (visibleHeight*(canvasCharacterHeight));
+                                             console.log("startX:"+startX+" window_innerWidth:"+window_innerWidth);
+                                             var imgData=ctx.getImageData(0,0,window_innerWidth-canvasCharacterWidth-canvasCharacterWidth,window_innerHeight);
+                                             ctx.putImageData(imgData,canvasCharacterWidth,0);  
+                                             drawVerticalLine(leftLine,0);
+       
+   }
+   
+   
+   
    
    /** This gets called due when a different event gets called **/
    function handleKeyCode2(keyCode,e) {
@@ -1008,9 +1063,13 @@
                                             
                                        
                                             if (cursorPosX<maxWidth) {
+                                                
                                                 console.log("INCREASED");
                                                 setCursorPosX(cursorPosX+1);
                                                 redrawCursor();
+                                            } else if (cursorPosX+leftLine<getTotalDisplayWidth()-2) {
+                                                console.log("SCROLLRIGHT");
+                                                scrollRight();
                                             }
                                       } else {
                                       
@@ -1033,7 +1092,7 @@
                                             copyEndY=cursorPosY;
                                           }
                                           if (cursorPosX<maxWidth) {
-                                          
+                                          console.log("cursorPOSX:"+cursorPosX+" maxWidth:"+maxWidth);
                                                 copyEndX++;
                                                 
                                                 if (cursorPosX<copyStartX) { // The cursor is to the left of the copyStartX ([][][][][][]copyStartX)
@@ -1090,7 +1149,7 @@
                                                 setCursorPosX(cursorPosX+1);
                                                 redrawCursor();
                                                 
-                                            }
+                                            } 
                                           
                                           
                                   }
@@ -1202,6 +1261,8 @@
                                         if (cursorPosX>0) {
                                         setCursorPosX(cursorPosX-1);
                                         redrawCursor();
+                                        } else if (cursorPosX+leftLine>0) {
+                                            scrollLeft();
                                         }
                                       } else {
                                           if (currentBackground<255) currentBackground++; else currentBackground=0;

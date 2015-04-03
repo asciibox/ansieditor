@@ -967,7 +967,7 @@
        }
    };
    
-   function updateScrollbarY() {
+   function updateScrollbarY(drawTopBlackside) {
        
        var scrollPosX = (visibleWidth-1  ) * parseInt(canvasCharacterWidth)-4;
        var window_innerHeight = (visibleHeight*(canvasCharacterHeight));
@@ -981,6 +981,17 @@
        scrollbarStopY = scrollBarHeight;
                 
        var context = document.getElementById("ansi").getContext("2d");
+       
+       if (drawTopBlackside) {
+            context.beginPath();
+            context.rect(scrollPosX+1, 0, 2*canvasCharacterWidth, scrollPosY);
+            context.fillStyle = 'black';
+            context.fill();
+            context.lineWidth = 7;
+            context.strokeStyle = 'black';
+            context.stroke();
+       }
+       
        context.beginPath();
        context.rect(scrollPosX+1, scrollPosY, 2*canvasCharacterWidth, scrollBarHeight);
        context.fillStyle = 'yellow';
@@ -988,6 +999,16 @@
        context.lineWidth = 7;
        context.strokeStyle = 'black';
        context.stroke();
+       
+        if (!drawTopBlackside) {
+            context.beginPath();
+            context.rect(scrollPosX+1, scrollPosY+scrollBarHeight, 2*canvasCharacterWidth, window_innerHeight-(scrollPosY+scrollBarHeight));
+            context.fillStyle = 'black';
+            context.fill();
+            context.lineWidth = 7;
+            context.strokeStyle = 'black';
+            context.stroke();
+       }
        
    }
    
@@ -1050,7 +1071,7 @@
                                                 
                                                 drawLine(visibleHeight-scrollBarYShown+firstLine-1,(visibleHeight-scrollBarYShown)-1);
                                                 
-                                                updateScrollbarY();
+                                                updateScrollbarY(true);
        
    }
    
@@ -1064,7 +1085,7 @@
                                               var imgData=ctx.getImageData(startX,startY,window_innerWidth-canvasCharacterWidth,window_innerHeight-canvasCharacterHeight);
                                               ctx.putImageData(imgData,0,canvasCharacterHeight);  
                                               drawLine(firstLine, 0);
-                                              updateScrollbarY();
+                                              updateScrollbarY(false);
    }
    
    function scrollRight() {
@@ -1635,6 +1656,8 @@
                      
                 }
             }
+            updateScrollbarX();
+            updateScrollbarY();
         }
         
        function setCanvasSize(canvas) {

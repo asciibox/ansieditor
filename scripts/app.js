@@ -1,5 +1,4 @@
-        var scrollbarY = true;
-        var scrollbarX = false;
+       
         /** used in connection with mouse click **/
         var waitingforDoubleclick = false;
         /** timer used for mouseclick **/
@@ -13,6 +12,10 @@
         /** This is the general width and height, used globally to show the right coordinate system inside the canvas **/
         var width=320;
         var height=90;
+        
+        // Check/uncheck if the scrollbar is being shown
+        var scrollBarXShown = 1;
+        var scrollBarYShown = 1;
         
         var visibleWidth = 160;
         var visibleHeight = 45;
@@ -305,12 +308,12 @@
 
 					}
                                                 var maxWidth = getDisplayWidth()-1;
-                                                if (scrollbarY) maxWidth--;
-                                                if (myCursorPosX<=maxWidth) {
+                                                
+                                                if (myCursorPosX<=maxWidth-scrollBarXShown) {
                                                     
                                                 
 						//if (myCursorPosX>=getDisplayWidth()-1) { console.log(myCursorPosX+" too far"); setCursorPosX(getDisplayWidth()-1); redrawCursor(); return; }
-						if (myCursorPosY>=getDisplayHeight()-1) { console.log(myCursorPosY+" too high"); setCursorPosY(getDisplayHeight()-1); redrawCursor(); return; }
+						if (myCursorPosY>=getDisplayHeight()-1-scrollBarYShown) { console.log(myCursorPosY+" too high"); setCursorPosX(myCursorPosX); setCursorPosY(getDisplayHeight()-1-scrollBarYShown); redrawCursor(); return; }
 						
                                                
                                                     setCursorPosX(myCursorPosX);
@@ -945,7 +948,6 @@
    }
    
    function drawLine(fromRealY, toCursorY) {
-       console.log("fromRealY:"+fromRealY+" toCursorY:"+toCursorY);
        for (var x = 0; x < screenCharacterArray[fromRealY].length; x++) {
            var charArray = screenCharacterArray[fromRealY][x];
            asciiCode=charArray[0];
@@ -956,7 +958,6 @@
    }
    
    function drawVerticalLine(fromRealX, toCursorX) {
-       console.log("fromRealX:"+fromRealX+" toCursorX:"+toCursorX);
        for (var y = 0; y < screenCharacterArray.length; y++) {
            var charArray = screenCharacterArray[y][fromRealX];
            asciiCode=charArray[0];
@@ -964,9 +965,73 @@
            background=charArray[2];
            codepage.drawChar(ctx, asciiCode, foreground, background, toCursorX, y, false, false); // do not store
        }
-   }
+   };
    
    function updateScrollbarY() {
+       
+       var scrollPosX = (visibleWidth-1  ) * parseInt(canvasCharacterWidth)-4;
+       var window_innerHeight = (visibleHeight*(canvasCharacterHeight));
+       var scrollBarHeight = (visibleHeight/totalVisibleHeight)*window_innerHeight;
+       console.log("scrollBarHeight:"+scrollBarHeight);
+       
+       var scrollPosY = (firstLine / totalVisibleHeight)*window_innerHeight;
+       console.log("scrollPosY:"+scrollPosY);
+       
+       scrollbarStartY = 0;
+       scrollbarStopY = scrollBarHeight;
+                
+       var context = document.getElementById("ansi").getContext("2d");
+       context.beginPath();
+       context.rect(scrollPosX+1, scrollPosY, 2*canvasCharacterWidth, scrollBarHeight);
+       context.fillStyle = 'yellow';
+       context.fill();
+       context.lineWidth = 7;
+       context.strokeStyle = 'black';
+       context.stroke();
+       
+   }
+   
+   function updateScrollbarX(drawLeftBlackside) {
+       
+       var window_innerWidth = ((visibleWidth)*(canvasCharacterWidth));
+       var scrollPosX = (leftLine / totalVisibleWidth)*window_innerWidth;
+       var scrollBarWidth = (visibleWidth/totalVisibleWidth)*window_innerWidth;
+       
+       var scrollPosY = (visibleHeight-1  ) * parseInt(canvasCharacterHeight)-4;;
+       
+       var context = document.getElementById("ansi").getContext("2d");
+       
+       if (drawLeftBlackside) {
+       // Black part to the left
+       context.beginPath();
+       context.rect(0, scrollPosY, scrollPosX, canvasCharacterHeight*2);
+       context.fillStyle = 'black';
+       context.fill();
+       context.lineWidth = 7;
+       context.strokeStyle = 'black';
+       context.stroke();
+       }
+       
+       // Yellow part
+       context.beginPath();
+       context.rect(scrollPosX+1, scrollPosY, scrollBarWidth, canvasCharacterHeight*2);
+       context.fillStyle = 'yellow';
+       context.fill();
+       context.lineWidth = 7;
+       context.strokeStyle = 'black';
+       context.stroke();
+       
+       if (!drawLeftBlackside) {
+       // Black part to the right
+       context.beginPath();
+       context.rect(scrollPosX+scrollBarWidth, scrollPosY, window_innerWidth-scrollPosX, canvasCharacterHeight*2);
+       context.fillStyle = 'black';
+       context.fill();
+       context.lineWidth = 7;
+       context.strokeStyle = 'black';
+       context.stroke();
+       }
+       
        
    }
    
@@ -976,14 +1041,14 @@
                                                 var startX = 0;
                                                 var startY = canvasCharacterHeight;
                                                 var window_innerWidth = ((visibleWidth)*(canvasCharacterWidth));
-						var window_innerHeight = (visibleHeight*(canvasCharacterHeight));
+						var window_innerHeight = ((visibleHeight-scrollBarYShown)*(canvasCharacterHeight));
 
                                                 var screenWidth = canvasCharacterHeight;
                                                 
-                                                var imgData=ctx.getImageData(startX,startY,window_innerWidth-canvasCharacterWidth,window_innerHeight-canvasCharacterHeight);
+                                                var imgData=ctx.getImageData(startX,startY,window_innerWidth-canvasCharacterWidth,window_innerHeight-canvasCharacterHeight-1);
                                                 ctx.putImageData(imgData,0,0);
                                                 
-                                                drawLine(visibleHeight+firstLine-1,visibleHeight-1);
+                                                drawLine(visibleHeight-scrollBarYShown+firstLine-1,(visibleHeight-scrollBarYShown)-1);
                                                 
                                                 updateScrollbarY();
        
@@ -995,10 +1060,11 @@
                                               var startX = 0;
                                               var startY = 0;
                                               var window_innerWidth = ((visibleWidth)*(canvasCharacterWidth));
-                                              var window_innerHeight = (visibleHeight*(canvasCharacterHeight));
+                                              var window_innerHeight = (visibleHeight-scrollBarYShown)*(canvasCharacterHeight);
                                               var imgData=ctx.getImageData(startX,startY,window_innerWidth-canvasCharacterWidth,window_innerHeight-canvasCharacterHeight);
                                               ctx.putImageData(imgData,0,canvasCharacterHeight);  
                                               drawLine(firstLine, 0);
+                                              updateScrollbarY();
    }
    
    function scrollRight() {
@@ -1009,9 +1075,14 @@
                                              var window_innerWidth = ((visibleWidth)*(canvasCharacterWidth));
                                              var window_innerHeight = (visibleHeight*(canvasCharacterHeight));
                                              console.log("startX:"+startX+" window_innerWidth:"+window_innerWidth);
-                                             var imgData=ctx.getImageData(startX,0,window_innerWidth-startX-startX-1,window_innerHeight);
+                                             var imgData=ctx.getImageData(startX,0,window_innerWidth-startX-startX,window_innerHeight);
                                              ctx.putImageData(imgData,0,0);  
-                                             drawVerticalLine(visibleWidth+leftLine,visibleWidth-2);
+                                             
+                                             console.log("visibleWidth+leftLine:"+(visibleWidth+leftLine));
+                                             console.log("visibleWidth:"+visibleWidth);
+                                             drawVerticalLine(visibleWidth+leftLine-2,visibleWidth-2);
+                                             
+                                             updateScrollbarX(true);
        
    }
    
@@ -1026,6 +1097,8 @@
                                              var imgData=ctx.getImageData(0,0,window_innerWidth-canvasCharacterWidth-canvasCharacterWidth,window_innerHeight);
                                              ctx.putImageData(imgData,canvasCharacterWidth,0);  
                                              drawVerticalLine(leftLine,0);
+                                             
+                                             updateScrollbarX(false);
        
    }
    
@@ -1056,13 +1129,13 @@
                     case 39 : // cursor right
                     console.log("39 copyMode:"+copyMode);
                          showCharacter(false);
-                         var maxWidth = getDisplayWidth()-1;
-                         if (scrollbarY) maxWidth--;
+                         var maxWidth = getDisplayWidth()-scrollBarXShown; // When the scroll is being shown, the size of the canvas is 1 character smaller
+                         
                          if (!e.shiftKey) { 
                                    if (!e.ctrlKey) {
                                             
                                        
-                                            if (cursorPosX<maxWidth) {
+                                            if (cursorPosX<maxWidth-scrollBarXShown) {
                                                 
                                                 console.log("INCREASED");
                                                 setCursorPosX(cursorPosX+1);
@@ -1160,8 +1233,7 @@
                               if (!e.shiftKey) {
                                   if (!e.ctrlKey) {
                                         
-                                        var maxHeight = getDisplayHeight()-1;
-                                        if (scrollbarX) maxHeight--;
+                                        var maxHeight = getDisplayHeight()-1-scrollBarYShown;
                                         
                                         if (cursorPosY<maxHeight) {
                                         cursorPosY++;

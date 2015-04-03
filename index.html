@@ -98,24 +98,10 @@ window.onbeforeunload=goodbye;
             display = new Display();
             doClearScreen(false);
             
-             var context = document.getElementById("ansi").getContext("2d");
                 
                 
-                
-                var scrollPosX = (visibleWidth-1  ) * parseInt(canvasCharacterWidth)-4;
-                var scrollPosY = 0;
-                var window_innerHeight = (visibleHeight*(canvasCharacterHeight));
-                var scrollBarHeight = (visibleHeight/totalVisibleHeight)*window_innerHeight;
-                scrollbarStartY = 0;
-                scrollbarStopY = scrollBarHeight;
-                
-                context.beginPath();
-                context.rect(scrollPosX, scrollPosY, 2*canvasCharacterWidth, scrollBarHeight);
-                context.fillStyle = 'yellow';
-                context.fill();
-                context.lineWidth = 7;
-                context.strokeStyle = 'black';
-                context.stroke();
+                updateScrollbarX();
+                updateScrollbarY();
            
             if (localStorage["ansicanvas"]) 
             {

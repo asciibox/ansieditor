@@ -1,4 +1,6 @@
        
+       doRedraw=false;
+        var currentDraw=0;
         /** used in connection with mouse click **/
         var waitingforDoubleclick = false;
         /** timer used for mouseclick **/
@@ -13,6 +15,11 @@
         var width=320;
         var height=90;
         
+        var movingX = false;
+        var movingY = false;
+        var movingXStartPos = 0;
+        var movingYStartPos = 0;
+        
         // Check/uncheck if the scrollbar is being shown
         var scrollBarXShown = 1;
         var scrollBarYShown = 1;
@@ -23,8 +30,6 @@
         var totalVisibleHeight=90;
         var firstLine=0;
         var leftLine=0;
-        scrollbarStartY = 0;
-        scrollbarStopY = 0;
         
         var resizeToScreen=false;
         /** This contains all characters. This is an array with three int values **/
@@ -142,6 +147,37 @@
                 keys[15] = [ 147, 148, 149, 224, 167, 150, 129, 151, 163, 154 ];
       /** Ansi interpreter, display and charactersatonce **/
       var interpreter, display, charactersatonce;
+         
+        function doRedraw(visibleXStart, visibleYStart, mustBe) {
+           
+             for (var x = 0; ( (x < visibleWidth-1) && (currentDraw==mustBe)); x++)
+             {
+                for (var y = 0; ( (y < visibleHeight) && (currentDraw==mustBe) ); y++) 
+                {
+                    codepage.copyChar(ctx, x+visibleXStart, y+visibleYStart, x, y); // do not store
+                }
+            }
+        }
+        
+        function redrawScreen() {
+            
+             
+            
+             var window_innerWidth = (visibleWidth*(canvasCharacterWidth));
+             var window_innerHeight = (visibleHeight*(canvasCharacterHeight));
+            
+             visibleXStart = Math.floor((scrollPosX/window_innerWidth)*width);
+             visibleXStop = visibleXStart + visibleWidth;
+             
+             visibleYStart = Math.floor((scrollPosY/window_innerHeight)*height);
+             var visibleYStop = visibleYStart + visibleHeight;
+             animOffsetX=visibleXStart;
+             animOffsetY=visibleYStart;
+             
+             doRedraw=true;
+             
+             
+        }
           
         function showMenu() {
             
@@ -206,6 +242,31 @@
                 
                 ansicanvas.addEventListener('mousedown', function(e) {
                     
+                        var window_innerWidth = (visibleWidth*(canvasCharacterWidth));
+                        var window_innerHeight = (visibleHeight*(canvasCharacterHeight));
+
+                        var mouse = getMousePos(ansicanvas, e);
+                        var my = mouse.y;                
+                        var mx = mouse.x;
+
+                        var scrollbarY = window_innerHeight-canvasCharacterHeight;
+
+                        if (my>(scrollbarY)) {
+                            movingXStartPos = mx;
+                            console.log("Setting movingX to true");
+                            movingX=true;
+                            movingY=false;
+                        }
+
+                        var scrollbarX = window_innerWidth-canvasCharacterWidth;
+
+                        if (mx>scrollbarX) {
+                            movingYStartPos = my;
+                            console.log("Setting movingY to true");
+                            movingY=true;
+                            movingX=false;
+                        }
+                    
                       if ( (copyMode) ) {
                         resetHighlighted();
                         copyMode=false;
@@ -260,13 +321,41 @@
                 });
                 
                 ansicanvas.addEventListener('mouseup', function(e) {
-                   mouseDown=false; 
+                   mouseDown=false;
+                   firstLine=animOffsetY;
+                   console.log("FIRSTLINE:"+firstLine);
+                   leftLine=animOffsetX;
+                   console.log("LEFTLINE:"+leftLine);
+                   movingX=false;
+                   movingY=false;
                 });
                 
                 ansicanvas.addEventListener('mousemove', function(e) {
                    
+                   
+                   console.log("MOUSEMOVE movingy: "+movingY+" movingX:"+movingY);
+                   if (movingY==true) 
+                   {
+                       var mouse = getMousePos(ansicanvas, e);
+                       var mx = mouse.x;
+                       var my = mouse.y;         
+                       console.log("my:"+my+" movingYStartPos:"+movingYStartPos+" OFFSET:"+(my-movingYStartPos));
+                       updateScrollbarY(2, my-movingYStartPos);
+                       redrawScreen();
+                   
+                   } else
+                   if (movingX==true) 
+                   {
+                       var mouse = getMousePos(ansicanvas, e);
+                       var mx = mouse.x;
+                       var my = mouse.y;         
+                       console.log("mx:"+mx+" movingXStartPos:"+movingXStartPos+" OFFSET:"+(mx-movingXStartPos));
+                       updateScrollbarX(2, mx-movingXStartPos);
+                       redrawScreen();
+                   
+                   } else
+                   
                    if (mouseDown==true) {
-                    
                     
                    mouseMove(ansicanvas,e);
                     
@@ -285,10 +374,18 @@
         
         function mouseMove(ansicanvas, e) {
             
+            
             var mouse = getMousePos(ansicanvas, e);
                     var mx = mouse.x;
                     var my = mouse.y;                
-                    
+            
+            if (movingY==true) {
+                
+            } else if (movingX==true) {
+                
+            }
+            
+            
                    
                                         showCharacter();
 
@@ -481,62 +578,6 @@
         
     }
     
-    /** This gets called when pressing CTRL-C **/
-    function copySelectedContent() {
-        
-        copyArray=Array();
-        if (copyMode) {
-            
-            if (copyEndY<copyStartY) {
-                var buffer = copyStartY;
-                copyStartY=copyEndY;
-                copyEndY=buffer;
-            } 
-            if (copyEndX < copyStartX) {
-                var buffer = copyStartX;
-                copyStartX = copyEndX;
-                copyEndX = buffer;
-            }
-            
-            copyWidth=copyEndX-copyStartX+1;
-            copyHeight=copyEndY-copyStartY+1;
-            copyStartXBuffer=copyStartX;
-            copyStartYBuffer=copyStartY;
-            for (var y = 0; y < copyEndY-copyStartY+1; y++) 
-            {
-                    
-                    copyArray[y]=Array();
-                    for (var x = 0; x < copyEndX-copyStartX+1; x++) {
-                        
-                        copyArray[y][x]=screenCharacterArray[y+copyStartY+firstLine][x+copyStartX];
-                    }
-            }
-        } else {
-            copyArray[0]=Array();
-            copyWidth=1;
-            copyHeight=1;
-            copyArray[0][0]=screenCharacterArray[cursorPosY+firstLine][cursorPosX];
-        }
-        
-    }
-    
-	/** This gets called when pressing CTRL-V **/
-    function pasteSelectedContent() {
-        
-      
-        for (var y = 0; y < copyHeight; y++) 
-            {
-                    for (var x = 0; x < copyWidth; x++) {
-                       
-                        var asciiCode = copyArray[y][x][0];
-                        
-                        var foreground = copyArray[y][x][1];
-                        var background = copyArray[y][x][2];
-                        codepage.drawChar(globalContext, asciiCode, foreground, background, cursorPosX+x, cursorPosY+y+firstLine, false, true);
-                    }
-            }
-            
-    }
     
     
     /** This converts to keycodes to real characters. Language dependency included. Calls executeKey to show the keys in effect **/
@@ -946,183 +987,6 @@
       }
        
    }
-   
-   function drawLine(fromRealY, toCursorY) {
-       for (var x = 0; x < screenCharacterArray[fromRealY].length; x++) {
-           var charArray = screenCharacterArray[fromRealY][x];
-           asciiCode=charArray[0];
-           foreground=charArray[1];
-           background=charArray[2];
-           codepage.drawChar(ctx, asciiCode, foreground, background, x, toCursorY, false, false); // do not store
-       }
-   }
-   
-   function drawVerticalLine(fromRealX, toCursorX) {
-       for (var y = 0; y < screenCharacterArray.length; y++) {
-           var charArray = screenCharacterArray[y][fromRealX];
-           asciiCode=charArray[0];
-           foreground=charArray[1];
-           background=charArray[2];
-           codepage.drawChar(ctx, asciiCode, foreground, background, toCursorX, y, false, false); // do not store
-       }
-   };
-   
-   function updateScrollbarY(drawTopBlackside) {
-       
-       var scrollPosX = (visibleWidth-1  ) * parseInt(canvasCharacterWidth)-4;
-       var window_innerHeight = (visibleHeight*(canvasCharacterHeight));
-       var scrollBarHeight = (visibleHeight/totalVisibleHeight)*window_innerHeight;
-       console.log("scrollBarHeight:"+scrollBarHeight);
-       
-       var scrollPosY = (firstLine / totalVisibleHeight)*window_innerHeight;
-       console.log("scrollPosY:"+scrollPosY);
-       
-       scrollbarStartY = 0;
-       scrollbarStopY = scrollBarHeight;
-                
-       var context = document.getElementById("ansi").getContext("2d");
-       
-       if (drawTopBlackside) {
-            context.beginPath();
-            context.rect(scrollPosX+1, 0, 2*canvasCharacterWidth, scrollPosY);
-            context.fillStyle = 'black';
-            context.fill();
-            context.lineWidth = 7;
-            context.strokeStyle = 'black';
-            context.stroke();
-       }
-       
-       context.beginPath();
-       context.rect(scrollPosX+1, scrollPosY, 2*canvasCharacterWidth, scrollBarHeight);
-       context.fillStyle = 'yellow';
-       context.fill();
-       context.lineWidth = 7;
-       context.strokeStyle = 'black';
-       context.stroke();
-       
-        if (!drawTopBlackside) {
-            context.beginPath();
-            context.rect(scrollPosX+1, scrollPosY+scrollBarHeight, 2*canvasCharacterWidth, window_innerHeight-(scrollPosY+scrollBarHeight));
-            context.fillStyle = 'black';
-            context.fill();
-            context.lineWidth = 7;
-            context.strokeStyle = 'black';
-            context.stroke();
-       }
-       
-   }
-   
-   function updateScrollbarX(drawLeftBlackside) {
-       
-       var window_innerWidth = ((visibleWidth)*(canvasCharacterWidth));
-       var scrollPosX = (leftLine / totalVisibleWidth)*window_innerWidth;
-       var scrollBarWidth = (visibleWidth/totalVisibleWidth)*window_innerWidth;
-       
-       var scrollPosY = (visibleHeight-1  ) * parseInt(canvasCharacterHeight)-4;;
-       
-       var context = document.getElementById("ansi").getContext("2d");
-       
-       if (drawLeftBlackside) {
-       // Black part to the left
-       context.beginPath();
-       context.rect(0, scrollPosY, scrollPosX, canvasCharacterHeight*2);
-       context.fillStyle = 'black';
-       context.fill();
-       context.lineWidth = 7;
-       context.strokeStyle = 'black';
-       context.stroke();
-       }
-       
-       // Yellow part
-       context.beginPath();
-       context.rect(scrollPosX+1, scrollPosY, scrollBarWidth, canvasCharacterHeight*2);
-       context.fillStyle = 'yellow';
-       context.fill();
-       context.lineWidth = 7;
-       context.strokeStyle = 'black';
-       context.stroke();
-       
-       if (!drawLeftBlackside) {
-       // Black part to the right
-       context.beginPath();
-       context.rect(scrollPosX+scrollBarWidth, scrollPosY, window_innerWidth-scrollPosX, canvasCharacterHeight*2);
-       context.fillStyle = 'black';
-       context.fill();
-       context.lineWidth = 7;
-       context.strokeStyle = 'black';
-       context.stroke();
-       }
-       
-       
-   }
-   
-   function scrollDown() {
-       
-                                                firstLine++;
-                                                var startX = 0;
-                                                var startY = canvasCharacterHeight;
-                                                var window_innerWidth = ((visibleWidth)*(canvasCharacterWidth));
-						var window_innerHeight = ((visibleHeight-scrollBarYShown)*(canvasCharacterHeight));
-
-                                                var screenWidth = canvasCharacterHeight;
-                                                
-                                                var imgData=ctx.getImageData(startX,startY,window_innerWidth-canvasCharacterWidth,window_innerHeight-canvasCharacterHeight-1);
-                                                ctx.putImageData(imgData,0,0);
-                                                
-                                                drawLine(visibleHeight-scrollBarYShown+firstLine-1,(visibleHeight-scrollBarYShown)-1);
-                                                
-                                                updateScrollbarY(true);
-       
-   }
-   
-   function scrollUp() {
-       
-                                              firstLine--;
-                                              var startX = 0;
-                                              var startY = 0;
-                                              var window_innerWidth = ((visibleWidth)*(canvasCharacterWidth));
-                                              var window_innerHeight = (visibleHeight-scrollBarYShown)*(canvasCharacterHeight);
-                                              var imgData=ctx.getImageData(startX,startY,window_innerWidth-canvasCharacterWidth,window_innerHeight-canvasCharacterHeight);
-                                              ctx.putImageData(imgData,0,canvasCharacterHeight);  
-                                              drawLine(firstLine, 0);
-                                              updateScrollbarY(false);
-   }
-   
-   function scrollRight() {
-       
-                                             leftLine++;
-                                             var startX = canvasCharacterWidth;
-                                             
-                                             var window_innerWidth = ((visibleWidth)*(canvasCharacterWidth));
-                                             var window_innerHeight = (visibleHeight*(canvasCharacterHeight));
-                                             console.log("startX:"+startX+" window_innerWidth:"+window_innerWidth);
-                                             var imgData=ctx.getImageData(startX,0,window_innerWidth-startX-startX,window_innerHeight);
-                                             ctx.putImageData(imgData,0,0);  
-                                             
-                                             console.log("visibleWidth+leftLine:"+(visibleWidth+leftLine));
-                                             console.log("visibleWidth:"+visibleWidth);
-                                             drawVerticalLine(visibleWidth+leftLine-2,visibleWidth-2);
-                                             
-                                             updateScrollbarX(true);
-       
-   }
-   
-   function scrollLeft() {
-       
-                                             leftLine--;
-                                             var startX = 0;
-                                             
-                                             var window_innerWidth = ((visibleWidth)*(canvasCharacterWidth));
-                                             var window_innerHeight = (visibleHeight*(canvasCharacterHeight));
-                                             console.log("startX:"+startX+" window_innerWidth:"+window_innerWidth);
-                                             var imgData=ctx.getImageData(0,0,window_innerWidth-canvasCharacterWidth-canvasCharacterWidth,window_innerHeight);
-                                             ctx.putImageData(imgData,canvasCharacterWidth,0);  
-                                             drawVerticalLine(leftLine,0);
-                                             
-                                             updateScrollbarX(false);
-       
-   }
-   
    
    
    
@@ -1656,8 +1520,8 @@
                      
                 }
             }
-            updateScrollbarX();
-            updateScrollbarY();
+            updateScrollbarX(2);
+            updateScrollbarY(2);
         }
         
        function setCanvasSize(canvas) {

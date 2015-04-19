@@ -91,8 +91,6 @@ function Codepage(codepageUrl, callback) {
                storeCharacter=true;
            }
            
-            
-           var originalX=x;
            // This is just some information used when scrolling is implemented
             if (x>=xStart-1) {
                 if (y>=yStart-1) {
@@ -152,6 +150,54 @@ function Codepage(codepageUrl, callback) {
             }
             }
         }
+        
+        
+         function copyChar(ctx, originX, originY, x, y) {
+            
+       
+           // This is just some information used when scrolling is implemented
+            if (x>=xStart-1) {
+                if (y>=yStart-1) {
+                 
+                        var charArray = screenCharacterArray[originY][originX];
+                        asciiCode=charArray[0];
+                        foreground=charArray[1];
+                        background=charArray[2];
+                        
+                        x = (x  ) * parseInt(canvasCharacterWidth);
+                        y = (y ) * parseInt( canvasCharacterHeight );
+                        
+                            var xpos=background;
+                           
+                            while (xpos >= 16) xpos=xpos-16;
+                            // This calculates the position of the block of the image, which has the same characters over and over again with different backgrounds, regarding the y position
+                            //console.log(Math.random()+"background:"+background);
+                            var ypos = Math.floor(background/16);
+                            ///console.log(Math.random()+"ypos:"+ypos);
+                          
+                            var myasciiCode=219;
+                            
+                            var myx = (myasciiCode % 32) * characterWidth+(xpos*256);
+                            var myy = Math.floor(myasciiCode / 32) * characterHeight + (ypos*128);
+                           
+                            //alert("1:myx="+myx+" myy="+myy+" x="+x+" y="+y+"CW1:"+characterHeight+" canvasCharacterHeight:"+canvasCharacterHeight);
+                            ctx.drawImage(codepageImg, myx, myy, characterWidth, characterHeight, x, y, canvasCharacterWidth, canvasCharacterHeight);
+                        
+                        
+                        var xpos=foreground;
+                        while (xpos >= 16) xpos=xpos-16;
+                        var ypos = Math.floor(foreground/16);
+                        
+                        
+                        var myx = (asciiCode % 32) * characterWidth+(xpos*256);
+                        var myy = Math.floor(asciiCode / 32) * characterHeight + (ypos*128);
+                        //alert(myx+"/"+x);
+                        ctx.drawImage(codepageImg, myx, myy, characterWidth, characterHeight, x, y, canvasCharacterWidth, canvasCharacterHeight);
+            }
+            }
+        };
+        
+        
 
         /** Creates an own instance of a canvas object with its own context **/
         function generateDisplay(width, height) {
@@ -164,7 +210,7 @@ function Codepage(codepageUrl, callback) {
             ctx.fillRect(0, canvas.height - characterHeight * 2, canvas.width, characterHeight);
         }
 
-        return { "drawChar": drawChar, "generateDisplay": generateDisplay, "scrollDisplay": scrollDisplay };
+        return { "drawChar": drawChar, "generateDisplay": generateDisplay, "scrollDisplay": scrollDisplay, "copyChar" : copyChar };
     };
     
     
@@ -309,7 +355,7 @@ function Codepage(codepageUrl, callback) {
             "drawChar": drawChar,
             "savePosition": savePosition,
             "restorePosition": restorePosition,
-			"getPosX": getPosX,
-			"getPosY": getPosY
+            "getPosX": getPosX,
+            "getPosY": getPosY
         };
     }

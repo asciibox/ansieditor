@@ -1,5 +1,32 @@
-var animOffsetX=0;
-var animOffsetY=0;
+/* The MIT License (MIT)
+ *
+ * Copyright (c) 2015 Oliver Bachmann, Karlsruhe, Germany
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+var animOffsetX = 0;
+var animOffsetY = 0;
+var scrollDown = 0;
+var scrollUp = 0;
+var scrollLeft = 0;
+var scrollRight = 0;
+
 
 
 var bps = 57600;
@@ -51,26 +78,99 @@ function getValues() {
 }
 
 function render() {
+
+    if (scrollDown) {
+        while (scrollDown>0) {
+            showCharacter(false);
+        firstLine++;
+        var startX = 0;
+        var startY = canvasCharacterHeight;
+        var window_innerWidth = ((visibleWidth) * (canvasCharacterWidth));
+        var window_innerHeight = ((visibleHeight - scrollBarYShown) * (canvasCharacterHeight));
+
+        var screenWidth = canvasCharacterHeight;
+
+        var imgData = ctx.getImageData(startX, startY, window_innerWidth - canvasCharacterWidth, window_innerHeight - canvasCharacterHeight - 1);
+        ctx.putImageData(imgData, 0, 0);
+
+        drawLine(visibleHeight - scrollBarYShown + firstLine - 1, (visibleHeight - scrollBarYShown) - 1);
+
+        updateScrollbarY(1);
+        scrollDown--;
+        }
+    } else
+    if (scrollUp) {
+        while (scrollUp>0) {
+            showCharacter(false);
+        firstLine--;
+        var startX = 0;
+        var startY = 0;
+        var window_innerWidth = ((visibleWidth) * (canvasCharacterWidth));
+        var window_innerHeight = (visibleHeight - scrollBarYShown) * (canvasCharacterHeight);
+        var imgData = ctx.getImageData(startX, startY, window_innerWidth - canvasCharacterWidth, window_innerHeight - canvasCharacterHeight);
+        ctx.putImageData(imgData, 0, canvasCharacterHeight);
+        drawLine(firstLine, 0);
+        updateScrollbarY(0);
+        scrollUp--;
+        }
+    } else
+    if (scrollLeft) {
+        while (scrollLeft>0) {
+             showCharacter(false);
+        leftLine--;
+        var startX = 0;
+
+        var window_innerWidth = ((visibleWidth) * (canvasCharacterWidth));
+        var window_innerHeight = (visibleHeight * (canvasCharacterHeight));
+        console.log("startX:" + startX + " window_innerWidth:" + window_innerWidth);
+        var imgData = ctx.getImageData(0, 0, window_innerWidth - canvasCharacterWidth - canvasCharacterWidth, window_innerHeight);
+        ctx.putImageData(imgData, canvasCharacterWidth, 0);
+        drawVerticalLine(leftLine, 0);
+
+        updateScrollbarX(0);
+        scrollLeft--;
+        }
+    } else
+    if (scrollRight) {
     
+        while (scrollRight>0) {
+                 showCharacter(false);
+        leftLine++;
+        var startX = canvasCharacterWidth;
+
+        var window_innerWidth = ((visibleWidth) * (canvasCharacterWidth));
+        var window_innerHeight = (visibleHeight * (canvasCharacterHeight));
+        console.log("startX:" + startX + " window_innerWidth:" + window_innerWidth);
+        var imgData = ctx.getImageData(startX, 0, window_innerWidth - startX - startX, window_innerHeight);
+        ctx.putImageData(imgData, 0, 0);
+
+        console.log("visibleWidth+leftLine:" + (visibleWidth + leftLine));
+        console.log("visibleWidth:" + visibleWidth);
+        drawVerticalLine(visibleWidth + leftLine - 2, visibleWidth - 2);
+
+        updateScrollbarX(1);
+        scrollRight--;
+        }
+    } else
     if (doRedraw) {
-       var redrawY=0;
-       while (redrawY<visibleHeight-1)
-             {
-                
-                redrawX=0;
-                while (redrawX<visibleWidth-1) {
-                    
-                    codepage.copyChar(ctx, redrawX+visibleXStart, redrawY+visibleYStart, redrawX, redrawY); // do not store
-                    redrawX++;
-                }
-                redrawY++;
+        var redrawY = 0;
+        while (redrawY < visibleHeight - 1)
+        {
+
+            redrawX = 0;
+            while (redrawX < visibleWidth - 1) {
+
+                codepage.copyChar(ctx, redrawX + visibleXStart, redrawY + visibleYStart, redrawX, redrawY); // do not store
+                redrawX++;
             }
-            doRedraw=false;
-         
-            
-            return;
+            redrawY++;
+        }
+        doRedraw = false;
+
+
+        return;
     }
-    
+
 
     var counter = 0;
 

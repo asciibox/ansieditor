@@ -242,6 +242,8 @@
                 
                 ansicanvas.addEventListener('mousedown', function(e) {
                     
+                  
+                    
                         var window_innerWidth = (visibleWidth*(canvasCharacterWidth));
                         var window_innerHeight = (visibleHeight*(canvasCharacterHeight));
 
@@ -249,18 +251,18 @@
                         var my = mouse.y;                
                         var mx = mouse.x;
 
-                        var scrollbarY = window_innerHeight-canvasCharacterHeight;
+                        var myScrollbarY = window_innerHeight-canvasCharacterHeight;
 
-                        if (my>(scrollbarY)) {
+                        if (my>(myScrollbarY)) {
                             movingXStartPos = mx;
                             console.log("Setting movingX to true");
                             movingX=true;
                             movingY=false;
                         }
 
-                        var scrollbarX = window_innerWidth-canvasCharacterWidth;
+                        var myScrollbarX = window_innerWidth-canvasCharacterWidth;
 
-                        if (mx>scrollbarX) {
+                        if (mx>myScrollbarX) {
                             movingYStartPos = my;
                             console.log("Setting movingY to true");
                             movingY=true;
@@ -298,10 +300,12 @@
                         codepage.drawChar(ctx, currentChar, currentForeground, currentBackground, cursorPosX, cursorPosY, false); // false == update coordinate system
                     }
                     
-                     
+                   
                     
                 }, true);
                 
+                
+                    // PANEL !!!!
                 document.getElementById('panel').addEventListener('mousedown', function(e) {
                     
                     if (waitingforDoubleclick==false) {
@@ -315,6 +319,7 @@
                     }
                 });
                     
+                 
                 
                 ansicanvas.addEventListener('mouseleave', function(e) {
                     mouseDown=false;
@@ -322,24 +327,22 @@
                 
                 ansicanvas.addEventListener('mouseup', function(e) {
                    mouseDown=false;
-                   firstLine=animOffsetY;
-                   console.log("FIRSTLINE:"+firstLine);
+                   if ( (movingX) || (movingY) ) {
+                   firstLine=animOffsetY; 
                    leftLine=animOffsetX;
-                   console.log("LEFTLINE:"+leftLine);
                    movingX=false;
                    movingY=false;
+                   }
                 });
                 
                 ansicanvas.addEventListener('mousemove', function(e) {
                    
                    
-                   console.log("MOUSEMOVE movingy: "+movingY+" movingX:"+movingY);
                    if (movingY==true) 
                    {
                        var mouse = getMousePos(ansicanvas, e);
                        var mx = mouse.x;
-                       var my = mouse.y;         
-                       console.log("my:"+my+" movingYStartPos:"+movingYStartPos+" OFFSET:"+(my-movingYStartPos));
+                       var my = mouse.y;
                        updateScrollbarY(2, my-movingYStartPos);
                        redrawScreen();
                    
@@ -348,8 +351,7 @@
                    {
                        var mouse = getMousePos(ansicanvas, e);
                        var mx = mouse.x;
-                       var my = mouse.y;         
-                       console.log("mx:"+mx+" movingXStartPos:"+movingXStartPos+" OFFSET:"+(mx-movingXStartPos));
+                       var my = mouse.y;
                        updateScrollbarX(2, mx-movingXStartPos);
                        redrawScreen();
                    
@@ -387,7 +389,7 @@
             
             
                    
-                                        showCharacter();
+                                        showCharacter(false);
 
 					if (resizeToScreen==false)
 					{					
@@ -443,7 +445,7 @@
                                     moveAndDrawCharacters(keyCode);
                                     codepage.drawChar(ctx, keyCode, currentForeground, currentBackground, cursorPosX, cursorPosY, false, cursorPosY+firstLine, cursorPosX+leftLine);
                                     if (cursorPosX<getDisplayWidth()-2) { setCursorPosX(cursorPosX+1); } else
-                                        if ((cursorPosX+leftLine)<getTotalDisplayWidth()-2) { scrollRight(); }
+                                        if ((cursorPosX+leftLine)<getTotalDisplayWidth()-2) { scrollRight++; }
                                     redrawCursor();
                                 }
                                 
@@ -853,7 +855,7 @@
                             }
                             var maxHeight = getDisplayHeight()-1;
                             if (cursorPosY<maxHeight) {
-                                    scrollDown();
+                                    scrollDown++;
                             }
                             redrawCursor();
                             break;
@@ -895,17 +897,37 @@
                               setCursorPosX(cursorPosX-1);
                               var currentPos = cursorPosX;
                               
-                              while (currentPos < getDisplayWidth()-1) 
-                              {
-                                      var asciiCode = screenCharacterArray[cursorPosY][currentPos+1][0];
-                                      var fgcolor = screenCharacterArray[cursorPosY][currentPos+1][1];
-                                      var bgcolor = screenCharacterArray[cursorPosY][currentPos+1][2];
+                              // Now to those characters which are outside of the visible screen
+                              currentPos = cursorPosX+leftLine;
+                              console.log("CPOS<TOTALVIS:"+currentPos+"<"+totalVisibleWidth);
+                              showCharacter(false);
+                              while (currentPos < totalVisibleWidth) {
+                                  screenCharacterArray[cursorPosY+firstLine][currentPos]=screenCharacterArray[cursorPosY+firstLine][currentPos+1];
+                                   // let's care about the visible characters on the screen
+                       
+                                  var ypos=cursorPosY+firstLine;
+                                  var maxxpos=getDisplayWidth()+leftLine-1;
+                                  var maxypos=getDisplayHeight()+firstLine;
+                                  
+                                  if (currentPos<maxxpos) {
+                                      console.log("DRAWCHRA"+(currentPos+1)+" to "+(currentPos-leftLine)+" firstLine:"+firstLine);
+                                      var asciiCode = screenCharacterArray[cursorPosY+firstLine][currentPos+1][0];
+                                      var fgcolor = screenCharacterArray[cursorPosY+firstLine][currentPos+1][1];
+                                      var bgcolor = screenCharacterArray[cursorPosY+firstLine][currentPos+1][2];
                                       
-                                      codepage.drawChar(ctx, asciiCode, fgcolor, bgcolor, currentPos, cursorPosY);
-                                      currentPos++;                                      
+                                      codepage.drawChar(ctx, asciiCode, fgcolor, bgcolor, currentPos-leftLine, cursorPosY, false, false);
+                                  }
+                                  screenCharacterArray[cursorPosY+firstLine][currentPos]=screenCharacterArray[cursorPosY+firstLine][currentPos+1];
+                                  currentPos++;
                               }
                               
-                              codepage.drawChar(ctx, 32, 15, 0, getDisplayWidth()-1, cursorPosY);
+                              var ch = new Array();
+                              ch.push(32);
+                              ch.push(screenCharacterArray[cursorPosY+firstLine][currentPos][1]);
+                              ch.push(screenCharacterArray[cursorPosY+firstLine][currentPos][2]);
+                              
+                              screenCharacterArray[cursorPosY+firstLine][currentPos+1]=ch;
+                              
                               
                               redrawCursor();
                             }
@@ -1012,7 +1034,6 @@
                 switch(keyCode){
                     
                     case 39 : // cursor right
-                    console.log("39 copyMode:"+copyMode);
                          showCharacter(false);
                          var maxWidth = getDisplayWidth()-scrollBarXShown; // When the scroll is being shown, the size of the canvas is 1 character smaller
                          
@@ -1022,12 +1043,10 @@
                                        
                                             if (cursorPosX<maxWidth-scrollBarXShown) {
                                                 
-                                                console.log("INCREASED");
                                                 setCursorPosX(cursorPosX+1);
                                                 redrawCursor();
                                             } else if (cursorPosX+leftLine<getTotalDisplayWidth()-2) {
-                                                console.log("SCROLLRIGHT");
-                                                scrollRight();
+                                                scrollRight++;
                                             }
                                       } else {
                                       
@@ -1037,7 +1056,6 @@
                                           codepage.overlay[0]=32;
                                           codepage.overlay[1]=currentForeground;
                                           codepage.overlay[2]=currentBackground;
-                                          console.log("codepage.overlay:"+codepage.overlay);
                                           hideTimer = setTimeout(function() { codepage.overlay=null; }, 1000);
                                       }
                                   } else {
@@ -1050,7 +1068,6 @@
                                             copyEndY=cursorPosY;
                                           }
                                           if (cursorPosX<maxWidth) {
-                                          console.log("cursorPOSX:"+cursorPosX+" maxWidth:"+maxWidth);
                                                 copyEndX++;
                                                 
                                                 if (cursorPosX<copyStartX) { // The cursor is to the left of the copyStartX ([][][][][][]copyStartX)
@@ -1061,7 +1078,6 @@
                                                         // currentPosX > copyStartX - move selection to the right (copyStartX[][][][][][][][[])
                                                              for (var y = copyEndY; y >= copyStartY; y--) 
                                                                 {
-                                                                console.log("X:"+cursorPosX+" Y: "+y);
                                                                 highlightCharacter(cursorPosX+1, y);
                                                                 }
                                                               
@@ -1069,7 +1085,6 @@
                                                               
                                                                     for (var y = copyEndY; y >= copyStartY; y--) 
                                                                     {
-                                                                            console.log("X:"+cursorPosX+" Y: "+y);
                                                                             showOriginalCharacter(cursorPosX, y);
                                                                     }
                                                                
@@ -1077,7 +1092,7 @@
                                                                     
                                                                      for (var y = copyStartY+1; y >= copyEndY-1; y--) 
                                                                      {
-                                                                       console.log("X:"+cursorPosX+" Y: "+y);
+                                                                       
                                                                        showOriginalCharacter(cursorPosX, y);
                                                                      }
                                                                     
@@ -1126,7 +1141,7 @@
                                          }
                                          else if (cursorPosY+firstLine<totalVisibleHeight) {
                                                 // Scroll
-                                               scrollDown();
+                                               scrollDown++;
                                                 
                                             }
                                         } else {
@@ -1136,7 +1151,6 @@
                                             codepage.overlay[0]=219;
                                             codepage.overlay[1]=currentForeground;
                                             codepage.overlay[2]=currentBackground;
-                                            console.log("codepage.overlay:"+codepage.overlay);
                                             hideTimer = setTimeout(function() { codepage.overlay=null; }, 1000);
                                         }
                                
@@ -1216,19 +1230,19 @@
                                    if (!e.ctrlKey) {
                                       
                                         if (cursorPosX>0) {
-                                        setCursorPosX(cursorPosX-1);
-                                        redrawCursor();
+                                            setCursorPosX(cursorPosX-1);
+                                            redrawCursor();
                                         } else if (cursorPosX+leftLine>0) {
-                                            scrollLeft();
+                                            scrollLeft++;
                                         }
                                       } else {
+                                          // Change color
                                           if (currentBackground<255) currentBackground++; else currentBackground=0;
                                           codepage.drawChar(ctx, 32, currentForeground, currentBackground, cursorPosX, cursorPosY, false, false); // do not store
                                           codepage.overlay=new Array();
                                           codepage.overlay[0]=32;
                                           codepage.overlay[1]=currentForeground;
                                           codepage.overlay[2]=currentBackground;
-                                          console.log("codepage.overlay:"+codepage.overlay);
                                           hideTimer = setTimeout(function() { codepage.overlay=null; }, 1000);
                                       }
                               } else {
@@ -1251,14 +1265,12 @@
                                                                     
                                                                     for (var y = copyEndY+1; y >= copyStartY-1; y--)
                                                                     {
-                                                                        console.log("X:"+cursorPosX+" Y: "+y);
                                                                         showOriginalCharacter(cursorPosX, y);
                                                                     }
                                                             } else {
                                                                
                                                                     for (var y = copyStartY+1; y >= copyEndY; y--)
                                                                     {
-                                                                        console.log("X:"+cursorPosX+" Y: "+y);
                                                                         showOriginalCharacter(cursorPosX, y);
                                                                     }
                                                             }
@@ -1268,7 +1280,6 @@
                                                             
                                                                     for (var y = copyStartY; y < copyEndY; y++)
                                                                     {
-                                                                        console.log("X:"+cursorPosX+" Y: "+y);
                                                                         showOriginalCharacter(cursorPosX, y);
                                                                     }
                                                                     
@@ -1313,7 +1324,7 @@
                                               redrawCursor();
                                           } else if (firstLine>0) {
                                               // Scrolls if the cursor is at the very top
-                                              scrollUp();
+                                              scrollUp++;
                                           }
                                       } else {
                                           // Changes the foreground color
@@ -1323,7 +1334,6 @@
                                           codepage.overlay[0]=219;
                                           codepage.overlay[1]=currentForeground;
                                           codepage.overlay[2]=currentBackground;
-                                          console.log("codepage.overlay:"+codepage.overlay);
                                           hideTimer = setTimeout(function() { codepage.overlay=null; }, 1000);
                                       }
                                } else {
@@ -1337,7 +1347,6 @@
                                           if (cursorPosY>0) {
                                                 if (cursorPosX == copyStartX) {
                                                   
-                                                  console.log("cursorPosY:"+cursorPosY+" copyStartY:"+copyStartY);
                                                      if (cursorPosY <= copyStartY) {
                                                         highlightCharacter(cursorPosX, cursorPosY);
                                                         highlightCharacter(cursorPosX, cursorPosY-1);

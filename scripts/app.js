@@ -40,7 +40,7 @@
         */
        var hideTimer; // Gets used when toggling the color using CTRL-Cursor for clearing the currently shown color
  
-        var screenCharacterArray = Array();
+        var screenCharacterArray = new Array();
                 
         /** When changing the charset. Number one indicates characters from 1-9, other characters are ascii codes **/
         var currentCharset=7;
@@ -78,12 +78,12 @@
         var copyEndY=0;
         
         
-        var copyArray=Array();
+        var copyArray=new Array();
         var copyWidth=0;
         var copyHeight=0;
         
-        var undo = Array();
-        var redo = Array();
+        var undo = new Array();
+        var redo = new Array();
         
         
         var ctrlKey=false;
@@ -184,6 +184,48 @@
             
             
         }
+        
+        
+    function clearWholeScreen() 
+    {
+        console.log("clearScreen");
+       if (confirm('Are you sure?')) {
+          doClearScreen(true);
+        }
+    }
+    
+	/** This clears the screen by putting spaces with the current foreground and background color on the screen **/
+    function doClearScreen(resetCharacters) {
+        
+      var charArray = new Array();
+      charArray[0]=32;
+      charArray[1]=currentForeground;
+      charArray[2]=currentBackground;
+      var startY = 0;
+       
+       if (resetCharacters) {
+           redrawCursor();
+                while (startY<totalVisibleHeight) 
+                {
+                 var startX=0;
+                 while (startX<totalVisibleWidth) 
+                 {
+                         screenCharacterArray[startY][startX++]=charArray;
+
+
+                 }
+                 startY++;
+                }
+       }
+       
+       var bgstring = "#"+ansicolors[currentBackground];
+      
+       ctx = document.getElementById("ansi").getContext("2d");
+       ctx.fillStyle = bgstring;
+       ctx.fillRect(0, 0, document.getElementById('ansi').width, document.getElementById('ansi').height);
+       redrawCursor();
+        
+    }
         
         function updateCanvasSize() {
             
@@ -516,10 +558,10 @@
             
             for (var y = 0; y <= totalDisplayHeight; y++) // TODO if really 
             {                    
-                    var xArray = Array();
+                    var xArray = new Array();
                     for (var x = 0; x <= totalDisplayWidth; x++)  // TODO if really
                     {
-                     var data = Array();
+                     var data = new Array();
                      data[0]=32; // ascii code
                      data[1]=15; // foreground color
                      data[2]=0; // background color
@@ -1411,50 +1453,6 @@
    
    
    
-    function clearScreen() 
-    {
-       if (confirm('Are you sure?')) {
-          doClearScreen(true);
-        }
-    }
-    
-	/** This clears the screen by putting spaces with the current foreground and background color on the screen **/
-    function doClearScreen(resetCharacters) {
-        
-       setCursorPosX(0);
-       setCursorPosY(0);
-       
-       if (resetCharacters) {
-           redrawCursor();
-                while (cursorPosY+1<visibleHeight) 
-                {
-                 setCursorPosX(0);
-                 while (cursorPosX<visibleWidth) 
-                 {
-
-                         var charArray = Array();
-                                  charArray[0]=32;
-                                  charArray[1]=currentForeground;
-                                  charArray[2]=currentBackground;
-
-                         screenCharacterArray[cursorPosY][cursorPosX]=charArray;
-                         setCursorPosXNoDebug(cursorPosX+1);
-
-                 }
-                 setCursorPosY(cursorPosY+1);
-                }
-            setCursorPosX(0);
-            setCursorPosY(0);
-         }
-       
-       var bgstring = "#"+ansicolors[currentBackground];
-      
-       ctx = document.getElementById("ansi").getContext("2d");
-       ctx.fillStyle = bgstring;
-       ctx.fillRect(0, 0, document.getElementById('ansi').width, document.getElementById('ansi').height);
-       redrawCursor();
-        
-    }
    
    /** This registers a key event listener, so entering something in the browser has functionality **/
    function registerKeyEventListener() { 

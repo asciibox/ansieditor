@@ -195,7 +195,9 @@
     }
     
 	/** This clears the screen by putting spaces with the current foreground and background color on the screen **/
-    function doClearScreen(resetCharacters) {
+    function doClearScreen(resetCharacters, all) {
+        
+      if (typeof(all)=="undefined") all=false;
         
       var charArray = new Array();
       charArray[0]=32;
@@ -222,7 +224,13 @@
       
        ctx = document.getElementById("ansi").getContext("2d");
        ctx.fillStyle = bgstring;
-       ctx.fillRect(0, 0, document.getElementById('ansi').width, document.getElementById('ansi').height);
+       var window_innerWidth = (visibleWidth*(canvasCharacterWidth));
+       var window_innerHeight = (visibleHeight*(canvasCharacterHeight));
+       if (all==false) {
+           ctx.fillRect(0, 0, window_innerWidth-canvasCharacterWidth, window_innerHeight-(canvasCharacterHeight*1));
+       } else {
+           ctx.fillRect(0, 0, document.getElementById('ansi').width, document.getElementById('ansi').height);
+       }
        redrawCursor();
         
     }
@@ -1510,7 +1518,7 @@
             canvas = document.getElementById("ansi");
             ctx = document.getElementById("ansi").getContext("2d");
             setCanvasSize(canvas);
-            doClearScreen(false);
+            //doClearScreen(false);
            
             for (var y = firstLine; y < screenCharacterArray.length-1; y++) {
            

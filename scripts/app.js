@@ -1,4 +1,4 @@
-       
+
        doRedraw=false;
         var currentDraw=0;
         /** used in connection with mouse click **/
@@ -241,6 +241,10 @@
         
          // Shows the cursor, which is ascii code 220 or 95, depending on whether or not insert is on. Does nothing with the character in the background.
          function redrawCursor() {
+
+			 if ( (typeof(enableCursor)=="undefined") || (enableCursor==true) )
+			 {
+			 
             
             cursorShown=false;
             
@@ -250,6 +254,8 @@
             clearTimeout(cursorInterval);
             cursorInterval = setInterval(function() { toggleCursor(); }, 10);
 			setTimeout(function() { clearTimeout(cursorInterval);  cursorShown=false; cursorInterval = setInterval(function() {  toggleCursor(); }, 500); }, 10);
+
+			}
 
         }
        

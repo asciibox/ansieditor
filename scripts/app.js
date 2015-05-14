@@ -204,6 +204,8 @@
       charArray[1]=currentForeground;
       charArray[2]=currentBackground;
       var startY = 0;
+      
+       var bgstring = "#"+ansicolors[currentBackground];
        
        if (resetCharacters) {
            redrawCursor();
@@ -218,9 +220,8 @@
                  }
                  startY++;
                 }
+                globalDisplay.clearScreen(bgstring);
        }
-       
-       var bgstring = "#"+ansicolors[currentBackground];
       
        ctx = document.getElementById("ansi").getContext("2d");
        ctx.fillStyle = bgstring;

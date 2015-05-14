@@ -268,9 +268,10 @@ function Codepage(codepageUrl, callback) {
             }
         }
 
-        function clearScreen() {
+       function clearScreen(fillStyle) {
+            if (typeof(fillStyle)=="undefined") fillStyle="black";
             homeCursor();
-            ctx.fillStyle = "black";
+            ctx.fillStyle = fillStyle;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
         }
 

@@ -249,8 +249,8 @@ function Codepage(codepageUrl, callback) {
         }
 
         function setPos(newX, newY) {
-            x = Math.min(width, Math.max(1, newX));
-            y = Math.min(height, Math.max(1, newY));
+            x = Math.min(width, Math.max(0, newX));
+            y = Math.min(height, Math.max(0, newY));
         }
 
         function setForeground(value) {

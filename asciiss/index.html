@@ -15,7 +15,8 @@
 <script src="scripts/parse_events.js"></script>-->
 <script src="scripts/Cursor.js"></script>
 <script src="scripts/parser.js"></script>
-<script src="scripts/eventsHandler.js"></script>
+<script src="scripts/events.js"></script>
+<script src="scripts/actions.js"></script>
 <link rel="stylesheet" href="node_modules/asciirocks/css/panel.css" type="text/css" media="screen" />
 <link rel="stylesheet" href="node_modules/asciirocks/css/style.css" type="text/css" media="screen" />
 <script>
@@ -54,6 +55,7 @@
 
             doClearScreen(false);
             tagParser.parse("#ascii_textarea");
+            userActions.init(tagParser.getAll());
             eventsHandler.init();
             //switchbutton(); // Shows the canvas right from the start and hides the HTML
 			globalDisplay = new Display();
@@ -61,7 +63,7 @@
 		
         
 		// This gets called whenever the user clicks on the Canvas
-          //document.getElementById('ansi').addEventListener('mousedown', parsed_mousedown, false);
+          //document.getElementById('ansi').addEventListener('mousedown', _parsedMouseDownEvent, false);
         
         
     });

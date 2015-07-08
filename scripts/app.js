@@ -1515,6 +1515,21 @@
                 },
                 false);
                 
+                
+                document.body.addEventListener('keyup',
+                function(e)
+                {
+                 
+                    var keyCode = e.which;
+                  
+                        if (keyCode == 17) {
+                                            
+                        ctrlKey=false;
+                    } 
+                
+                },
+                false);
+                
                
                 
     }

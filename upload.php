@@ -22,6 +22,7 @@
  * THE SOFTWARE.
  */
 if (isset($_GET['qqfile'])) {
+    if (!is_dir("uploads")) mkdir("uploads");
     $client_data = file_get_contents("php://input"); 
     $filename=rand(0,500000000);
     $fh=fopen('uploads/'.$filename.".ans","w");

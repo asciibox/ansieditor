@@ -69,8 +69,14 @@
 	<script src="node_modules/ascii_viewer/scripts/requestanimframe.js"></script>
 	<!-- This is the modified version of escape.js, the only modification is the function modified_write2 in it, which calls drawChar in codepagedisplay.js -->
 	<script src="node_modules/ascii_viewer/scripts/escapes_modified.js"></script>
-    <!--<link rel="stylesheet" href="css/panel.css" type="text/css" media="screen" />-->
+    
+
     <link rel="stylesheet" href="node_modules/ascii_viewer/css/style.css" type="text/css" media="screen" />
+    
+    <!-- original code from ascii.rocks -->
+    
+    <link rel="stylesheet" href="css/panel.css" type="text/css" media="screen" />
+    
     <!-- <link rel="stylesheet" href="fileuploader/fileuploader.css" type="text/css" media="screen" /> -->
 	<!-- This is not needed, but might be useful for additional functionality -->
     <!-- <script src="fileuploader/fileuploader.js"></script> -->
@@ -159,7 +165,7 @@ window.onbeforeunload=goodbye;
     $(document).ready(function(){
         
        	// Initialize the functionality to draw characters on the canvas, by using an image-map with the given filename (256 colors)
-        codepage = new Codepage("assets/CO_437_8x16vga.png", function() { // codepagedisplay.js
+        codepage = new Codepage("node_modules/ascii_viewer/assets/CO_437_8x16vga.png", function() { // codepagedisplay.js
             
 			globalString=""; // This variable gets regularly checked in requestanimframe.js
 
@@ -221,38 +227,7 @@ window.onbeforeunload=goodbye;
         });*/
         
         
-        //resizeToScreen=true;
-          $.ajax({
-                url: 'music/get_urls.php',
-                type: 'GET',
-                success: function(result) {
-                    
-                    $('#panel').append(result);
-                   
-                    player = new MediaElementPlayer('#mp3', {audioWidth:280, success: function(mediaElement) {
-                           
-                           
-                            mediaElement.addEventListener('ended', function() {
-           
-                                   var src = $('#allsongs ').find("li").eq(currentSong).attr('src');
-                                 
-
-                                    $('#mp3').attr('src', src);
-                                    player.play();
-                                    currentSong++;
-                                    if (currentSong>=$('#allsongs').find("li").length) currentSong=1;
-
-                            });
-                    } });
-                
-                    currentSong++;
-                    player.play();
-                    
-                    
-                        $('.mejs-time-total').unbind('mouseenter');
-                }
-                });
-        
+       
        
             $('#foreground_color').simpleColor({
               boxHeight: 40,
@@ -313,61 +288,14 @@ window.onbeforeunload=goodbye;
                    $('.columns').show();
               }
             });
-           registerKeyEventListener();initansicanvas();
-           var uploader = new qq.FileUploader({
-                // pass the dom node (ex. $(selector)[0] for jQuery users)
-                element: document.getElementById('file-uploader'),
-                // path to server-side upload script
-                action: 'upload.php',
-                allowedExtensions: ["ans"],
-                acceptFiles: null,		// comma separated string of mime-types for browser to display in browse dialog
-                            
-                abortOnFailure: true, // Fail all files if one doesn't meet the criteria
-                // events
-                // return false to cancel submit
-                onSubmit: function(id, fileName){},
-                onProgress: function(id, fileName, loaded, total){},
-                onComplete: function(id, fileName, responseJSON){ // The json looks like this: {"success":true,"filename":282806397}
-                    $('.qq-upload-list').html('');
-                    
-                    var filename=responseJSON.filename;
-            
-                    globalContext = document.getElementById("ansi").getContext("2d");
-                    display = new Display();
-                    charactersatonce = 999999; //Math.floor((baud || 115200) / 8 / 100);
-                    doClearScreen(true);
-                    interpreter = new Interpreter("uploads/"+filename+".ans", display);
-                    
-                },
-                onCancel: function(id, fileName){
-                    $('.qq-upload-list').html('');
-                },
-                onUpload: function(id, fileName, xhr){},
-                        onError: function(id, fileName, xhr) {
-                            $('.qq-upload-list').html('');
-                        },
-                // messages                
-                messages: {
-                    typeError: JAVASCRIPT_TEXT_UPLOAD_SIZE1+" {extensions} "+JAVASCRIPT_TEXT_UPLOAD_SIZE2,
-                    sizeError: "{file} "+JAVASCRIPT_TEXT_MAX_SIZE_ERROR+" {sizeLimit}.",
-                    minSizeError: "{file} "+JAVASCRIPT_TEXT_MIN_SIZE_ERROR+" {minSizeLimit}.",
-                    emptyError: "{file} "+JAVASCRIPT_TEXT_EMPTY_ERROR,
-                    onLeave: JAVASCRIPT_TEXT_ON_LEAVE            
-                },
-                showMessage: function(message){
-                    alert(message);
-                },
-                sizeLimit: 200000,   
-                minSizeLimit: 0         
-                   });
-           
-    });
+
+        });
     
    
     </script>
 </head>
 <body>
-    <div class="panel" id="panel">
+    <div class="panel" id="panel" style="display:none">
             <h3>Ansi editor</h3>
             <p>This is an ansi editor made of HTML5 and canvas</p>
             <p>The sourcecode is available on <a href="http://www.github.com/fanside/ansieditor" target="_blank">GitHub</a>. You can choose different charsets and show them by pressing 1-9, or you can paint a certain character with the mouse. You can also export the file to xterm ANSI.</p>

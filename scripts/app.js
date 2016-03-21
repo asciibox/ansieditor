@@ -308,13 +308,12 @@ var Editor = function() {
         
         this.initEditorEvents = function() {
             
-                setTimeout(function() { asciiEditor.toggleCursor(true); }, 1000);
+            	// CAUSES BUG
+                //setTimeout(function() { asciiEditor.toggleCursor(true); }, 1000);
              
                 ansicanvas = document.getElementById('ansi');
                 
                 ansicanvas.addEventListener('mousedown', function(e) {
-                    
-                  
                     
                         var window_innerWidth = (visibleWidth*(canvasCharacterWidth));
                         var window_innerHeight = (visibleHeight*(canvasCharacterHeight));
@@ -339,24 +338,16 @@ var Editor = function() {
                         asciiEditor.showPanel();
                     }
                     
-                    mouseDown=true;
-                    this.mouseMove(ansicanvas, e);
-                   
-                   /* asciiCode = screenCharacterArray[cursorPosY][cursorPosX][0];
-                    fgcolor = screenCharacterArray[cursorPosY][cursorPosX][1];
-                    bgcolor = screenCharacterArray[cursorPosY][cursorPosX][2];
-                    console.log("asciiCode:"+asciiCode+" fgcolor:"+fgcolor+" bgcolor:"+bgcolor);
-                    */
                   
-                   
-                    if (drawingMode) {
+                    if (this.drawingMode) {
                        
-                        codepage.drawChar(ctx, currentChar, currentForeground, currentBackground, cursorPosX, cursorPosY, false); // false == update coordinate system
+                        codepage.drawChar(ctx, this.currentChar, this.currentForeground, this.currentBackground, this.cursorPosX, this.cursorPosY, false); // false == update coordinate system
                     }
                     
                    
                     
                 }, true);
+                
                 
                 
                     // PANEL !!!!
@@ -382,7 +373,6 @@ var Editor = function() {
                 
                 
                 ansicanvas.addEventListener('mousemove', function(e) {
-                   
                    
                    
                    

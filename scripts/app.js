@@ -1,8 +1,9 @@
+var cursorPosX = 1;
+var cursorPosY = 1;
+
 var Editor = function() {
 
-}
-
-       doRedraw=false;
+        var doRedraw=false;
         var currentDraw=0;
         /** used in connection with mouse click **/
         var waitingforDoubleclick = false;
@@ -41,7 +42,7 @@ var Editor = function() {
         fgcolor = screenCharacterArray[cursorPosY][currentPos-1][1];
         bgcolor = screenCharacterArray[cursorPosY][currentPos-1][2];
         */
-       var hideTimer; // Gets used when toggling the color using CTRL-Cursor for clearing the currently shown color
+        var hideTimer; // Gets used when toggling the color using CTRL-Cursor for clearing the currently shown color
  
         var screenCharacterArray = new Array();
                 
@@ -151,7 +152,28 @@ var Editor = function() {
       /** Ansi interpreter, display and charactersatonce **/
       var interpreter, display, charactersatonce;
          
-        function doRedraw(visibleXStart, visibleYStart, mustBe) {
+        /** This is the panel with the information about how to use this application **/
+        this.showPanel = function() {
+         
+            if ($('#panel').css('display')!="block") {
+                
+                         $(".panel").slideDown("slow", "easeOutBounce");
+                        } 
+                        waitingforDoubleclick = false;
+                        clearTimeout(doubleclickInterval);
+        }
+        
+		/** This hides the panel **/
+        this.hidePanel = function() {
+            if ($('#panel').css('display')=="block") {
+                 $(".panel").slideUp("slow", "easeOutBounce");
+            }
+            waitingforDoubleclick = false;
+            clearTimeout(doubleclickInterval);
+        }
+
+         
+        this.doRedraw = function(visibleXStart, visibleYStart, mustBe) {
            
              for (var x = 0; ( (x < visibleWidth-1) && (currentDraw==mustBe)); x++)
              {
@@ -162,7 +184,7 @@ var Editor = function() {
             }
         }
         
-        function redrawScreen() {
+        this.redrawScreen = function () {
             
              
             
@@ -181,15 +203,9 @@ var Editor = function() {
              
              
         }
-          
-        function showMenu() {
-            
-            
-            
-        }
         
         
-    function clearWholeScreen() 
+    this.clearWholeScreen = function() 
     {
         console.log("clearScreen");
        if (confirm('Are you sure?')) {
@@ -198,7 +214,7 @@ var Editor = function() {
     }
     
 	/** This clears the screen by putting spaces with the current foreground and background color on the screen **/
-    function doClearScreen(resetCharacters, all) {
+    this.doClearScreen = function(resetCharacters, all) {
         
       if (typeof(all)=="undefined") all=false;
         
@@ -238,13 +254,9 @@ var Editor = function() {
        redrawCursor();
         
     }
-        
-        function updateCanvasSize() {
-            
-        }
-        
+      
          // Shows the cursor, which is ascii code 220 or 95, depending on whether or not insert is on. Does nothing with the character in the background.
-         function redrawCursor() {
+         this.redrawCursor = function() {
 
 			 if ( (typeof(enableCursor)=="undefined") || (enableCursor==true) )
 			 {
@@ -256,47 +268,47 @@ var Editor = function() {
            
             codepage.drawChar(ctx, insert==false ? 220 : 95, 15, (copyMode==false) ? 0 : 15, cursorPosX, cursorPosY, true, cursorPosY); // shows cursor transparently
             clearTimeout(cursorInterval);
-            cursorInterval = setInterval(function() { toggleCursor(); }, 10);
-			setTimeout(function() { clearTimeout(cursorInterval);  cursorShown=false; cursorInterval = setInterval(function() {  toggleCursor(); }, 500); }, 10);
+            cursorInterval = setInterval(function() { asciiEditor.toggleCursor(); }, 10);
+			setTimeout(function() { clearTimeout(cursorInterval);  cursorShown=false; cursorInterval = setInterval(function() {  asciiEditor.toggleCursor(); }, 500); }, 10);
 
 			}
 
         }
        
-        function getDisplayWidth() {
+        this.getDisplayWidth = function() {
             return visibleWidth; // return parseInt(document.getElementById('displaywidth').value);
         }
-        function getDisplayHeight() {
+        this.getDisplayHeight = function() {
             return visibleHeight; // return parseInt(document.getElementById('displayheight').value);
         }
-        function getTotalDisplayWidth() {
+        this.getTotalDisplayWidth = function() {
             return totalVisibleWidth; // return parseInt(document.getElementById('displaywidth').value);
         }
-        function getTotalDisplayHeight() {
+        this.getTotalDisplayHeight = function() {
             return totalVisibleHeight; // return parseInt(document.getElementById('displayheight').value);
         }
         
-        function setCursorPosX(x) {
+        this.setCursorPosX = function(x) {
              
             cursorPosX=x;
         }
         
-        function setCursorPosY(y) {
+        this.setCursorPosY = function(y) {
             
             cursorPosY=y;
         }
         
-        function setCursorPosXNoDebug(x) {
+        this.setCursorPosXNoDebug = function(x) {
             cursorPosX=x;
         }
         
-        function setCursorPosYNoDebug(y) {
+        this.setCursorPosYNoDebug = function(y) {
             cursorPosY=y;
         }
         
-        function initEditorEvents() {
+        this.initEditorEvents = function() {
             
-                setTimeout(function() { toggleCursor(true); }, 1000);
+                setTimeout(function() { asciiEditor.toggleCursor(true); }, 1000);
              
                 ansicanvas = document.getElementById('ansi');
                 
@@ -317,18 +329,18 @@ var Editor = function() {
                     }
                     
                     if (waitingforDoubleclick==false) {
-                        hidePanel();
+                        asciiEditor.hidePanel();
                         waitingforDoubleclick = true;
                         clearTimeout(doubleclickInterval);
                         doubleclickInterval = setTimeout(function() { waitingforDoubleclick=false; }, 300);
                         
                     } else {
                         
-                        showPanel();
+                        asciiEditor.showPanel();
                     }
                     
                     mouseDown=true;
-                    mouseMove(ansicanvas, e);
+                    this.mouseMove(ansicanvas, e);
                    
                    /* asciiCode = screenCharacterArray[cursorPosY][cursorPosX][0];
                     fgcolor = screenCharacterArray[cursorPosY][cursorPosX][1];
@@ -355,7 +367,7 @@ var Editor = function() {
                         clearTimeout(doubleclickInterval);
                         doubleclickInterval = setTimeout(function() { waitingforDoubleclick=false; }, 400);
                     } else { // we can save us the work and clear the timeout
-                        hidePanel();
+                        this.hidePanel();
                         waitingforDoubleclick = false;
                         clearTimeout(doubleclickInterval);
                     }
@@ -391,7 +403,7 @@ var Editor = function() {
         
         /** This gets called whenever the mouse moves and the left mouse button is getting keeped pressed  **/
         
-        function mouseMove(ansicanvas, e) {
+        this.mouseMove = function(ansicanvas, e) {
             
             
             var mouse = getMousePos(ansicanvas, e);
@@ -399,7 +411,7 @@ var Editor = function() {
                     var my = mouse.y;                
            
                    
-                                        showCharacter(false);
+                                        this.showCharacter(false);
 
 					if (resizeToScreen==false)
 					{					
@@ -438,8 +450,8 @@ var Editor = function() {
         }
         
 		 /** This gets called from handleKeyCode **/
-        function executeKey(keyCode) {
-       showCharacter(false); 
+        this.executeKey = function(keyCode) {
+       this.showCharacter(false); 
         if (insert==false) {
                                     var myascii = screenCharacterArray[cursorPosY+firstLine][cursorPosX][0] ;
                                     undo.push({ action : "overwrite", x : cursorPosX, y : cursorPosY, fgColor : screenCharacterArray[cursorPosY][cursorPosX][1], bgColor : screenCharacterArray[cursorPosY][cursorPosX][2], asciiCode : myascii});
@@ -464,7 +476,7 @@ var Editor = function() {
    }
    
    /** CTRL-C - buffer functionality - called when pressing CTRL-V **/
-   function moveAndDrawCharacters(keyCode) {
+   this.moveAndDrawCharacters = function(keyCode) {
        
             var realY = Number(firstLine)+Number(cursorPosY);
             var currentPos=getDisplayWidth()-2;
@@ -499,30 +511,11 @@ var Editor = function() {
        
    }
         
-		 /** This is the panel with the information about how to use this application **/
-        function showPanel() {
-         
-            if ($('#panel').css('display')!="block") {
-                
-                         $(".panel").slideDown("slow", "easeOutBounce");
-                        } 
-                        waitingforDoubleclick = false;
-                        clearTimeout(doubleclickInterval);
-        }
-        
-		/** This hides the panel **/
-        function hidePanel() {
-            if ($('#panel').css('display')=="block") {
-                 $(".panel").slideUp("slow", "easeOutBounce");
-            }
-            waitingforDoubleclick = false;
-            clearTimeout(doubleclickInterval);
-        }
         
 		
         
 		/** This gets called to switch the cursor between insert and overwrite mode **/
-        function toggleCursor(interval) {
+        this.toggleCursor = function(interval) {
      
             cursorShown=!cursorShown;
             
@@ -533,7 +526,7 @@ var Editor = function() {
             codepage.drawChar(globalContext, insert==false ? 220 : 95, 15, (copyMode == false) ? 0 : 15, cursorPosX, cursorPosY, true, false); // shows cursor transparently
             
             } else {
-                showCharacter(false); // see below
+                this.showCharacter(false); // see below
             }
             
            
@@ -543,10 +536,22 @@ var Editor = function() {
         
 		/** Shows the character at the current position. Might get called from toggleCursor to hide the cursor **/
         
-        function showCharacter(overwrite) {
+        this.showCharacter = function(overwrite) {
             
             if (typeof(overwrite)=="undefined") overwrite=true;
             
+            //alert("cursorPosY:"+cursorPosY);
+            //alert("firstLine:"+firstLine);
+            
+            if (typeof(screenCharacterArray[cursorPosY+firstLine])=="undefined") 
+            {
+            	screenCharacterArray[cursorPosY+firstLine]=new Array();
+            	var charArray = new Array();
+      			charArray[0]=32;
+      			charArray[1]=currentForeground;
+      			charArray[2]=currentBackground;
+            	screenCharacterArray[cursorPosY+firstLine][cursorPosX]=charArray;
+            }
             var asciiCode = screenCharacterArray[cursorPosY+firstLine][cursorPosX+leftLine][0];
             var foreground = screenCharacterArray[cursorPosY+firstLine][cursorPosX+leftLine][1];
             var background = screenCharacterArray[cursorPosY+firstLine][cursorPosX+leftLine][2];
@@ -555,7 +560,7 @@ var Editor = function() {
             
         }
         
-       function getMousePos(canvas, evt) {
+       this.getMousePos = function(canvas, evt) {
         var rect = canvas.getBoundingClientRect();
         return {
           x: evt.clientX - rect.left,
@@ -570,7 +575,7 @@ var Editor = function() {
     
     
     /** This converts to keycodes to real characters. Language dependency included. Calls executeKey to show the keys in effect **/
-   function handleKeyCode(keyCode,e) {
+   this.handleKeyCode = function(keyCode,e) {
           
             
                if ( (copyMode) && (!e.shiftKey) ) {
@@ -933,7 +938,7 @@ var Editor = function() {
    }
    
    
-   function highlightCharacter(myCursorPosX, myCursorPosY) {
+   this.highlightCharacter = function(myCursorPosX, myCursorPosY) {
        
        var asciiCode = screenCharacterArray[myCursorPosY+firstLine][myCursorPosX+leftLine][0];
        var foreground = screenCharacterArray[myCursorPosY+firstLine][myCursorPosX+leftLine][1];
@@ -941,7 +946,7 @@ var Editor = function() {
        
    }
    
-    function showOriginalCharacter(myCursorPosX, myCursorPosY) {
+    this.showOriginalCharacter = function(myCursorPosX, myCursorPosY) {
        
        var asciiCode = screenCharacterArray[myCursorPosY+firstLine][myCursorPosX+leftLine][0];
        var foreground = screenCharacterArray[myCursorPosY+firstLine][myCursorPosX+leftLine][1];
@@ -950,7 +955,7 @@ var Editor = function() {
        
    }
    
-   function resetHighlighted() 
+   this.resetHighlighted = function() 
    {
        
        if (copyStartY < copyEndY) {
@@ -1000,7 +1005,7 @@ var Editor = function() {
    
    
    /** This gets called due when a different event gets called **/
-   function handleKeyCode2(keyCode,e) {
+   this.handleKeyCode2 = function(keyCode,e) {
              
                 clearTimeout(hideTimer);
                 codepage.overlay=null;
@@ -1014,7 +1019,7 @@ var Editor = function() {
                         clearTimeout(cursorInterval);
                         resetHighlighted();
                         doshowcharacter=false;
-                        cursorInterval = setTimeout(function() { toggleCursor(); }, 500);
+                        cursorInterval = setTimeout(function() { asciiEditor.toggleCursor(); }, 500);
                     
                     }
                
@@ -1206,7 +1211,7 @@ var Editor = function() {
                                                 setCursorPosY(cursorPosY+1);
                                                 highlightCharacter(cursorPosX, cursorPosY);
                                                 redrawCursor();
-                                                cursorInterval = setTimeout(function() { toggleCursor(); }, 500);
+                                                cursorInterval = setTimeout(function() { asciiEditor.toggleCursor(); }, 500);
                                             } 
                               }
                               return true;
@@ -1295,7 +1300,7 @@ var Editor = function() {
                                                 
                                                 setCursorPosX(cursorPosX-1);
                                                 highlightCharacter(cursorPosX, cursorPosY);   
-                                                cursorInterval = setTimeout(function() { toggleCursor(); }, 500);
+                                                cursorInterval = setTimeout(function() { asciiEditor.toggleCursor(); }, 500);
                                              
                                             }
                               }
@@ -1400,7 +1405,7 @@ var Editor = function() {
    
    
    /** This registers a key event listener, so entering something in the browser has functionality **/
-   function registerEditorKeyEventListener() { 
+   this.registerEditorKeyEventListener = function() { 
 		
                 document.body.addEventListener('keypress',
                 function(e)
@@ -1428,9 +1433,9 @@ var Editor = function() {
                     } else
                     if (keyCode==27) {
                          if ($('#panel').css('display')=="block") {
-
-                            hidePanel(); } else {
-                            showPanel();
+                            	this.hidePanel(); 
+                            } else {
+                            	this.showPanel();
                             }
                     } else
                     if ( (keyCode<=40) && (keyCode>=37) ) { 
@@ -1465,7 +1470,7 @@ var Editor = function() {
     }
         
 		/** This is getting called whenever the user resizes the canvas, to show always the same amount of characters, just with a different width and height **/
-        function resize_canvas(){
+        this.resize_canvas = function(){
             
             canvas = document.getElementById("ansi");
             ctx = document.getElementById("ansi").getContext("2d");
@@ -1491,7 +1496,7 @@ var Editor = function() {
             updateScrollbarY(2);
         }
         
-       function setCanvasSize(canvas) {
+       this.setCanvasSize = function(canvas) {
             
             var window_innerWidth = $(window).width();
             var window_innerHeight = $(window).height();
@@ -1528,7 +1533,7 @@ var Editor = function() {
        /** This is getting called when saving the ANSI, and exports the asciis by saving the decimal values of the screen into a file **/
       
         
-       function myexport() {
+       this.myexport = function() {
        
                 cursorY=firstLine;
 

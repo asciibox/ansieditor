@@ -17,7 +17,8 @@
     },
     "bugs": {
         "url": "git://github.com/asciibox/asciirocks/issues"
-    },”dependencies": {
+    },
+    “dependencies": {
     “ascii_viewer”: "https://github.com/asciibox/ascii_viewer.git"  }
-}
+    }
 }

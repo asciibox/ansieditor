@@ -1,3 +1,6 @@
+var Editor = function() {
+
+}
 
        doRedraw=false;
         var currentDraw=0;
@@ -291,7 +294,7 @@
             cursorPosY=y;
         }
         
-        function initansicanvas() {
+        function initEditorEvents() {
             
                 setTimeout(function() { toggleCursor(true); }, 1000);
              
@@ -308,24 +311,6 @@
                         var my = mouse.y;                
                         var mx = mouse.x;
 
-                        var myScrollbarY = window_innerHeight-canvasCharacterHeight;
-
-                        if (my>(myScrollbarY)) {
-                            movingXStartPos = mx;
-                            console.log("Setting movingX to true");
-                            movingX=true;
-                            movingY=false;
-                        }
-
-                        var myScrollbarX = window_innerWidth-canvasCharacterWidth;
-
-                        if (mx>myScrollbarX) {
-                            movingYStartPos = my;
-                            console.log("Setting movingY to true");
-                            movingY=true;
-                            movingX=false;
-                        }
-                    
                       if ( (copyMode) ) {
                         resetHighlighted();
                         copyMode=false;
@@ -382,37 +367,12 @@
                     mouseDown=false;
                 });
                 
-                ansicanvas.addEventListener('mouseup', function(e) {
-                   mouseDown=false;
-                   if ( (movingX) || (movingY) ) {
-                   firstLine=animOffsetY; 
-                   leftLine=animOffsetX;
-                   movingX=false;
-                   movingY=false;
-                   }
-                });
+                
                 
                 ansicanvas.addEventListener('mousemove', function(e) {
                    
                    
-                   if (movingY==true) 
-                   {
-                       var mouse = getMousePos(ansicanvas, e);
-                       var mx = mouse.x;
-                       var my = mouse.y;
-                       updateScrollbarY(2, my-movingYStartPos);
-                       redrawScreen();
                    
-                   } else
-                   if (movingX==true) 
-                   {
-                       var mouse = getMousePos(ansicanvas, e);
-                       var mx = mouse.x;
-                       var my = mouse.y;
-                       updateScrollbarX(2, mx-movingXStartPos);
-                       redrawScreen();
-                   
-                   } else
                    
                    if (mouseDown==true) {
                     
@@ -437,14 +397,7 @@
             var mouse = getMousePos(ansicanvas, e);
                     var mx = mouse.x;
                     var my = mouse.y;                
-            
-            if (movingY==true) {
-                
-            } else if (movingX==true) {
-                
-            }
-            
-            
+           
                    
                                         showCharacter(false);
 
@@ -566,30 +519,7 @@
             clearTimeout(doubleclickInterval);
         }
         
-		/* This creates a new screenCharacterArray in which the colors and codes get stored, by default color white and space (32) **/
-        function setANSICanvasSize() {
-            var totalDisplayWidth=getTotalDisplayWidth();
-            var totalDisplayHeight=getTotalDisplayHeight();
-            
-            for (var y = 0; y <= totalDisplayHeight; y++) // TODO if really 
-            {                    
-                    var xArray = new Array();
-                    for (var x = 0; x <= totalDisplayWidth; x++)  // TODO if really
-                    {
-                     var data = new Array();
-                     data[0]=32; // ascii code
-                     data[1]=15; // foreground color
-                     data[2]=0; // background color
-                     xArray[x]=data;
-                    }
-                    screenCharacterArray[y]=xArray;
-                    
-                    //console.log("y:"+y+" length:"+screenCharacterArray[y].length);
-            }
-
-           $('body').attr('onresize', 'resize_canvas();');
-            
-        }
+		
         
 		/** This gets called to switch the cursor between insert and overwrite mode **/
         function toggleCursor(interval) {
@@ -1470,7 +1400,7 @@
    
    
    /** This registers a key event listener, so entering something in the browser has functionality **/
-   function registerKeyEventListener() { 
+   function registerEditorKeyEventListener() { 
 		
                 document.body.addEventListener('keypress',
                 function(e)
@@ -1659,3 +1589,4 @@
         }
         
     
+}

@@ -76,6 +76,7 @@
     <!-- original code from ascii.rocks -->
     
     <link rel="stylesheet" href="css/panel.css" type="text/css" media="screen" />
+    <script src="scripts/app.js"></script>
     
     <!-- <link rel="stylesheet" href="fileuploader/fileuploader.css" type="text/css" media="screen" /> -->
 	<!-- This is not needed, but might be useful for additional functionality -->
@@ -182,6 +183,13 @@ window.onbeforeunload=goodbye;
 					  // Initialize the event listening
                       registerEventListeners(); // app.js - if you want to clean it up you can create a class called App
 					  registerKeyEventListeners(); // app.js
+					  
+					  // Editor specific
+					  var editor = new Editor();
+					  
+					  editor.initEditorEvents(); // scripts/app.js
+					  editor.registerEditorKeyEventListeners(); // app.js
+					  
             }); 
            
             /*if (localStorage["ansicanvas"]) 

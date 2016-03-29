@@ -60,9 +60,6 @@ var Editor = function() {
         
         /** This is not used at the moment (shape.js) and should be used for dragging a small overview image (rectangular box) showing the complete ANSI image when it's too large **/
         var ansimation;
-        /** Cursor X and Y positions start at 0, when the cursor is at 1,1 **/
-        var cursorPosX=0;
-        var cursorPosY=0;
         /** Used for toggling the cursor **/
         var cursorShown=true;
         /** Timer used or displaying displaying the cursor in a certain time span, toggling from shown to not shown */
@@ -183,6 +180,7 @@ var Editor = function() {
                 }
             }
         }
+        
         
         this.redrawScreen = function () {
             
@@ -480,17 +478,18 @@ var Editor = function() {
 		
         
 		/** This gets called to switch the cursor between insert and overwrite mode **/
-        this.toggleCursor = function(interval) {
+        this.toggleCursor = function() {
      
             cursorShown=!cursorShown;
             
             if (cursorShown) {
                
             // Depending on what cursor is active, shows character code 220 or character code 95
-            console.log("copyMode:"+copyMode);
-            codepage.drawChar(globalContext, insert==false ? 220 : 95, 15, (copyMode == false) ? 0 : 15, cursorPosX, cursorPosY, true, false); // shows cursor transparently
+            console.log("showing cursor"+cursorPosX+"/"+cursorPosY);
+            codepage.drawChar(this.ctx, insert==false ? 220 : 95, 15, 0, cursorPosX, cursorPosY); // shows cursor transparently
             
             } else {
+                console.log("showing character");
                 this.showCharacter(false); // see below
             }
             
@@ -520,8 +519,8 @@ var Editor = function() {
             var asciiCode = screenCharacterArray[cursorPosY+firstLine][cursorPosX+leftLine][0];
             var foreground = screenCharacterArray[cursorPosY+firstLine][cursorPosX+leftLine][1];
             var background = screenCharacterArray[cursorPosY+firstLine][cursorPosX+leftLine][2];
-       
-            codepage.drawChar(globalContext, asciiCode, foreground, (copyMode == false) ? background : 15, cursorPosX, cursorPosY, false, overwrite);
+
+            codepage.drawChar(globalContext, asciiCode, foreground, (copyMode == false) ? background : 15, cursorPosX, cursorPosY); // , false, overwrite);
             
         }
         

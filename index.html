@@ -50,6 +50,19 @@
    
     <script src="music/mediaelement/mediaelement-and-player.min.js"></script>
     <link rel="stylesheet" href="music/mediaelement/mediaelementplayer.css" />-->
+    <script>
+    	var visibleWidth = 80; // Number of characters visible on the screen
+        var visibleHeight = 45; // Number of characters visible on the screen
+		var defaultVisibleWidth = visibleWidth;
+		var defaultVisibleHeight = visibleHeight;
+		var totalVisibleWidth = 160; // Will get changed after drawChar
+        var totalVisibleHeight=45;  // Will get changed after drawChar	
+		//var defaultTotalVisibleWidth = totalVisibleWidth;
+		//var defaultTotalVisibleHeight = totalVisibleHeight;
+		var defaultTotalVisibleWidth = 0; // This should be used to calculate canvasCharacterWidth accordingly
+        var defaultTotalVisibleHeight=0; // This should calculate canvasCharacterHeight accordingly
+
+    </script>
     <script src="scripts/jquery-1.9.1.min.js" type="text/javascript"></script>
     <script src="scripts/jquery.simple-color.js" type="text/javascript"></script>
     <script src="scripts/jquery-ui-1.10.4.custom.min.js"></script>
@@ -61,6 +74,8 @@
     <script src="node_modules/ascii_viewer/scripts/scrollbar.js"></script>
     <!-- contains most of the variables and event listeners -->
     <script src="node_modules/ascii_viewer/scripts/app.js"></script>
+    <script src="node_modules/ascii_viewer/scripts/events.js"></script>
+
 	
 	
 	<!-- This makes a simple ajax call -->
@@ -505,6 +520,14 @@ window.onbeforeunload=goodbye;
       <area shape="rect" alt="o0" title="" coords="216,175,238,196" onclick="setD(154,16);" />
   </map>
             
+	    <div class="inputgroup"><label>Visible width: </label><input type="text" oninput="this.value = this.value.replace(/[^0-9]/g, ''); this.value = this.value.replace(/(\..*)\./g, '$1');" maxlength="3" id="visibleWidth" disabled>
+		</div>
+		<div style="display:none;" class="inputgroup"><label>Visible height: </label><input type="text"  id="visibleHeight" oninput="this.value = this.value.replace(/[^0-9]/g, ''); this.value = this.value.replace(/(\..*)\./g, '$1');" maxlength="3" disabled>
+		</div>
+		<div class="inputgroup"><label>Total width: </label><input type="text"  id="totalVisibleWidth" oninput="document.getElementById('setdynamicfontsize').checked=false; this.value = this.value.replace(/[^0-9]/g, ''); this.value = this.value.replace(/(\..*)\./g, '$1');" maxlength="3">
+		</div>
+		<div class="inputgroup"><label>Total height: </label><input type="text"  id="totalVisibleHeight" oninput="document.getElementById('setdynamicfontsize').checked=false; this.value = this.value.replace(/[^0-9]/g, ''); this.value = this.value.replace(/(\..*)\./g, '$1');" maxlength="3" disabled="disabled">
+		</div>
 
     </div>
 
@@ -517,7 +540,7 @@ window.onbeforeunload=goodbye;
 	<canvas id="boxcanvas" width="800" height="500" style="border: 1px solid black;">
         Your browser does not support canvas
         </canvas>
-    --><div style="width: 640px" class="centered">
+    --><div style="width: 640px">
         <canvas id="ansi" width=640 height=480></canvas>
     </div>
   <div id="popup" class="popup">

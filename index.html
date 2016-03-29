@@ -103,6 +103,13 @@
     }
     </style>
     <script>
+       function showOverlay() {
+       						   asciiEditor.showPanel();       
+       }
+       function hideOverlay() {
+                               asciiEditor.hidePanel();
+
+       }
        var debug=false;
        var asciiEditor;
         var ansicolors = [
@@ -203,6 +210,8 @@ window.onbeforeunload=goodbye;
 					  
 					  asciiEditor.initEditorEvents(); // scripts/app.js
 					  asciiEditor.registerEditorKeyEventListener(); // app.js
+					  
+					  setInterval("asciiEditor.toggleCursor();", 700);
 					  
             }); 
            
@@ -317,7 +326,7 @@ window.onbeforeunload=goodbye;
     </script>
 </head>
 <body>
-    <div class="panel" id="panel" style="display:none">
+    <div class="panel" id="overlay" style="display:none">
             <h3>Ansi editor</h3>
             <p>This is an ansi editor made of HTML5 and canvas</p>
             <p>The sourcecode is available on <a href="http://www.github.com/fanside/ansieditor" target="_blank">GitHub</a>. You can choose different charsets and show them by pressing 1-9, or you can paint a certain character with the mouse. You can also export the file to xterm ANSI.</p>

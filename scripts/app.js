@@ -155,18 +155,18 @@ var Editor = function() {
         /** This is the panel with the information about how to use this application **/
         this.showPanel = function() {
          
-            if ($('#panel').css('display')!="block") {
+            if ($('#overlay').css('display')=="none") {
                 
-                         $(".panel").slideDown("slow", "easeOutBounce");
-                        } 
+                         $("#overlay").fadeIn().slideDown("slow", "easeOutQuart").css('display', 'inline');
+                        }
                         waitingforDoubleclick = false;
                         clearTimeout(doubleclickInterval);
         }
         
 		/** This hides the panel **/
         this.hidePanel = function() {
-            if ($('#panel').css('display')=="block") {
-                 $(".panel").slideUp("slow", "easeOutBounce");
+            if ($('#overlay').css('display')!="none") {
+                 $("#overlay").fadeOut().slideUp("slow", "easeOutQuart");
             }
             waitingforDoubleclick = false;
             clearTimeout(doubleclickInterval);
@@ -326,18 +326,6 @@ var Editor = function() {
                         resetHighlighted();
                         copyMode=false;
                     }
-                    
-                    if (waitingforDoubleclick==false) {
-                        asciiEditor.hidePanel();
-                        waitingforDoubleclick = true;
-                        clearTimeout(doubleclickInterval);
-                        doubleclickInterval = setTimeout(function() { waitingforDoubleclick=false; }, 300);
-                        
-                    } else {
-                        
-                        asciiEditor.showPanel();
-                    }
-                    
                   
                     if (this.drawingMode) {
                        
@@ -350,20 +338,7 @@ var Editor = function() {
                 
                 
                 
-                    // PANEL !!!!
-                document.getElementById('panel').addEventListener('mousedown', function(e) {
-                    
-                    if (waitingforDoubleclick==false) {
-                        waitingforDoubleclick = true;
-                        clearTimeout(doubleclickInterval);
-                        doubleclickInterval = setTimeout(function() { waitingforDoubleclick=false; }, 400);
-                    } else { // we can save us the work and clear the timeout
-                        this.hidePanel();
-                        waitingforDoubleclick = false;
-                        clearTimeout(doubleclickInterval);
-                    }
-                });
-                    
+                
                  
                 
                 ansicanvas.addEventListener('mouseleave', function(e) {
@@ -1422,10 +1397,10 @@ var Editor = function() {
                         ctrlKey=true;
                     } else
                     if (keyCode==27) {
-                         if ($('#panel').css('display')=="block") {
-                            	this.hidePanel(); 
+                         if ($('#overlay').css('display')=="block") {
+                            	hideOverlay();
                             } else {
-                            	this.showPanel();
+                            	showOverlay();
                             }
                     } else
                     if ( (keyCode<=40) && (keyCode>=37) ) { 

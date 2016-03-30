@@ -311,7 +311,7 @@ var Editor = function() {
              
                 ansicanvas = document.getElementById('ansi');
                 
-                ansicanvas.addEventListener('mousedown', function(e) {
+                $('#ansi').mousedown( function(e) {
                     
                         var window_innerWidth = (visibleWidth*(canvasCharacterWidth));
                         var window_innerHeight = (visibleHeight*(canvasCharacterHeight));
@@ -330,9 +330,29 @@ var Editor = function() {
                         codepage.drawChar(ctx, this.currentChar, this.currentForeground, this.currentBackground, this.cursorPosX, this.cursorPosY, false); // false == update coordinate system
                     }
                     
+                    alert(9);
+                    if (resizeToScreen==false)
+					{					
+                    
+						cursorPosX = Math.floor(mx / canvasCharacterWidth);
+						cursorPosY = Math.floor(my / canvasCharacterHeight);
+						
+					} else 
+					{
+						var window_innerWidth = (visibleWidth*(canvasCharacterWidth));
+						var window_innerHeight = (visibleHeight*(canvasCharacterHeight));
+
+						cursorPosX = Math.floor((mx / window_innerWidth) * visibleWidth);
+						cursorPosY = Math.floor((my / window_innerHeight) * visibleHeight);
+
+					}
+					this.redrawCursor();
+					console.log("Cursor redrawn");
+                    
+                    
                    
                     
-                }, true);
+                }); 
                 
                 
                 

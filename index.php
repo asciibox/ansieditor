@@ -224,12 +224,6 @@
 	  <script src="scripts/requestanimframe.js"></script>
     <link rel="stylesheet" href="css/panel.css" type="text/css" media="screen" />
     <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
-    <link rel="stylesheet" href="fileuploader/fileuploader.css" type="text/css" media="screen" />
-
-   
-    <script src="music/mediaelement/mediaelement-and-player.min.js"></script>
-    <link rel="stylesheet" href="music/mediaelement/mediaelementplayer.css" />
-   
    
     <style type="text/css" media="screen">
    
@@ -324,10 +318,10 @@ window.onbeforeunload=goodbye;
                                          currentPosY++;
                                     }
                   } else {
-                      interpreter = new Interpreter("test.ans", display);
+                      interpreter = new Interpreter("ans/test.ans", display);
                   }
             } else {
-                interpreter = new Interpreter("test.ans", display);
+                interpreter = new Interpreter("ans/test.ans", display);
             }
             
         });

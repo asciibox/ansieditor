@@ -16,3 +16,6 @@ handlers:
 
 - url: /fileuploader
   static_dir: fileuploader 
+
+- url: /ans
+  static_dir: ans

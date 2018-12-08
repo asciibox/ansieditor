@@ -488,8 +488,8 @@ window.onbeforeunload=goodbye;
                     <div class="colleft">
                     <h3>Editing</h3>
                             <ul>
-                                    <!--<li><a href="#" onclick="insert=!insert; return false;" title="toggle cursor">toggle cursor</a></li>
-                                    <li><a href="#" onclick="drawingMode=!drawingMode; return false;" title="toggle drawing mode">toggle drawing mode</a></li>-->
+                                    <li><a href="#" onclick="insert=!insert; return false;" title="toggle cursor">toggle cursor</a></li>
+                                    <li><a href="#" onclick="drawingMode=!drawingMode; return false;" title="toggle drawing mode">toggle drawing mode</a></li>
                                     <li><a href="#" onclick="clearWholeScreen(); return false;" title="clear screen">clear screen</a></li>
                             </ul>
                     </div>

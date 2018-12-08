@@ -27,6 +27,9 @@ var scrollUp = 0;
 var scrollLeft = 0;
 var scrollRight = 0;
 
+var visibleXStart = 0;
+var visibleYStart = 0;
+
 
 
 var bps = 57600;
@@ -78,6 +81,10 @@ function getValues() {
 }
 
 function render() {
+
+    if (typeof(codepage)=='undefined') {
+        return;
+    }
 
     if (scrollDown) {
         while (scrollDown>0) {

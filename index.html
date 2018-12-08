@@ -27,6 +27,187 @@
 <head>
     <meta http-equiv="Content-type" content="text/html; charset=utf-8">
     <title>ascii.rocks</title>
+    <script>
+        /** This contains the ansi colors used in the color picker. No guarantee at all **/
+        window.ansicolors = [
+      '000000', 'cd0000', '00cd00', 'cdcd00', '1e90ff', 'cd00cd', '00cdcd', 'e5e5e5', '4c4c4c', 'ff0000', // 10
+      '00ff00', 'ffff00', '4682b4', 'ff00ff', '00ffff', 'FFFFFF', '000000', '00005F', '000087', '0000af', // 20
+      '0000D7', '0000FF', '005F00', '005F5F', '005f87', '005faf', '005fd7', '005fff', '008700', '00875f', // 30
+      '008787', '0087af', '0087d7', '0087ff', '00af00', '00af5f', '00af87', '00afaf', '00afd7', '00afff', // 40
+      '00d700', '00d787', '00d787', '00d7af', '00d7af', '00d7ff', '00ff00', '00ff5f', '00ff87', '00ffaf', // 50
+      '00ffd7', '00ffff', '5f0000', '5f5fff', '5f0087', '5f00af', '5f00d7', '5f00ff', '5f5f00', '5f5f5f', // 60
+      '5f5f87', '5f5faf', '5f5fd7', '5f5fff', '5f8700', '5f875f', '5f8787', '5f87af', '5f87d7', '5f87ff', // 70
+      '5faf00', '5faf5f', '5faf87', '5fafaf', '5fafd7', '5fafff', '5fd700', '5fd75f', '5fd787', '5fd7af', // 80
+      '5fd7d7', '5fd7ff', '5fff00', '3399cc', '5fff87', '5fffaf', '5fffd7', '5fffff', '870000', '87005f', // 90
+      '870087', '8700af', '8700af', '8700ff', '875f00', '875f5f', '875f87', '875faf', '875fd7', '875fff', // 100 
+      '878700', '87875f', '878787', '8787af', '8787d7', '8787ff', '87af00', '87af5f', '87af87', '87afaf', // 110
+      '87afd7', '87afff', '87d700', '87d75f', '87d787', '87d7af', '87d7d7', '87d7ff', '87ff00', '87ff5f', // 120
+      '87ff87', '87ffaf', '87ffd7', '87ffff', 'af0000', 'af005f', 'af0087', 'af00af', 'af00d7', 'af00ff', // 130
+      'af5f00', 'af5f5f', 'af5f87', 'af5faf', 'af5fd7', 'af5fff', 'af8700', 'af875f', 'af8787', 'af87af', // 140
+      'af87d7', 'af87ff', 'afaf00', 'afd7af', 'afaf87', 'afafaf', 'afafd7', 'afafff', 'afd700', 'afd75f', // 150
+      'afd787', 'afd7af', 'afd7d7', 'afd7ff', 'afff00', 'afff5f', 'afff87', 'afffaf', 'afffd7', 'afffff', // 160
+      'd70000', 'd7005f', 'dd2699', 'd700af', 'd700d7', 'd700ff', 'd75f00', 'd75f5f', 'd75f87', 'd75faf', // 170
+      'd75fd7', 'd75fff', 'd78700', 'd7875f', 'd78787', 'd787af', 'd787d7', 'd787ff', 'd7af00', 'd7af5f', // 180
+      'd7af87', 'd7afaf', 'd7afd7', 'd7afff', 'd7d75f', 'd7d75f', 'd7d787', 'd7d7af', 'd7d7d7', 'd7d7ff', // 190
+      'd7ff00', 'd7ff5f', 'd7ff87', 'd7ffaf', 'd7ffd7', 'd7ffff', 'ff0000', 'ff005f', 'ff0087', 'ff00af', // 200
+      'ff00d7', 'ff00ff', 'ff5f00', 'ff5f5f', 'ff5f87', 'ff5faf', 'ff5fd7', 'ff5fff', 'ff8700', 'ff875f', // 210
+      'ff8787', 'ff87af', 'ff87d7', 'ffaf00', 'ffaf00', 'ffaf5f', 'ffaf87', 'ffafaf', 'ffafd7', 'ffafff', // 220
+      'ffd700', 'ffd75f', 'ffd787', 'ffd7af', 'ffd7d7', 'ffd7ff', 'ffff00', 'ffff5f', 'ffff87', 'ffffaf', // 230
+      'ffffd7', 'ffffff', '080808', '121212', '1c1c1c', '262626', '303030', '3a3a3a', '444444', '4e4e4e', // 240
+      '585858', '626262', '6c6c6c', '767676', '808080', '8a8a8a', '949494', '9e9e9e', 'a8a8a8', 'b2b2b2', // 250
+      'bcbcbc', 'c6c6c6', 'd0d0d0', 'e4e4e4', 'e4e4e4', 'eeeeee', 'ffffff', '000000', '000000', '000000'  // 260
+    ];
+   // Initializes the canvas object using the image that is available inside the images directory for. The image consists of 8x16px blocks in different colors.
+   
+
+    
+      function initScreenCharacterArray(currentBackground) {
+            var charArray = new Array();
+            charArray[0]=32;
+            charArray[1]=currentForeground;
+            charArray[2]=currentBackground;
+            var startY = 0;
+            
+             var bgstring = "#"+ansicolors[currentBackground];
+                      while (startY<totalVisibleHeight) 
+                      {
+                       var startX=0;
+                       screenCharacterArray[startY]=[];
+                       while (startX<totalVisibleWidth) 
+                       {
+                               screenCharacterArray[startY][startX++]=charArray;
+
+
+                       }
+                       startY++;
+                      }
+    }
+    
+
+
+       doRedraw=false;
+        var currentDraw=0;
+        /** used in connection with mouse click **/
+        var waitingforDoubleclick = false;
+        /** timer used for mouseclick **/
+        var doubleclickInterval;
+        /** Canvas context obect **/
+        var globalContext;
+        /** When we are drawing by using mouse clicks, this is set to true **/
+        var drawingMode = false;
+        /** Set on mouse click, and evaluated in mousemove **/
+        var mouseDown =false;
+        /** This is the general width and height, used globally to show the right coordinate system inside the canvas **/
+        var width=320;
+        var height=90;
+
+
+        var screenCharacterArray = new Array();
+        
+        var movingX = false;
+        var movingY = false;
+        var movingXStartPos = 0;
+        var movingYStartPos = 0;
+        
+        // Check/uncheck if the scrollbar is being shown
+        var scrollBarXShown = 1;
+        var scrollBarYShown = 1;
+        
+        var visibleWidth = 160;
+        var visibleHeight = 45;
+        var totalVisibleWidth = 320;
+        var totalVisibleHeight=90;
+        var firstLine=0;
+        var leftLine=0;
+
+        
+        var resizeToScreen=false;
+        /** This contains all characters. This is an array with three int values **/
+        /*
+        asciiCode = screenCharacterArray[cursorPosY][currentPos-1][0];
+        fgcolor = screenCharacterArray[cursorPosY][currentPos-1][1];
+        bgcolor = screenCharacterArray[cursorPosY][currentPos-1][2];
+        */
+       var hideTimer; // Gets used when toggling the color using CTRL-Cursor for clearing the currently shown color
+ 
+        var screenCharacterArray = new Array();
+        initScreenCharacterArray(14);
+                
+        /** When changing the charset. Number one indicates characters from 1-9, other characters are ascii codes **/
+        var currentCharset=7;
+        /** This is the character used when drawing **/
+        var currentChar=216;
+        
+        /** This is an image object, containing the image used when initializing the Codepage object, which has the parameter "images/CO_437_8x16.png" for setting this image **/
+        var codepageImg;
+        /** Actual color. Can get changed by changing the foreground inside the panel with the colors **/
+        var currentColor=15;
+        /** This is ctx = document.getElementById("ansi").getContext("2d"); and gets set at different positions. Should be all at one position **/
+        var ctx;
+        
+        /** This is not used at the moment (shape.js) and should be used for dragging a small overview image (rectangular box) showing the complete ANSI image when it's too large **/
+        var ansimation;
+        /** Cursor X and Y positions start at 0, when the cursor is at 1,1 **/
+        var cursorPosX=0;
+        var cursorPosY=0;
+        /** Used for toggling the cursor **/
+        var cursorShown=true;
+        /** Timer used or displaying displaying the cursor in a certain time span, toggling from shown to not shown */
+        var cursorInterval;
+        /** Depending on the screen size, this has a certain value of pixels **/
+        var characterWidth, characterHeight;
+        /** Depending on what cursor mode is on: Insert or overwrite, whereby in this case different ascii charsets get used **/
+        var insert=true;
+        /** Stores the current fore and background color **/
+        var currentBackground=0;
+        var currentForeground=15;
+        
+        var copyMode=false;
+        var copyStartX=0;
+        var copyStartY=0;
+        var copyEndX=0;
+        var copyEndY=0;
+        
+        
+        var copyArray=new Array();
+        var copyWidth=0;
+        var copyHeight=0;
+        
+        var undo = new Array();
+        var redo = new Array();
+        
+        
+        var ctrlKey=false;
+        
+        /** This gets called when pressing on the blue window, and sets the character set as well as the ascii code for drawing **/
+        function setD(asciiCode, drawingBox) {
+        
+            currentCharset=drawingBox;
+            currentChar=asciiCode;
+        }
+        
+    
+    /** This contains the special characters when choosing one of the character blocks inside the blue window **/
+     var keys = new Array();
+                keys[0] = [ 49, 50, 51, 52, 53, 54, 55, 56, 57, 48 ];
+                keys[1] = [ 218, 191, 192, 217, 196, 179, 195, 180, 193, 194 ];
+                keys[2] = [ 201, 187, 200, 188, 205, 186, 204, 185, 202, 203 ];
+                keys[3] = [ 251, 184, 212, 190, 205, 179, 198, 181, 207, 209 ];
+                keys[4] = [ 161, 183, 211, 135, 179, 186, 199, 182, 208, 144 ];
+                keys[5] = [ 197, 206, 139, 140, 232, 163, 155, 156, 153, 239 ];
+                keys[6] = [ 176, 177, 178, 219, 223, 220, 124, 141, 254, 250 ];
+                keys[7] = [ 001, 002, 003, 004, 005, 006, 196, 127, 014, 207 ];
+                keys[8] = [ 024, 025, 024, 025, 016, 017, 023, 023, 020, 021 ];
+                keys[9] = [ 174, 175, 061, 243, 169, 170, 253, 246, 171, 172 ];
+                keys[10] = [ 149, 241, 020, 021, 235, 157, 227, 167, 251, 252 ];
+                keys[11] = [ 162, 225, 147, 228, 230, 232, 235, 236, 237, 237 ];
+                keys[12] = [ 128, 135, 165, 164, 152, 159, 044, 249, 173, 168 ];
+                keys[13] = [ 131, 132, 133, 160, 248, 134, 142, 143, 145, 146 ];
+                
+   
+                keys[14] = [ 136, 137, 138, 130, 144, 140, 139, 141, 161, 158 ];
+                keys[15] = [ 147, 148, 149, 224, 167, 150, 129, 151, 163, 154 ];
+    </script>
     <script src="scripts/codepagedisplay.js" type="text/javascript"></script>
     <script src="scripts/scrollbar.js" type="text/javascript"></script>
     <script src="scripts/shape.js" type="text/javascript"></script>
@@ -39,8 +220,8 @@
     <script src="scripts/scrollbar.js"></script>
     <script src="asciiss/scripts/parse.js"></script>
     <script src="fileuploader/fileuploader.js"></script>
-	<script src="scripts/interpreter.js"></script>
-	<script src="scripts/requestanimframe.js"></script>
+	  <script src="scripts/interpreter.js"></script>
+	  <script src="scripts/requestanimframe.js"></script>
     <link rel="stylesheet" href="css/panel.css" type="text/css" media="screen" />
     <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
     <link rel="stylesheet" href="fileuploader/fileuploader.css" type="text/css" media="screen" />
@@ -48,6 +229,7 @@
    
     <script src="music/mediaelement/mediaelement-and-player.min.js"></script>
     <link rel="stylesheet" href="music/mediaelement/mediaelementplayer.css" />
+   
    
     <style type="text/css" media="screen">
    
@@ -62,7 +244,8 @@
     }
     </style>
     <script>
-       
+        canvasCharacterWidth = 8;
+        canvasCharacterHeight = 16;
         var currentSong=0;
         var JAVASCRIPT_TEXT_DROP_HERE_TO_UPLOAD="Drop files here to upload";
         var JAVASCRIPT_TEXT_UPLOAD_A_FILE="Upload a file"; 
@@ -150,7 +333,7 @@ window.onbeforeunload=goodbye;
         });
         
         
-        //resizeToScreen=true;
+        /*
           $.ajax({
                 url: 'music/get_urls.php',
                 type: 'GET',
@@ -180,7 +363,7 @@ window.onbeforeunload=goodbye;
                     
                         $('.mejs-time-total').unbind('mouseenter');
                 }
-                });
+                });*/
         
        
             $('#foreground_color').simpleColor({
@@ -311,8 +494,8 @@ window.onbeforeunload=goodbye;
                     <div class="colleft">
                     <h3>Editing</h3>
                             <ul>
-                                    <li><a href="#" onclick="insert=!insert; return false;" title="toggle cursor">toggle cursor</a></li>
-                                    <li><a href="#" onclick="drawingMode=!drawingMode; return false;" title="toggle drawing mode">toggle drawing mode</a></li>
+                                    <!--<li><a href="#" onclick="insert=!insert; return false;" title="toggle cursor">toggle cursor</a></li>
+                                    <li><a href="#" onclick="drawingMode=!drawingMode; return false;" title="toggle drawing mode">toggle drawing mode</a></li>-->
                                     <li><a href="#" onclick="clearWholeScreen(); return false;" title="clear screen">clear screen</a></li>
                             </ul>
                     </div>
@@ -320,16 +503,15 @@ window.onbeforeunload=goodbye;
                     <div class="colright">
                             <h3>Other</h3>
                             <ul>
-                                    <li><a href="#" onclick="myexport(); return false;" title="export to xterm ANSI">export to xterm ANSI</a></li>
+                                    <!--<li><a href="#" onclick="myexport(); return false;" title="export to xterm ANSI">export to xterm ANSI</a></li>-->
                                     <!--<li><a href="#" onclick="$('#popup').bPopup();" title="change width and height">change width and heght</a></li>-->
                                     
                             </ul>
-                            <div id="file-uploader">       
+                           <!-- <div id="file-uploader">       
                                     <noscript>          
                                     <p>Please enable JavaScript to use file uploader.</p>
-                                    <!-- or put a simple form for upload here -->
-                                    </noscript>         
-                            </div>
+                                    </noscript>
+                            </div>-->
                     </div>
             </div>
             <div style="clear:both;"></div>

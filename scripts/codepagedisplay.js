@@ -155,6 +155,8 @@ function Codepage(codepageUrl, callback) {
          function copyChar(ctx, originX, originY, x, y) {
             
        
+            if (typeof(ctx)=='undefined') return;
+
            // This is just some information used when scrolling is implemented
             if (x>=xStart-1) {
                 if (y>=yStart-1) {
@@ -180,7 +182,7 @@ function Codepage(codepageUrl, callback) {
                             var myx = (myasciiCode % 32) * characterWidth+(xpos*256);
                             var myy = Math.floor(myasciiCode / 32) * characterHeight + (ypos*128);
                            
-                            //alert("1:myx="+myx+" myy="+myy+" x="+x+" y="+y+"CW1:"+characterHeight+" canvasCharacterHeight:"+canvasCharacterHeight);
+                           
                             ctx.drawImage(codepageImg, myx, myy, characterWidth, characterHeight, x, y, canvasCharacterWidth, canvasCharacterHeight);
                         
                         

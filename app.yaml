@@ -1,9 +1,6 @@
 runtime: php72
 
 handlers:
-- url: (.+\.(gif|png|jpg|html))$
-  static_files: \1
-  upload: .+\.(gif|png|jpg|html)$
 
 - url: /asciirocks/images
   static_dir: asciirocks/images

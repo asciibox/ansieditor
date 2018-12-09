@@ -2,6 +2,9 @@ runtime: php72
 
 handlers:
 
+- url: /asciirocks/assets
+  static_dir: asciirocks/assets
+
 - url: /asciirocks/images
   static_dir: asciirocks/images
 

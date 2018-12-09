@@ -24,4 +24,4 @@ handlers:
   script: auto
 
 - url: /asciirocks/(.+\.php)$
-  script: asciirocks/index.php
+  script: auto

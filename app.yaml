@@ -6,22 +6,20 @@ handlers:
   upload: .+\.(gif|png|jpg|html)$
 
 - url: /asciirocks/images
-  static_dir: images
+  static_dir: asciirocks/images
 
 - url: /asciirocks/css     
-  static_dir: css
+  static_dir: asciirocks/css
 
 - url: /asciirocks/scripts
-  static_dir: scripts
+  static_dir: asciirocks/scripts
 
 - url: /asciirocks/fileuploader
-  static_dir: fileuploader 
+  static_dir: asciirocks/fileuploader 
 
 - url: /asciirocks/ans
-  static_dir: ans
+  static_dir: asciirocks/ans
 
 - url: /(.+\.php)$
   script: auto
 
-- url: /asciirocks/(.+\.php)$
-  script: auto

@@ -1,0 +1,56 @@
+Default parent:
+{
+    text: "",
+    x: 0,
+    y: 0,
+    fg: default color for text (white),
+    bg: default background color for text (black),
+    form: false,
+    width: 0,
+    offsetX: {},
+    offsetY: 0,
+    id: "body"
+};
+
+Position of elements.
+
+By default all elements have absolute position.
+
+Position on X axis:
+    If element has x coordinate (by left or right) it will be placed on it (position: absolute - by default)
+    If element doesn`t have any style, than position will be inherit from parent
+    If parent has two child elements without x on the same y, than first wiil be placed in the beginning, second after first
+    If element has style position:relative than his x position will be added to parent x position
+
+Position on Y axis
+    If element has x coordinate (by top or bottom) it will be placed on it (position: absolute - by default)
+    If element doesn`t have any style, than position will be inherit from parent
+    If element has style position:relative than his y position will be added to parent y position
+    Element <li> always going from new line (y++)
+
+Styles
+    top, bottom - can be in px or %. Percent calculating from global height (as canvas)
+    left, right - can be in px or %. Percent calculating from global width (as canvas)
+    bottom and right calculating from globals heighr and width, not parent
+    color, background-color - colours for elements, if none inherits from parents, some element have predefined colours
+        default colours can be changed in parser.js:11 (defaultColors)
+    width - width of element, can be used to format margin-right of text (for example in list)
+    height - by default 1 except <textarea>
+    border - can be 1px or 2px, if not 2px than by default 1px, moving child elements right and down by 1 or 2
+    border-color - color of border
+        only div can have borders, in other element style "border" ignored
+
+Elements specific props
+
+<div> using to place borders or nesting elements
+only div can have border
+-width and height attr using only for borders, after calculating borders set to null
+
+<li>
+always going from new line by adding 1 to y position
+
+<input> <textarea>
+have default colours
+
+<textarea>
+has attr cols and rows to calculate width and height, default cols = 20, rows = 10

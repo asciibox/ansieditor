@@ -19,3 +19,6 @@ handlers:
 
 - url: /ans
   static_dir: ans
+
+- url: /(.+\.php)$
+  script: \1

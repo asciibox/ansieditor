@@ -1,0 +1,21 @@
+runtime: php72
+
+handlers:
+- url: /(.+\.(gif|png|jpg|html))$
+  static_files: \1
+  upload: .+\.(gif|png|jpg|html)$
+
+- url: /images
+  static_dir: images
+
+- url: /css     
+  static_dir: css
+
+- url: /scripts
+  static_dir: scripts
+
+- url: /fileuploader
+  static_dir: fileuploader 
+
+- url: /ans
+  static_dir: ans

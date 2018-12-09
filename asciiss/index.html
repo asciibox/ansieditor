@@ -1,288 +1,423 @@
 <!DOCTYPE html>
-<script src="node_modules/asciirocks/scripts/ansi.js" type="text/javascript"></script>
-<script src="node_modules/asciirocks/scripts/jquery-1.9.1.min.js" type="text/javascript"></script>
-<script src="node_modules/asciirocks/scripts/jquery-ui-1.10.4.custom.min.js"></script>
-<script src="node_modules/asciirocks/scripts/app.js"></script>
-<script src="node_modules/asciirocks/scripts/interpreter.js"></script>
-<script src="node_modules/asciirocks/scripts/requestanimframe.js"></script>
-<script src="scripts/x256.js"></script>
-<script src="scripts/parse.js"></script>
-<script src="scripts/Cursor.js"></script>
-<link rel="stylesheet" href="node_modules/asciirocks/css/panel.css" type="text/css" media="screen" />
-<link rel="stylesheet" href="node_modules/asciirocks/css/style.css" type="text/css" media="screen" />
-<style>
-    #ascii_content {
-        font-family:Courier, Mono, Monaco;
-        font-size:10px;
-        letter-spacing:0px;
-    }
-
-    #ascii_content div {
-        display:inline-block;
-    }
-</style>
-<script>
-    var doubleClickStarted = false;
-    var doubleClickInterval;
-	cursor = new Cursor();
-   
-   /** This registers a key event listener, so entering something in the browser has functionality **/
-   function registerParsedKeyEventListener() {
-		
-                document.body.addEventListener('keypress',
-                function(e)
-                {
-                
-                    var keyCode = e.which;
-                   
-                    if (keyCode!=0) {
-                        e.preventDefault(); 
-                        
-                        handleParsedKeyCode(keyCode,e);
-                    }
-                
-                },
-                false);
-                
-                document.body.addEventListener('keydown',
-                function(e)
-                {
-                 
-                    var keyCode = e.which;
-                  
-					if (keyCode == 17) {
-                        ctrlKey=true;
-                    } else
-                    if (keyCode==27) {
-                         if ($('#panel').css('display')=="block") {
-                            hidePanel(); } else {
-                            showPanel();
-                            }
-                    } else
-                    if ( (keyCode<=40) && (keyCode>=37) ) { 
-                        e.preventDefault();
-                        handleParsedKeyCode2(keyCode,e);
-                    } /*else if (keyCode==8) {
-                        e.preventDefault();
-                        handleParsedKeyCode(keyCode, e);
-                    }*/
-                    
-                
-                },
-                false);
-                
-               
-                
-    }
-   
-   
-   
-
-    window.onload = function() {
-        
-		
-
-        registerParsedKeyEventListener();
-        
-		// At the start, if there already is some HTML, the user gets asked if he wants to keep the original HTML
-        if (localStorage.getItem("html")!=null) {
-            if (confirm('Do you want to keep the HTML you have entered before?')) {
-                $('#ascii_textarea').val(localStorage.getItem("html"));
-            } else {
-                localStorage.clear();
-            }
-        }
-        
-		// This defines the screen width in characters
-        width = 160;
-		// Here the height
-        height = 60;
-		// Different modes of showing the characters: Either resized so it fits on the screen, or taking the width of characters for the height
-        resizeToScreen = true;
-
-		// Initializes the canvas object using the image that is available inside the images directory for. The image consists of 8x16px blocks in different colors.
-        codepage = new Codepage("node_modules/asciirocks/images/CO_437_8x16.png", function() {
-
-            setCanvasSize(document.getElementById("ansi"));
-            setANSICanvasSize();
-
-            globalContext = document.getElementById("ansi").getContext("2d");
-
-            doClearScreen(false, true);
-            switchbutton(); // Shows the canvas right from the start and hides the HTML
-
-			globalDisplay = new Display();
-        });
-		
-        
-		// This gets called whenever the user clicks on the Canvas
-          document.getElementById('ansi').addEventListener('mousedown', function(e) {
-                   
-				   
-                    if (doubleClickStarted)
-                    {
-                        doubleClickStarted=false;
-                        switchbutton();
-                        clearTimeout(doubleClickInterval);
-                    }
-                    doubleClickStarted = true;
-                    doubleClickInterval = setTimeout(function() { doubleClickStarted=false; }, 300);
-                   
-                    var ansicanvas = document.getElementById('ansi');
-                    var mouse = getMousePos(ansicanvas, e);
-                    var mx = mouse.x;
-                    var my = mouse.y;                    
-                    
-                    showCharacter();
-                    
-                    myCursorPosX = Math.floor(mx / canvasCharacterWidth);
-                    myCursorPosY = Math.floor(my / canvasCharacterHeight);
-                    
-                    if (myCursorPosX>=getDisplayWidth()-1) { console.log(myCursorPosX+" too far"); setCursorPosX(getDisplayWidth()-1); redrawCursor(); return; }
-                    if (myCursorPosY>=getDisplayHeight()-1) { console.log(myCursorPosY+" too high"); setCursorPosY(getDisplayHeight()-1); redrawCursor(); return; }
-                    
-                    
-                    checkSelectionOnParsed(myCursorPosX, myCursorPosY);
-                    
-                    
-                    
-                });
-        
-        
-    };
-
-    
-
-	// Gets called from calculateContent and shows the parameter text at the given x and y position on the canvas
-    function printthat(text, x, y, fg_rgb,bg_rgb) {
-
-       var mygoto = cursor.goto(x,y);
-						
-						var fg = cursor.rgb(fg_rgb[0], fg_rgb[1], fg_rgb[2]).foreground.current;
-						var bg = "48"+cursor.rgb(bg_rgb[0], bg_rgb[1], bg_rgb[2]).foreground.current.substring(2);
-						fg = String.fromCharCode(27)+"["+fg+"m";
-						bg = String.fromCharCode(27)+"["+bg+"m";
-						
-    
-		parseANSI(mygoto+fg+bg+text);
-
-    }
-
-	function parseANSI(text) {
-		
-		var data = [];
-		for (var i = 0; i < text.length; i++) {
-	            var asciiCode = text.charCodeAt(i);
-				
-                data.push(asciiCode);
-        }
-             
-        var myBuffer = new Uint8Array(data);                            
-
-		
-		var tmp = new Uint8Array(globalBuffer.byteLength + myBuffer.byteLength);
-                        tmp.set(new Uint8Array(globalBuffer), 0);
-                        tmp.set(new Uint8Array(myBuffer), globalBuffer.byteLength);
-                        globalBuffer=tmp;
-
-	}
-
-	// This is just a test function if the ascii table works and gets properly shown
-    function testAsciiTable() {
-        $('#switchbutton').val('Show HTML');
-        $('#ansi').show();
-        $('#ascii_html').hide();
-        drawAsciiTable();
-    }
-
-	// gets called from testAsciiTable and the only purpose is testing the ascii table.
-    function drawAsciiTable() {
-        for (var i = 0; i < 255; i++)
-        {
-            y = 0;
-            var x = i;
-            while (x > 80)
-            {
-                y++;
-                x = x - 81;
-            }
-
-            console.log("x:" + x + "y:" + y);
-
-            codepage.drawChar(ctx, i, 0, 1, x, y);
-        }
-    }
-    
-    /** JS FUNCTIONS CALLED IN PARSE.JS **/
-    
-function parsed_drawChar(ctx, charcode, fg_rgb, bg_rgb, x, y) {
-						
-						var mygoto = cursor.goto(x,y);
-						
-						var fg = cursor.rgb(fg_rgb[0], fg_rgb[1], fg_rgb[2]).foreground.current;
-						var bg = "48"+cursor.rgb(bg_rgb[0], bg_rgb[1], bg_rgb[2]).foreground.current.substring(2);
-						fg = String.fromCharCode(27)+"["+fg+"m";
-						bg = String.fromCharCode(27)+"["+bg+"m";
-						var mychar = String.fromCharCode(charcode);
-						
-						parseANSI(mygoto+fg+bg+mychar);
-
-}
-
-function parsed_showCharacter(bool) {
-    showCharacter(bool);
-}
-
-function parsed_redrawCursor() {
-	
-    redrawCursor(true);
-}
-
-function parsed_setCursorPosX(x) {
-if (typeof(globalDisplay)!="undefined") {
-	var mygoto = cursor.goto(x,globalDisplay.getPosY());
-	
-	parseANSI(mygoto);
-}
-setCursorPosX(x);
-
-}
-function parsed_setCursorPosY(y) {
-	if (typeof(globalDisplay)!="undefined") {
-		var mygoto = cursor.goto(globalDisplay.getPosX(),y);
-		parseANSI(mygoto);
-	}
-	setCursorPosY(y);
-}
-function parsed_getCursorPosX(x) {
-    return cursorPosX;
-}
-function parsed_getCursorPosY(y) {
-    return cursorPosY;
-}
-
-
-function submit() {
-}
-
-</script>
-<body style="width:100%;height:100%;">
+<html lang="en">
+<head>
     <title>Ascii Stylesheet</title>
-    <div id="ascii_content" style="opacity:0" ></div> <!-- must be at the top position for coordinate getters to work -->
-    <span id="ascii_html">
-	<!-- This is the textarea which is used for entering the HTML and CSS for showing the page on the canvas -->
-        The HTML:<textarea id="ascii_textarea" style="width:1024px;height:640;" rows="20" onkeyup="updateAsciiArea();">
-<span style="top:20px;left:20px;color:white;">This look and feel of this text was made by defining CSS style attributes. The HTML was parsed by javascript and the result is this.</span>
-<span style="top:22px;left:20px;color:#3caac8;">Please login!</span>
-<form onsubmit="submit();">
-    <span style="top:25px;left:20px;color:white;">Username: <input type="text" name="username" value="Guest"/></span>
-    <span style="top:27px;left:20px;color:white;">Password: <input type="text" name="password" /><span style="left:45px;"><input type="button" onclick="submit();"></span></span>
-</form>
+    <script src="node_modules/asciirocks/scripts/codepagedisplay.js" type="text/javascript"></script>
+    <script src="node_modules/asciirocks/scripts/buffer.js" type="text/javascript"></script>
+    <script src="node_modules/asciirocks/scripts/scrollbar.js" type="text/javascript"></script>
+    <script src="node_modules/asciirocks/scripts/jquery-1.9.1.min.js" type="text/javascript"></script>
+    <script src="node_modules/asciirocks/scripts/jquery-ui-1.10.4.custom.min.js"></script>
+    <script src="node_modules/asciirocks/scripts/app.js"></script>
+    <script src="node_modules/asciirocks/scripts/interpreter.js"></script>
+    <script src="node_modules/asciirocks/scripts/requestanimframe.js"></script>
+    <script src="scripts/x256.js"></script>
+    <script src="scripts/Cursor.js"></script>
+    <script src="scripts/jQuery.extensions.js"></script>
+    <script src="scripts/parser.js"></script>
+    <script src="scripts/events.js"></script>
+    <script src="scripts/actions.js"></script>
+    <link rel="stylesheet" href="node_modules/asciirocks/css/panel.css" type="text/css" media="screen"/>
+    <link rel="stylesheet" href="node_modules/asciirocks/css/style.css" type="text/css" media="screen"/>
+    <script>
+           window.ansicolors = [
+      '000000', 'cd0000', '00cd00', 'cdcd00', '1e90ff', 'cd00cd', '00cdcd', 'e5e5e5', '4c4c4c', 'ff0000', // 10
+      '00ff00', 'ffff00', '4682b4', 'ff00ff', '00ffff', 'FFFFFF', '000000', '00005F', '000087', '0000af', // 20
+      '0000D7', '0000FF', '005F00', '005F5F', '005f87', '005faf', '005fd7', '005fff', '008700', '00875f', // 30
+      '008787', '0087af', '0087d7', '0087ff', '00af00', '00af5f', '00af87', '00afaf', '00afd7', '00afff', // 40
+      '00d700', '00d787', '00d787', '00d7af', '00d7af', '00d7ff', '00ff00', '00ff5f', '00ff87', '00ffaf', // 50
+      '00ffd7', '00ffff', '5f0000', '5f5fff', '5f0087', '5f00af', '5f00d7', '5f00ff', '5f5f00', '5f5f5f', // 60
+      '5f5f87', '5f5faf', '5f5fd7', '5f5fff', '5f8700', '5f875f', '5f8787', '5f87af', '5f87d7', '5f87ff', // 70
+      '5faf00', '5faf5f', '5faf87', '5fafaf', '5fafd7', '5fafff', '5fd700', '5fd75f', '5fd787', '5fd7af', // 80
+      '5fd7d7', '5fd7ff', '5fff00', '3399cc', '5fff87', '5fffaf', '5fffd7', '5fffff', '870000', '87005f', // 90
+      '870087', '8700af', '8700af', '8700ff', '875f00', '875f5f', '875f87', '875faf', '875fd7', '875fff', // 100 
+      '878700', '87875f', '878787', '8787af', '8787d7', '8787ff', '87af00', '87af5f', '87af87', '87afaf', // 110
+      '87afd7', '87afff', '87d700', '87d75f', '87d787', '87d7af', '87d7d7', '87d7ff', '87ff00', '87ff5f', // 120
+      '87ff87', '87ffaf', '87ffd7', '87ffff', 'af0000', 'af005f', 'af0087', 'af00af', 'af00d7', 'af00ff', // 130
+      'af5f00', 'af5f5f', 'af5f87', 'af5faf', 'af5fd7', 'af5fff', 'af8700', 'af875f', 'af8787', 'af87af', // 140
+      'af87d7', 'af87ff', 'afaf00', 'afd7af', 'afaf87', 'afafaf', 'afafd7', 'afafff', 'afd700', 'afd75f', // 150
+      'afd787', 'afd7af', 'afd7d7', 'afd7ff', 'afff00', 'afff5f', 'afff87', 'afffaf', 'afffd7', 'afffff', // 160
+      'd70000', 'd7005f', 'dd2699', 'd700af', 'd700d7', 'd700ff', 'd75f00', 'd75f5f', 'd75f87', 'd75faf', // 170
+      'd75fd7', 'd75fff', 'd78700', 'd7875f', 'd78787', 'd787af', 'd787d7', 'd787ff', 'd7af00', 'd7af5f', // 180
+      'd7af87', 'd7afaf', 'd7afd7', 'd7afff', 'd7d75f', 'd7d75f', 'd7d787', 'd7d7af', 'd7d7d7', 'd7d7ff', // 190
+      'd7ff00', 'd7ff5f', 'd7ff87', 'd7ffaf', 'd7ffd7', 'd7ffff', 'ff0000', 'ff005f', 'ff0087', 'ff00af', // 200
+      'ff00d7', 'ff00ff', 'ff5f00', 'ff5f5f', 'ff5f87', 'ff5faf', 'ff5fd7', 'ff5fff', 'ff8700', 'ff875f', // 210
+      'ff8787', 'ff87af', 'ff87d7', 'ffaf00', 'ffaf00', 'ffaf5f', 'ffaf87', 'ffafaf', 'ffafd7', 'ffafff', // 220
+      'ffd700', 'ffd75f', 'ffd787', 'ffd7af', 'ffd7d7', 'ffd7ff', 'ffff00', 'ffff5f', 'ffff87', 'ffffaf', // 230
+      'ffffd7', 'ffffff', '080808', '121212', '1c1c1c', '262626', '303030', '3a3a3a', '444444', '4e4e4e', // 240
+      '585858', '626262', '6c6c6c', '767676', '808080', '8a8a8a', '949494', '9e9e9e', 'a8a8a8', 'b2b2b2', // 250
+      'bcbcbc', 'c6c6c6', 'd0d0d0', 'e4e4e4', 'e4e4e4', 'eeeeee', 'ffffff', '000000', '000000', '000000'  // 260
+    ];
+        var insert = false;
+        var copyMode = false;
+        var cursorPosX = 1;
+        var cursorPosY = 1; 
+        cursorInterval = null;
+        var cursor = new Cursor();
+        var codepage, globalDisplay;
+        var width, height;
+          currentBackground = 0;
+          currentForeground = 15;
+          var firstLine = 0;
+          var leftLine = 0;
 
-        </textarea>
+         function initScreenCharacterArray(currentBackground) {
+            var charArray = new Array();
+            charArray[0]=32;
+            charArray[1]=currentForeground;
+            charArray[2]=currentBackground;
+            var startY = 0;
+            
+             var bgstring = "#"+ansicolors[currentBackground];
+                      while (startY<totalVisibleHeight) 
+                      {
+                       var startX=0;
+                       screenCharacterArray[startY]=[];
+                       while (startX<totalVisibleWidth) 
+                       {
+                               screenCharacterArray[startY][startX++]=charArray;
+
+
+                       }
+                       startY++;
+                      }
+    }
+    
+
+
+        $(function () {
+
+
+            //registerParsedKeyEventListener();
+
+            // At the start, if there already is some HTML, the user gets asked if he wants to keep the original HTML
+            /* if (localStorage.getItem("html")!=null) {
+             if (confirm('Do you want to keep the HTML you have entered before?')) {
+             $('#ascii_textarea').val(localStorage.getItem("html"));
+             } else {
+             localStorage.clear();
+             }
+             }*/
+
+            // This defines the screen width in characters
+            width = 160;
+            // Here the height
+            height = 60;
+            // Different modes of showing the characters: Either resized so it fits on the screen, or taking the width of characters for the height
+            resizeToScreen = true;
+
+            // Initializes the canvas object using the image that is available inside the images directory for. The image consists of 8x16px blocks in different colors.
+            codepage = new Codepage("node_modules/asciirocks/images/CO_437_8x16.png", function () {
+
+                setCanvasSize(document.getElementById("ansi"));
+                setANSICanvasSize();
+
+                globalContext = document.getElementById("ansi").getContext("2d");
+
+                doClearScreen(false);
+                globalDisplay = new Display();
+                showHTML(3);
+                eventsHandler.init();
+                showCanvas();
+
+            });
+        });
+
+        // Gets called from calculateContent and shows the parameter text at the given x and y position on the canvas
+        function printthat(text, x, y, fg_rgb, bg_rgb) {
+
+            // Default white
+            fg_rgb = fg_rgb || [255, 255, 255];
+
+            // Default black
+            bg_rgb = bg_rgb || [0, 0, 0];
+
+            var mygoto = cursor.goto(x, y);
+
+            var fg = cursor.rgb(fg_rgb[0], fg_rgb[1], fg_rgb[2]).foreground.current;
+            var bg = "48" + cursor.rgb(bg_rgb[0], bg_rgb[1], bg_rgb[2]).foreground.current.substring(2);
+            fg = String.fromCharCode(27) + "[" + fg + "m";
+            bg = String.fromCharCode(27) + "[" + bg + "m";
+
+
+            parseANSI(mygoto + fg + bg + text);
+
+        }
+
+        function parseANSI(text) {
+
+            var data = [];
+            for (var i = 0; i < text.length; i++) {
+                var asciiCode = text.charCodeAt(i);
+                data.push(asciiCode);
+            }
+
+            var myBuffer = new Uint8Array(data);
+
+
+            var tmp = new Uint8Array(globalBuffer.byteLength + myBuffer.byteLength);
+            tmp.set(new Uint8Array(globalBuffer), 0);
+            tmp.set(new Uint8Array(myBuffer), globalBuffer.byteLength);
+            globalBuffer = tmp;
+        }
+
+        // This is just a test function if the ascii table works and gets properly shown
+        function testAsciiTable() {
+            $('#switchbutton').val('Show HTML');
+            $('#ansi').show();
+            $('#ascii_html').hide();
+            drawAsciiTable();
+        }
+
+        // gets called from testAsciiTable and the only purpose is testing the ascii table.
+        function drawAsciiTable() {
+            for (var i = 0; i < 255; i++) {
+                var y = 0,
+                        x = i;
+
+                while (x > 80) {
+                    y++;
+                    x = x - 81;
+                }
+
+                console.log("x:" + x + "y:" + y);
+
+                codepage.drawChar(ctx, i, 0, 1, x, y);
+            }
+        }
+
+        /** JS FUNCTIONS CALLED IN PARSE.JS **/
+
+        function parsed_drawChar(ctx, charcode, fg_rgb, bg_rgb, x, y) {
+
+            var mygoto = cursor.goto(x, y);
+
+            var fg = cursor.rgb(fg_rgb[0], fg_rgb[1], fg_rgb[2]).foreground.current;
+            var bg = "48" + cursor.rgb(bg_rgb[0], bg_rgb[1], bg_rgb[2]).foreground.current.substring(2);
+            fg = String.fromCharCode(27) + "[" + fg + "m";
+            bg = String.fromCharCode(27) + "[" + bg + "m";
+            var mychar = String.fromCharCode(charcode);
+
+            parseANSI(mygoto + fg + bg + mychar);
+
+        }
+
+        function parsed_showCharacter(bool) {
+            showCharacter(bool);
+        }
+
+        function parsed_redrawCursor() {
+            redrawCursor(true);
+        }
+
+        function parsed_setCursorPosX(x) {
+            if (typeof(globalDisplay) != "undefined") {
+                var mygoto = cursor.goto(x, globalDisplay.getPosY());
+                parseANSI(mygoto);
+            }
+            setCursorPosX(x);
+        }
+        function parsed_setCursorPosY(y) {
+            if (typeof(globalDisplay) != "undefined") {
+                var mygoto = cursor.goto(globalDisplay.getPosX(), y);
+                parseANSI(mygoto);
+            }
+            setCursorPosY(y);
+        }
+        function parsed_getCursorPosX(x) {
+            return cursorPosX;
+        }
+        function parsed_getCursorPosY(y) {
+            return cursorPosY;
+        }
+
+        function submit() {
+            alert("SUBMIT was called");
+        }
+        function register() {
+            alert("register() was called");
+        }
+
+
+        function showCanvas() {
+            $("#html_view").hide();
+            $("#ansi").show();
+
+        }
+        function showHTML(index) {
+            $("#ansi").hide();
+            $("#html_view").show();
+            $(".ascii_textarea").hide();
+            $("#ascii_textarea" + index).show();
+
+            doClearScreen(true);
+
+            tagParser.parse("#ascii_textarea" + index);
+            userActions.init(tagParser.getAll());
+
+            window.parsedData = userActions.getObj();
+
+            if (index === 3) {
+                userActions.setSpecialCommand("editusers", 1);
+                userActions.setSpecialCommand("editattributes", 2);
+            }
+
+        }
+
+    </script>
+    <style>
+        #html_view {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            border: 0;
+            top: 0;
+            overflow: hidden;
+        }
+
+        #html_view {
+            top: 50px;
+            display: none;
+        }
+
+        #ansi {
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: block;
+        }
+
+        #buttons {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Controls -->
+<div id="buttons">
+    <button onclick="showCanvas();" value="Show Canvas">Show Canvas</button>
+    <button onclick="showHTML(1);" value="Show HTML1">Show HTML1</button>
+    <button onclick="showHTML(2);" value="Show HTML2">Show HTML2</button>
+    <button onclick="showHTML(3);" value="Show HTML3">Show HTML3</button>
+</div>
+<!-- textarea -->
+<div id="html_view">
+    <!-- This is the textarea which is used for entering the HTML and CSS for showing the page on the canvas -->
+    <textarea class="ascii_textarea" id="ascii_textarea1" style="width:80%;height:80%;margin: 0 auto; display: none;"
+              rows="20" onkeyup="updateAsciiArea();">
+&lt;div id="simple-form"&gt;
+    &lt;span style="top:20px; left:20px"&gt;Registration to our community allows you to save your edited levels.&lt;/span&gt;
+    &lt;span style="left:20px; top:22px; color: #3caac8"&gt;&lt;input type="button" onclick="register();" value="Do you want to login?"&gt;&lt;/span&gt;
+    &lt;form onsubmit="submit();" action="script.php" method="post"&gt;
+        &lt;span style="top:25px; left:20px"&gt;Username: &lt;input type="text" name="username" value="12345678901234567890123"/&gt;&lt;/span&gt;
+        &lt;span style="top:27px; left:20px"&gt;E-Mail address: &lt;input type="text" name="email" value="2"/&gt;
+        &lt;span style="top:29px; left:20px"&gt;Password: &lt;input type="text" name="password" value="3"/&gt;&lt;span style="left:45px"&gt;&lt;/span&gt;
+        &lt;span style="top:31px; left:20px"&gt;Password repetition: &lt;input type="text" name="password2" value="4"/&gt;&lt;span&gt;&lt;input type="submit" onclick="register();"&gt;&lt;/span&gt;&lt;/span&gt;
+    &lt;/form&gt;
+
+    &lt;textarea cols="100" rows="10"  style="top:33px; left:20px" name="textarea"&gt;I will send you another example app in a few hours which describes how to fix something. &lt;/textarea&gt;
+    </textarea>
+
+    <textarea class="ascii_textarea" id="ascii_textarea2" style="width:80%;height:80%;margin: 0 auto; display: block;"
+              rows="20" onkeyup="updateAsciiArea();">
+<span style="top:20px">
+    <span style="left:20px">
+        <span style="color: red;">t</span>
+        <span style="color: yellow;">e</span>
+        <span style="color: aqua;">s</span>
+        <span style="color: green;">t</span>
     </span>
+</span>
+     </textarea>
 
-    <canvas id="ansi" width="640" height="480" style="display:none"></canvas>
-	<!-- Two buttons to change between the views -->
-    <input type="button" value="Show Ascii" id="switchbutton" onclick="switchbutton();"/>
-    <input type="button" value="Test ascii table" id="testasciitable" onclick="testAsciiTable();" />
+<textarea class="ascii_textarea" id="ascii_textarea3" style="width:80%;height:80%;margin: 0 auto; display: block;"
+              rows="20" onkeyup="updateAsciiArea();">
+<div style="position:absolute;top:0;right:30px;width:29px;height:16px;border-color:green;border:1px;">
+    <ul id="editattributes">
+        <li style="width: 25px">Deleted <input type="checkbox" name="deleted" checked></li>
+        <li style="width: 25px">ANSI Graphics <input type="checkbox" name="ANSI Graphics"></li>
+        <li style="width: 25px">Screen clears <input type="checkbox" name="Screen clears"></li>
+        <li style="width: 25px">More prompts <input type="checkbox" name="moreprompts"></li>
+        <li style="width: 25px">No-Kill flags <input type="checkbox" name="no-kill flags" checked></li>
+        <li style="width: 25px">Ignore downloads hours <input type="checkbox" name="ignoredlhours"></li>
+        <li style="width: 25px">Full Screen editor<input type="checkbox" name="fullscreeneditor"></li>
+        <li style="width: 25px">Mail Check<input type="checkbox" name="mailcheck"></li>
+        <li style="width: 25px">New Files check<input type="checkbox" name="newfilescheck"></li>
+        <li style="width: 25px">No Download Ratio<input type="checkbox" name="nodownloadratio"></li>
+        <li style="width: 25px">Fullscreen viewer<input type="checkbox" name="fullscrenviewer"></li>
+        <li style="width: 25px">Comb. mail check<input type="checkbox" name="combinedmailcheck"></li>
+        <li style="width: 25px">No hotkeys<input type="checkbox" name="nohotkeys"></li>
+    </ul>
+</div>
+<span style="right:18px;color:yellow">Attributes</span>
+<div style="width:100%;height:29px;border-color:green;border:2px;color:lightcyan;">
+    <ul id="editusers" style="navigation:vertical">
+        <li style="width: 17px">Name: <input type="text" name="name" width="40" value="Data Data"></li>
+        <li style="width: 17px">Alias: <input type="text" name="alias" width="40" value="test"></li>
+        <li style="width: 17px">City: <input type="text" name="city" width="30" value="germanz"></li>
+        <li style="width: 17px">Password: <input type="text" name="password" width="20" value="pass"></li>
+        <li style="position:relative;top:1px;width: 17px">Home phone: <input type="text" name="homephone" width="20" value="None"></li>
+        <li style="position:relative;left:40px;top:-1px;width: 17px">Data phone: <input type="text" name="dataphone" width="20" value="None"></li>
+        <li style="width: 17px">Last date: <input type="text" width="20" name="lastdate" value="25.06.14"></li>
+        <li style="position:relative;left:40px;top:-1px;width: 17px">Last time: <input type="text" name="lasttime" width="20" value="25.06.14"></li>
+        <li style="width: 17px">First date: <input type="text" name="firstdate" width="8"></li>
+        <li style="position:relative;left:40px;top:-1px;width: 17px">First time: <input type="text" name="firsttime" width="8"></li>
+        <li style="position:relative;top:1px;width: 17px">Birthday: <input type="text" name="birthday" width="8"></li>
+        <li style="position:relative;left:40px;top:-1px;width: 17px">Age: <input type="text" name="age" width="3" value="42"></li>
+        <li style="width: 17px">Expiration: <input type="text" name="expiration" width="8"></li>
+        <li style="position:relative;left:40px;top:-1px;width: 17px">Days left: <input type="text" name="daysleft" width="4" value="????"></li>
+        <li style="position:relative;top:1px;width: 17px">Uploads: <input type="text" name="uploads" value="0"></li>
+        <li style="position:relative;left:40px;top:-1px;width: 17px">Uploads: <input type="text" name="uploadsmb" value="0"> MB</li>
+        <li style="width: 17px">Downloads: <input type="text" name="downloads" value="0"></li>
+        <li style="position:relative;left:40px;top:-1px;width: 17px">Downloads: <input type="text" name="downloads" value="0"> MB</li>
+        <li style="width: 17px">Calls: <input type="text" name="calls" value="1"></li>
+        <li style="position:relative;left:40px;top:-1px;width: 17px">Messages: <input type="text" name="messages" value="0"></li>
+        <li style="width: 17px">Total time: <input type="text" name="minutes" width="8" value="0"> min</li>
+        <li style="position:relative;top:1px;width: 17px">DL's today<input type="text" name="dlstoday" value="0" width="8"></li>
+        <li style="position:relative;left:40px;top:-1px;width: 17px">Elapsed: <input type="text" name="elapsed" value="0"></li>
+        <li style="width: 17px">Today calls: <input type="text" name="todaycalls" value="1"></li>
+        <li style="width: 17px">Comment: <input type="text" name="comment" value="Not yet commented"></li>
+        <li style="width: 17px">First menu: <input type="text" name="firstmenu" value=""></li>
+        <li style="width: 17px">Language file: <input type="text" name="languagefile" value="ENGLISH"></li>
+        <li style="width: 17px">Screen length: <input type="text" name="screenlength" value=""></li>
+        <li style="width: 17px">Credits: <input type="text" name="credits" value="0"></li>
+        <li style="width: 17px">Pending: <input type="text" name="pending" value="0"></li>
+        <li style="width: 17px">Sex:
+            <span>Male </span><input type="radio" name="sex" value="1"><span> </span>
+            <span>Female </span><input type="radio" name="sex" value="0"><span> </span>
+            <span>Alien </span><input type="radio" name="sex" value="0">
+        </li>
+    </ul>
+</div>
+    <span style="top:31px">shift + 1 - to edit user; shift + 2 - to edit atributes (set in index.html:206)</span>
+    <span style="top:33px; left:20px">
+        Example to show and hide popup window:
+        <input type="button" onmouseover="$(this).setBg('#FFFF00').setFg('black')" onclick="parsedData.find('#hidden').showHidden()" value="Show">
+        <input style="position: relative;left:2px" type="button" onclick="parsedData.find('#hidden').hideHidden()" value="Hide">
+    </span>
+    <div id="hidden" style="top:15px; left: 50px; width:30px; height: 8px; border-color: black; border: 2px; background-color: gray; color: black; display: none;">
+        <span>Popup window </span>
+        <span style="position: relative;top: 1px;"></span>
+        <input type="text" name="uploads" value="0">
+        <input type="button" style="position: relative;top: 2px; left:5px" value="Test" onclick="alert('Test success!!!')">
+    </div>
+    <div style="right:30px;top:17px;height:7px;width:29px;border-color:green;border:1px;">
+        <span>Flags: <span style="color:red">12345678</span></span>
+        <ul id="editflags" style="position: relative;top:1px;left:4px">
+            <li>A: <input type="flags" width="8" name="A" value="00001000"></li>
+            <li>B: <input type="flags" width="8" name="B" value="00000000"></li>
+            <li>C: <input type="flags" width="8" name="C" value="00100000"></li>
+            <li>D: <input type="flags" width="8" name="D" value="00000010"></li>
+        </ul>
+    </div>
+</textarea>
+</div>
+<!-- Canvas -->
+<canvas id="ansi"></canvas>
+</body>
+</html>

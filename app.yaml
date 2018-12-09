@@ -5,20 +5,23 @@ handlers:
   static_files: \1
   upload: .+\.(gif|png|jpg|html)$
 
-- url: /images
+- url: /asciirocks/images
   static_dir: images
 
-- url: /css     
+- url: /asciirocks/css     
   static_dir: css
 
-- url: /scripts
+- url: /asciirocks/scripts
   static_dir: scripts
 
-- url: /fileuploader
+- url: /asciirocks/fileuploader
   static_dir: fileuploader 
 
-- url: /ans
+- url: /asciirocks/ans
   static_dir: ans
 
 - url: /(.+\.php)$
   script: auto
+
+- url: /asciirocks/(.+\.php)$
+  script: asciirocks/index.php

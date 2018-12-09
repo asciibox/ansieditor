@@ -20,6 +20,15 @@ handlers:
 - url: /asciirocks/ans
   static_dir: asciirocks/ans
 
+- url: /asciiss/asciirocks/scripts
+  static_dir: asciiss/asciirocks/scripts
+
+- url: /asciiss/asciirocks/css
+  static_dir: asciiss/asciirocks/css
+
+- url: /asciiss/scripts
+  static_dir: asciiss/scripts
+
 - url: /(.+\.php)$
   script: auto
 

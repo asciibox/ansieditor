@@ -16,7 +16,7 @@
     global.resizeToScreen = true;
 
     // Initializes the canvas object using the image that is available inside the images directory for. The image consists of 8x16px blocks in different colors.
-    global.codepage = new Codepage("node_modules/asciirocks/images/CO_437_8x16.png", function () {
+    global.codepage = new Codepage("asciirocks/images/CO_437_8x16.png", function () {
 
         var canvas = document.getElementById('ansi');
 

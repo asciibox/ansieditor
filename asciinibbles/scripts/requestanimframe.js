@@ -218,7 +218,7 @@ function updatePlayer(player) {
 		var effectID=Math.floor(Math.random()*4)+1;
 		console.log(effectID);	
 
-		if (soundManager) soundManager.play('effect'+effectID);
+		if (typeof(soundManager)!='undefined') soundManager.play('effect'+effectID);
         players[player].totalStones++;
         players[player].playerLength = players[player].playerLength + players[player].totalStones * 2;
         drawStones(); // -> action.js

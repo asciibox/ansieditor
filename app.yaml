@@ -26,6 +26,8 @@ handlers:
 - url: /asciiss/asciirocks/css
   static_dir: asciiss/asciirocks/css
 
+- url: /asciiss/asciirocks/images
+  static_dir: asciiss/asciirocks/images
 
 - url: /asciiss/scripts
   static_dir: asciiss/scripts

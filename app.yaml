@@ -44,6 +44,9 @@ handlers:
 - url: /asciinibbles/asciirocks/css
   static_dir: asciinibbles/asciirocks/css
 
+- url: /asciinibbles/asciirocks/images
+  static_dir: asciinibbles/asciirocks/images
+
 - url: /asciinibbles/image
   static_dir: asciinibbles/image
 

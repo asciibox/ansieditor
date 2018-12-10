@@ -32,6 +32,18 @@ handlers:
 - url: /asciiss/scripts
   static_dir: asciiss/scripts
 
+- url: /asciinibbles/scripts
+  static_dir: asciinibbles/scripts
+
+- url: /asciinibbles/asciirocks/scripts
+  static_dir: asciinibbles/asciirocks/scripts
+
+- url: /asciinibbles/asciiss/scripts
+  static_dir: asciinibbles/asciiss/scripts
+
+- url: /asciinibbles/asciirocks/css
+  static_dir: asciinibbles/asciirocks/css
+
 - url: /(.+\.php)$
   script: auto
 

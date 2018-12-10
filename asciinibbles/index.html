@@ -1,0 +1,299 @@
+<!-- The MIT License (MIT)
+ *
+ * Copyright (c) 2016 Oliver Bachmann, Karlsruhe, Germany
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ -->
+ <!DOCTYPE html>
+<script src="asciirocks/scripts/codepagedisplay.js" type="text/javascript"></script>
+<script src="asciirocks/scripts/buffer.js" type="text/javascript"></script>
+<script src="asciirocks/scripts/scrollbar.js" type="text/javascript"></script>
+<script src="asciirocks/scripts/jquery-1.9.1.min.js" type="text/javascript"></script>
+<script src="asciirocks/scripts/jquery-ui-1.10.4.custom.min.js"></script>
+<script src="asciirocks/scripts/app.js"></script>
+<script src="asciiss/scripts/parse.js"></script>
+<script src="asciiss/scripts/parse_events.js"></script>
+<script src="scripts/editor.js"></script>
+<script src="asciirocks/scripts/interpreter.js"></script>
+<script src="scripts/Cursor.js"></script>
+<script src="scripts/astar-pathfinding-short.js"></script>
+<script src="scripts/requestanimframe.js"></script>
+<script src="scripts/x256.js"></script>
+<script src="scripts/action.js"></script>
+<script src="scripts/php.js"></script>
+<script src="scripts/keyboard.js"></script>
+<script src="scripts/crop.js"></script>
+<script src="scripts/mouse_editor.js"></script>
+<script src="scripts/myparser.js"></script>
+<script src="scripts/ai.js"></script>
+<script src="soundmanager/soundmanager2-nodebug-jsmin.js"></script>
+<script src="jqlite/jqlite.1.1.1.min.js"></script>
+<link rel="stylesheet" href="asciirocks/css/panel.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="asciirocks/css/style.css" type="text/css" media="screen" />
+<style>
+    #ascii_content {
+        font-family:Courier, Mono, Monaco;
+        font-size:10px;
+        letter-spacing:0px;
+    }
+
+    #ascii_content div {
+        display:inline-block;
+    }
+    body {
+        overflow:hidden;
+    }
+</style>
+<script>
+	var dolog=false;
+	var doshowblocks=false;;
+	var fixedstart=true;
+    var numberOfPlayers = 2; // Default number of players
+    var width = 160;
+    var height = 80;
+    var visibleWidth = 160;
+    var visibleHeight = 80;
+    var totalVisibleWidth = 160;
+    var totalVisibleHeight = 80;
+	var calculatedBlocksAhead=new Array();
+	var pauseDelay = 40;
+    var players = new Array();
+	var playerMoved = new Array();
+    var previousKeyBufferCharArray = new Array();
+    var keyBuffers = new Array();
+    var usedColors = new Array();    
+    var enableCursor = false;
+    var gridHeight = height * 2;    
+    playerCoordinates = new Array();
+
+	function playRandom() {
+
+		$.ajax("php/get_music.php", {
+                    dataType: "text",
+                    isLocal: true,
+                    error: function () {
+                       
+                    },
+                    success: function (source) {
+					
+							soundManager.setup({
+								  url: "soundmanager/",
+								  flashVersion: 9, // optional: shiny features (default = 8)
+								  // optional: ignore Flash where possible, use 100% HTML5 mode
+								  // preferFlash: false,
+								  onready: function() {
+										var mySound = soundManager.createSound({
+										 url: source,
+										 onfinish : playRandom
+										});
+										mySound.play();
+								  }
+							});
+
+                    }
+        });
+
+	}
+
+	window.onload = function() {
+
+		$.ajax("php/get_music.php?filename1=Captive_Virus_short.mp3&filename2=Magic_Transition.mp3&filename3=Modern_Blip.mp3&filename4=Modern_Blip3.mp3&filename5=Mystic_Event.mp3", {
+                    dataType: "json",
+                    isLocal: true,
+                    error: function () {
+                       
+                    },
+                    success: function (source) {
+					
+							soundManager.setup({
+								  url: "soundmanager/",
+								  flashVersion: 9, // optional: shiny features (default = 8)
+								  // optional: ignore Flash where possible, use 100% HTML5 mode
+								  // preferFlash: false,
+								  onready: function() {
+										var mySound = soundManager.createSound({
+										 url: source.filename1,
+										 onfinish : playRandom
+										});
+										mySound.play();
+								  }
+							});
+							soundManager.createSound({
+							 id: 'effect1',
+							 url: source.filename2
+							});
+							soundManager.createSound({
+							 id: 'effect2',
+							 url: source.filename3
+							});
+							soundManager.createSound({
+							 id: 'effect3',
+							 url: source.filename4
+							});
+							soundManager.createSound({
+							 id: 'effect4',
+							 url: source.filename5
+							});
+                    }
+        });
+
+		if (dolog)
+		{
+		document.getElementById('coords').style.display="inline";
+		}
+
+	
+		for (var i = 0; i <= numberOfPlayers ; i++ )
+		{
+			playerMoved[i]=false;
+		}
+        initGrid();
+        initPlayers(); // --> action.js
+        imageCropper.init(); //Crop functionality
+        //console.log(isCropping);
+        
+        registerKeyEventListener();
+
+        // This defines the screen width in characters
+        nibbleX = Math.floor(width / 2);
+        nibbleY = Math.floor(height / 2); //height;
+
+        // Different modes of showing the characters: Either resized so it fits on the screen, or taking the width of characters for the height
+        resizeToScreen = true;
+
+        // Initializes the canvas object using the image that is available inside the images directory for. The image consists of 8x16px blocks in different colors.
+        codepage = new Codepage("asciirocks/images/CO_437_8x16.png", function() {
+
+            setCanvasSize(document.getElementById("ansi"));
+            setANSICanvasSize();
+
+            globalContext = document.getElementById("ansi").getContext("2d"); // This must stay intact. Don't comment it out. It's used at several other locations. That's why it's global.
+
+			// false: Assign ascii 32 to the variable screenCharacterArray, and clear the screen
+            doClearScreen(false);
+
+            globalDisplay = new Display();
+            drawStones();
+
+            drawLevelZero();
+
+           
+            started = true;
+          
+            if (localStorage.getItem("levelGrids")!=null) {
+              var json = localStorage.getItem("levelGrids");
+                levelGrids = JSON.parse(json);
+            } else {
+                levelGrids = new Array();
+            }
+   
+        });
+
+        // This gets called whenever the user clicks on the Canvas
+        document.getElementById('ansi').addEventListener('mousedown', mousedown);
+        document.getElementById('ansi').addEventListener('mouseup', mouseup);
+        //document.getElementById('ansi').addEventListener('mousemove', mousemove);    
+    }
+
+    /** This registers a key event listener, so entering something in the browser has functionality **/
+    function registerKeyEventListener() {
+
+
+        document.body.addEventListener('keypress',
+                keypress,
+                false);
+
+        
+        document.body.addEventListener('keydown',
+                keydown,
+                false);
+
+
+
+    }
+</script>
+
+<!-- Crop styles -->
+<style type="text/css">
+    .table {
+        display: table;
+        border-collapse: separate;
+        border-spacing: 10px 50px;
+    }
+    .tableRow {
+        display: table-row;
+    }
+    .tableCell {
+        display: table-cell;
+        vertical-align: top;
+    }
+    .box {
+        border: 10px solid rgba(238, 238, 238, 0.6);
+        background-color: rgba(238, 238, 238, 0.2);
+    }
+</style>
+<body style="width:100%;height:100%;">
+<div style="display:none;" id="coords" style="color:white;">Coordinates</div>    <title>Ascii Nibbles</title>
+
+    <canvas id="ansi" width="640" height="480" ></canvas>
+    <!-- Crop canvas -->
+    <div class="table" id="canvastable" style="display:none;">
+        <div class="tableRow">
+            <div class="tableCell box">
+                <canvas id="panel" width="380" height="380" style="display:inline"></canvas>
+                <p>
+                    <input type="button" id="cropBttn" value="Crop">
+                </p>
+            </div>
+            <div class="tableCell box">
+                <img src="" id="croppedImage">
+            </div>
+        </div>
+    </div>
+
+
+    <div id="ascii_content" style="opacity:0" ></div> <!-- must be at the top position for coordinate getters to work -->
+    <span id="ascii_login" style="display:none">
+	<!-- This is the textarea which is used for entering the HTML and CSS for showing the page on the canvas -->
+        
+<span style="top:20px;left:20px;color:white;">This look and feel of this text was made by defining CSS style attributes. The HTML was parsed by javascript and the result is this.</span>
+<span style="top:22px;left:20px;color:#3caac8;">Please login!</span>
+<form onsubmit="submit();">
+    <span style="top:25px;left:20px;color:white;">Username: <input type="text" name="username" value="Guest"/></span>
+    <span style="top:27px;left:20px;color:white;">Password: <input type="text" name="password" /><span style="left:45px;"><input type="button" onclick="login();"></span></span>
+</form>
+
+       
+    </span>
+    <span id="ascii_register" style="display:none;">
+	<!-- This is the textarea which is used for entering the HTML and CSS for showing the page on the canvas -->
+        
+<span style="top:16px;left:20px;color:white;">1 -9: Number of players                                 E - Level editor</span>
+<span style="top:20px;left:20px;color:white;">Registration to our community allows you to save your edited levels.</span>
+<span style="top:22px;left:20px;color:#3caac8;"><input type="button" onclick="register();">Do you want to login?</input></span>
+<form onsubmit="submit();">
+    <span style="top:25px;left:20px;color:white;">Username: <input type="text" name="username" value="Guest"/></span>
+    <span style="top:27px;left:20px;color:white;">E-Mail address: <input type="text" name="password" />
+    <span style="top:29px;left:20px;color:white;">Password: <input type="text" name="password" /><span style="left:45px;">
+    <span style="top:31px;left:20px;color:white;">Password repetition: <input type="text" name="password" /><span style="left:45px;"><input type="button" onclick="register();"></span></span>
+</form>
+
+       
+    </span>
+    </span>

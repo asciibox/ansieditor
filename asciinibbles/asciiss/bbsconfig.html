@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>BBS</title>
+    <script src="asciirocks/scripts/codepagedisplay.js" type="text/javascript"></script>
+    <script src="asciirocks/scripts/buffer.js" type="text/javascript"></script>
+    <script src="asciirocks/scripts/scrollbar.js" type="text/javascript"></script>
+    <script src="asciirocks/scripts/jquery-1.9.1.min.js" type="text/javascript"></script>
+    <script src="asciirocks/scripts/jquery-ui-1.10.4.custom.min.js"></script>
+    <script src="asciirocks/scripts/app.js"></script>
+    <script src="asciirocks/scripts/interpreter.js"></script>
+    <script src="asciirocks/scripts/requestanimframe.js"></script>
+    <script src="scripts/x256.js"></script>
+    <script src="scripts/Cursor.js"></script>
+    <script src="scripts/parser.js"></script>
+    <script src="scripts/events.js"></script>
+    <script src="scripts/actions.js"></script>
+    <script src="scripts/jQuery.extensions.js"></script>
+    <script src="scripts/bbsconfig.js"></script>
+    <style>
+        body {
+            background-color: #000000;
+        }
+        #html {
+            display: none;
+        }
+        #ansi {
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+<canvas id="ansi"></canvas>
+<div id="html">
+
+    <span id="info-line"></span>
+
+    <!-- Main menu -->
+    <div id="main-menu" style="color:cyan;top:1px;left:0;width:100%;height: 2px;border:2px;border-color:purple;">
+        <span style="width: 5px;"></span>
+        <input class="menu" data-sub="1" type="button" value="?" alt="Information about this config"/>
+        <span style="width: 5px;"></span>
+        <input class="menu" data-sub="2" type="button" value="Registration" alt="Information about the license"/>
+        <span style="width: 5px;"></span>
+        <input class="menu" data-sub="3" type="button" value="Messages" alt="Messages"/>
+        <span style="width: 5px;"></span>
+        <input class="menu" data-sub="4" type="button" value="Files" alt="Files"/>
+        <span style="width: 5px;"></span>
+        <input class="menu" data-sub="5" type="button" value="Other" alt="Other"/>
+        <span style="width: 5px;"></span>
+        <input class="menu" data-sub="6" type="button" value="Colors" alt="Color configuration"/>
+        <span style="width: 5px;"></span>
+        <input class="menu" data-id="limits" type="button" value="Limits" alt="Limits"/>
+        <span style="width: 5px;"></span>
+        <input class="menu" data-id="paths" type="button" value="Paths" alt="Paths"/>
+        <span style="width: 5px;"></span>
+        <input class="menu" type="button" value="Quit" alt="Exit the config program"/>
+    </div>
+
+    <div id="sub-menu-1" class="sub-menu" style="display: none;color:cyan;top:3px;left:6px;width:15px;height:3px;border:2px;border-color:purple;">
+        <p><input data-id="information" type="button" value="Information" alt=""/></p>
+        <p><input data-id="ascii-config" type="button" value="Ascii Config" alt=""/></p>
+    </div>
+
+    <div id="sub-menu-2" class="sub-menu" style="display: none;color:cyan;top:3px;left:11px;width:15px;height:2px;border:2px;border-color:purple;">
+        <p><input data-id="information" type="button" value="Information" alt=""/></p>
+    </div>
+
+    <div id="sub-menu-3" class="sub-menu" style="display: none;color:cyan;top:3px;left:28px;width:15px;height:3px;border:2px;border-color:purple;">
+        <p><input data-id="message-areas" type="button" value="Message areas" alt="Define the message areas"/></p>
+        <p><input data-id="mail-global-options" type="button" value="Global options" alt="Define general message options"/></p>
+    </div>
+
+    <div id="sub-menu-4" class="sub-menu" style="display: none;color:cyan;top:3px;left:41px;width:15px;height:3px;border:2px;border-color:purple;">
+        <p><input data-id="file-areas" type="button" value="File areas" alt="Define the file areas"/></p>
+        <p><input data-id="file-global-options" type="button" value="Global options" alt="Define general file options"/></p>
+    </div>
+
+    <div id="sub-menu-5" class="sub-menu" style="display: none;color:cyan;top:3px;left:51px;width:21px;height:7px;border:2px;border-color:purple;">
+        <p><input data-id="new-users" type="button" value="New users" alt="Define new user parameter"/></p>
+        <p><input data-id="other-general-options" type="button" value="General options" alt="Define general options"/></p>
+        <p><input data-id="on-off-options" type="button" value="ON/OFF settings" alt="Toggle some settings"/></p>
+        <p><input data-id="restrictions" type="button" value="Restrictions" alt="Define restrictions"/></p>
+        <p><input data-id="ctrl-1-9-keys" type="button" value="CTRL 1-9 keys" alt="Define CTRL 1-9 key options"/></p>
+        <p><input data-id="define-keyboard-password" type="button" value="String configuration" alt="Define password for the SysOp keys"/></p>
+    </div>
+
+    <div id="sub-menu-6" class="sub-menu" style="display: none;color:cyan;top:3px;left:61px;width:17px;height:4px;border:2px;border-color:purple;">
+        <p><input data-id="messagebase-filebase-colors" type="button" value="Message/filebase" alt="Define the default message/file base colors"/></p>
+        <p><input data-id="general-colors" type="button" value="General" alt="Define general colors"/></p>
+        <p><input data-id="msg-reader-colors" type="button" value="Msg reader" alt="Define full screen message reader colors"/></p>
+    </div>
+
+    <!-- Information -->
+    <div class="settings" id="information" style="display:none;width:80%;height:10px;top:8px;left:10%;border:2px;border-color:purple;" title="License">
+        <span style="text-align:center">This is free software, running under a MIT license.</span>
+    </div>
+    
+    <div class="settings" id="ascii-config" style="display:none;height: 2px;width:30px;left:60px;margin-left:-15px;top:12px;border:2px;border-color:purple;">
+        <span style="text-align:center;color:gray;position: relative;left: 6px;">Ascii Config 2015</span>
+    </div>
+    
+    <div class="settings" id="message-areas" style="display:none;height:17px;width:70%;top:7px;left:15%;border:2px;border-color:purple;">
+        <span style="top:7px;left:40%;color:cyan">Message Area Configuration</span>
+        <ul style="position:relative;left:1px;">
+            <li style="width: 16px;">
+                Msg area #1 Shift+CursorDown=Next Shift+CursorUp=Prev Shift-1=Jump
+            </li>
+            <li style="width: 16px;">
+                Name:
+                <input type="text" width="30" value="" alt="The name of this message">
+            </li>
+            <li style="width: 16px;">
+                Type:
+                <input type="text" width="1" value="0" range="0-3" alt="The type of this area. 0=Normal, 1=Netmail, 3=Echomail">
+            </li>
+            <li style="width: 16px;">
+                Status:
+                <input type="text" width="1" value="0" range="0-3"
+                              alt="Type of messages. 0=Private & Public, 1=Private, 2=Public, 3=Read only">
+            </li>
+            <li style="width: 16px;">
+                Aka:
+                <input type="text" width="1" value="0" range="0-3" alt="Type of messages. 0=Private&Public, 1=Private, 2=Public, 3=Read only">
+            </li>
+            <li style="width: 16px;">
+                User names:
+                <select alt="How aliases are handled in this area">
+                    <option value="no_aliases">No aliases</option>
+                    <option value="aliases_only">Aliases only</option>
+                    <option value="ask_aliases">Ask aliases</option>
+                    <option value="alias_name">Alias name</option>
+                </select>
+            </li>
+            <li style="width: 16px;">
+                Reply status:
+                <select alt="How replies are handled in this area">
+                    <option value="normal">Normal</option>
+                    <option value="net_normal">Net/normal</option>
+                    <option value="netmail">Netmail</option>
+                    <option value="no_replies">No replies</option>
+                </select>
+            </li>
+            <li style="width: 16px;top:9px;left:82px">
+                Default comb:
+                <select alt="Is this area toggled ON as deault in the combined">
+                    <option>Yes</option>
+                    <option>No</option>
+                </select>
+            </li>
+            <li style="width: 16px;left:82px;top:10px">
+                Allow delete:
+                <select alt="Allow message deleting in this area">
+                    <option>Yes</option>
+                    <option>No</option>
+                </select>
+            </li>
+            <li style="width: 16px;left:82px;top:11px">
+                Allow tagline:
+                <select alt="Allow taglines in this area">
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                </select>
+            </li>
+            <li style="width: 16px;left:82px;top:12px">
+                Template:
+                <select alt="Use this area in the template system">
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                </select>
+            </li>
+            <li style="width: 16px;left:82px;top:13px">
+                Group:
+                <input type="text" width="1" value="0" range="0-3" alt="To which group this area belongs">
+            </li>
+            <li style="width: 16px;left:82px;top:14px">
+                Force mail chk:
+                <select alt="Always use this area in the mail check">
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                </select>
+            </li>
+            <li style="position: relative;top: 1px;">
+                <span style="width: 15px">
+                    Read security:
+                    <input type="text" width="5" value="5" alt="Security level required to read messages">
+                </span>
+                <span style="width: 15px;left: 60px;">
+                    Write security:
+                    <input type="text" width="5" value="5" alt="Security level required to write messages">
+                </span>
+                <span style="width: 15px;left: 100px;">
+                    SysOp security:
+                    <input type="text" width="5" value="32000" alt="SysOp security level in this area">
+                </span>
+            </li>
+            <li>
+                <span>
+                    A Flag: <input type="flags" width="8" value="00000000" alt="A flags needed required to read messages">
+                </span>
+                <span style="left:60px">
+                    A Flag: <input type="flags" width="8" value="00000000" alt="A flags needed required to read messages">
+                </span>
+                <span style="left:100px">
+                    A Flag: <input type="flags" width="8" value="00000000" alt="SysOp A flags in this in this area">
+                </span>
+            </li>
+            <li>
+                <span>
+                    B Flag: <input type="flags" width="8" value="00000000" alt="B flags needed required to read messages">
+                </span>
+                <span style="left:60px">
+                    B Flag: <input type="flags" width="8" value="00000000" alt="B flags needed required to read messages">
+                </span>
+                <span style="left:100px">
+                B Flag: <input type="flags" width="8" value="00000000" alt="SysOp B flags in this in this area">
+            </span>
+            </li>
+            <li>
+                <span>
+                    C Flag: <input type="flags" width="8" value="00000000" alt="C flags needed required to read messages">
+                </span>
+                <span style="left:60px">
+                    C Flag: <input type="flags" width="8" value="00000000" alt="C flags needed required to read messages">
+                </span>
+                <span style="left:100px">
+                    C Flag: <input type="flags" width="8" value="00000000" alt="SysOp C flags in this in this area">
+                </span>
+            </li>
+            <li>
+                <span>
+                    D Flag: <input type="flags" width="8" value="00000000" alt="D flags needed required to read messages">
+                </span>
+                <span style="left:60px">
+                    D Flag: <input type="flags" width="8" value="00000000" alt="D flags needed required to read messages">
+                </span>
+                <span style="left:100px">
+                D Flag: <input type="flags" width="8" value="00000000" alt="SysOp D flags in this in this area">
+            </span>
+            </li>
+            <li style="position: relative;top:1px;">
+                Origin:
+                <input type="text" width="50" alt="Origin line for this area, empty = default origin line">
+            </li>
+        </ul>
+    </div>
+    
+    <div class="settings" id="mail-global-options" style="display:none;height:7px;width:70%;top:7px;left:15%;border:2px;border-color:purple;">
+        <span style="top:7px;left:40%;color:cyan">Global message base options</span>
+        <ul style="position:relative;left:1px;">
+            <li style="width: 30px;">
+                Check mail at logon:
+                <select alt="use personal mail check at logon" name="check_mail_at_logon">
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                </select>
+            </li>
+            <li style="width: 30px;">
+                Colored quotes in msgs:
+                <select name="colored_quotes" alt="Write quote texts in different colors">
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                </select>
+            </li>
+            <li style="width: 30px;">
+                Show userlist when mistyping:
+                <select name="userlist_on_mistyping" alt="Show the userlist if the user mistypes the name in a menu">
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                </select>
+            </li>
+            <li style="width: 30px;">
+                Line editors quote mode:
+                <select name="quote_mode" alt="How quoting is handled in the built-in line editor">
+                    <option value="Quote">Quote</option>
+                    <option value="NoQuotes">No Quotes</option>
+                </select>
+            </li>
+            <li style="width: 30px;">
+                Show user names in group mail:
+                <select name="realname_in_group_mail" alt="Show users real name in group mail messages">
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                </select>
+            </li>
+            <li style="width: 30px;left:82px;top:8px">
+                Quote string:
+                <input type="text" name="quote_string" value="&smiley;"
+                       alt="The string which is added before the quoted lines, and smiley = receivers initials">
+            </li>
+            <li style="width: 30px;left:82px;top:9px">
+                Comment answer board:
+                <input type="text" name="comment_answer_board" value="0">
+            </li>
+            <li style="width: 30px;left:82px;top:10px">
+                Password failure board:
+                <input type="text" value="0" alt="To which boards password failure messages are written, 0 = no messages">
+            </li>
+            <li style="width: 30px;left:82px;top:11px">
+                Message after page board:
+                <input type="text" name="message_after_page_board" value="0"
+                       alt="On which board messages after SysOp pages are written, 0 = no messages">
+            </li>
+            <li style="width: 30px;left:82px;top:12px">
+                Group mail security:
+                <input type="text" value="32000" alt="Minimum security level required to send group messages">
+            </li>
+            <li style="width: 30px;left:82px;top:13px">
+                Birthday chk failure board:
+                <input type="text" value="0"
+                       alt="To which board birthday check failure messages are written, 0 = no messages">
+            </li>
+        </ul>
+    </div>
+    
+    <div class="settings" id="file-areas" style="display:none;height:15px;width:60px;top:7px;left:5%;border:1px;border-color:purple;">
+        <span style="top:7px;left:20%;color:cyan">Area Name:</span>
+        <ul>
+            <li>
+                <input class="new-area" data-id="new-area" type="button" name="new-area" value="New Area" alt="Shift+plus to add, Shift+minus to delete, Enter to edit">
+            </li>
+        </ul>
+    </div>
+    
+    <div class="new-area-settings" id="new-area" style="display:none;height:15px;width:60px;top:7px;left:80px;border:2px;border-color:purple;">
+        <span style="top:7px;left:100px;color:cyan">FLSEARCH editor</span>
+        <ul style="position: relative;left: 1px;">
+            <li style="width: 12px;">
+                Name:
+                <input type="text" width="40">
+            </li>
+            <li style="width: 12px;">
+                Directory:
+                <input type="text" width="40" value="C:\">
+            </li>
+            <li style="width: 12px;">
+                List name:
+                <input type="text" width="5">
+            </li>
+            <li style="width: 12px;">
+                Age:
+                <input type="text" width="5">
+            </li>
+            <li style="width: 12px;">
+                Flags A:
+                <input type="flags" width="8" value="00000000">
+            </li>
+            <li style="width: 12px;">
+                Flags B:
+                <input type="flags" width="8" value="00000000">
+            </li>
+            <li style="width: 12px;">
+                Flags C:
+                <input type="flags" width="8" value="00000000">
+            </li>
+            <li style="width: 12px;">
+                Flags D:
+                <input type="flags" width="8" value="00000000">
+            </li>
+            <li style="width: 12px;">
+                Template:
+                <select>
+                    <option value="yes">Yes</option>
+                    <option value="no">No</option>
+                </select>
+            </li>
+            <li style="width: 12px;">
+                Downloads:
+                <select>
+                    <option value="yes">Yes</option>
+                    <option value="no">No</option>
+                </select>
+            </li>
+            <li style="width: 12px;">
+                Uploads:
+                <select>
+                    <option value="yes">Yes</option>
+                    <option value="no">No</option>
+                </select>
+            </li>
+            <li style="width: 12px;">
+                Virus chk:
+                <select>
+                    <option value="yes">Yes</option>
+                    <option value="no">No</option>
+                </select>
+            </li>
+            <li style="width: 12px;">
+                Dupe scan:
+                <select>
+                    <option value="yes">Yes</option>
+                    <option value="no">No</option>
+                </select>
+            </li>
+            <li style="width: 12px;">
+                New scan:
+                <select>
+                    <option value="yes">Yes</option>
+                    <option value="no">No</option>
+                </select>
+            </li>
+        </ul>
+    </div>
+    
+    <div class="confirm" id="confirm-save" style="display:none;position:relative;top:25px;left:50px;width:45px;height:2px;border:2px;border-color:purple;">
+        <span style="width: 3px;"></span>
+        <span style="color:yellow;">Changes not saved. Save?</span>
+        <span style="width: 3px;"></span>
+        <input type="button" value="Yes">
+        <span style="width: 3px;"></span>
+        <input type="button" value="No">
+    </div>
+    
+    <div class="settings" id="file-global-options" style="display:none;height:8px;width:70%;top:7px;left:15%;border:2px;border-color:purple;">
+        <span style="top:7px;left:40%;color:cyan">Global filearea options</span>
+        <ul style="position: relative;left: 1px;">
+            <li style="width: 30px;">
+                Check files at logon:
+                <select name="files_at_logon" alt="Use new files check at logon">
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                </select>
+            </li>
+            <li style="width: 30px;">
+                Virus check:
+                <select name="virus_check" alt="Run a program after every upload">
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                </select>
+            </li>
+            <li style="width: 30px;">
+                Uploader to files.bbs:
+                <select name="uploader2files" alt="Add uploaders name to files.bbs">
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                </select>
+            </li>
+            <li style="width: 30px;">
+                Use > in long desc:
+                <select name="long_arrow_in_desc" alt="Add long file descriptions to files.bbs with > characters">
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                </select>
+            </li>
+            <li style="width: 30px;">
+                Auto add download counter:
+                <select name="add_download_counter"
+                        alt="Add automatically download counters to FILES.BBS when a file is uploaded">
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                </select>
+            </li>
+            <li style="width: 30px;">
+                Upload credit multiplier:
+                <select name="credit_multiplier" alt="How minutes uploader should give back for every minute upload took">
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                </select>
+            </li>
+            <li style="width: 30px;">
+                Files before ratio check:
+                <input type="text" value="5" name="files_before_ratio_check"
+                       alt="How many files users are allowed to download before the ratio check is activated">
+            </li>
+            <li style="width: 30px;left:82px;top:8px">
+                Minimum upload space (GB):
+                <input type="text" value="5" name="minimum_upload_disk_space"
+                       alt="Minimum diskspace in Kb required before the uploads are allowed">
+            </li>
+            <li style="width: 30px;left:82px;top:9px">
+                Maximum file desc. lines:
+                <input type="text" value="5" name="maximum_desc_lines"
+                       alt="Nr. of file description lines the users are allowed to enter">
+            </li>
+            <li style="width: 30px;left:82px;top:10px">
+                Dl counter left bracket:
+                <input type="text" width="1" value="("
+                       alt="Download counter left bracket, if empty (space) then counter is not used">
+            </li>
+            <li style="width: 30px;left:82px;top:11px">
+                Dl counter right bracket:
+                <input type="text" width="1" value=")"
+                       alt="Download counter right bracket, if empty (space) then counter is not used">
+            </li>
+            <li style="width: 30px;left:82px;top:12px">
+                Download counter digits:
+                <input type="text" width="2" value="1" name="download_counter_digits"
+                       alt="Download counter digits (i.e. 1 = <1>, 2 = <01>, 3 = <001>)">
+            </li>
+            <li style="width: 30px;left:82px;top:13px">
+                File list wrap position:
+                <input type="text" width="2" value="34" name="filelist_wrap_position"
+                       alt="From which X position long lines are wrapped in file lists">
+            </li>
+        </ul>
+    </div>
+    
+    <div class="settings" id="new-users" style="display:none;height:16px;width:70%;top:12px;left:15%;border:2px;border-color:purple;">
+        <span style="top:12px;left:40%;color:cyan">New user options</span>
+        <ul style="position: relative;left: 1px;">
+            <li style="width: 20px">
+                New user sec lvl:
+                <input type="text" value="100" name="new_user_security_level" alt="The security level given to a new user">
+            </li>
+            <li style="width: 20px">
+                New user A flags:
+                <input type="flags" width="8" name="" value="00000000" name="new_user_a_flags" alt="A flags given to a new user">
+            </li>
+            <li style="width: 20px">
+                New user B flags:
+                <input type="flags" width="8" value="00000000" name="new_user_b_flags" alt="B flags given to a new user">
+            </li>
+            <li style="width: 20px">
+                New user C flags:
+                <input type="flags" width="8" value="00000000" name="new_user_c_flags" alt="C flags given to a new user">
+            </li>
+            <li style="width: 20px">
+                New user D flags:
+                <input type="flags" width="8" value="00000000" name="new_user_d_flags" alt="D flags given to a new user">
+            </li>
+            <li style="width: 30px">
+                Ask Voice phone number:
+                <select name="ask_voice_phone_number" alt="Ask home phone number from new users">
+                    <option value="No">No</option>
+                    <option value="Yes">Yes</option>
+                </select>
+            </li>
+            <li style="width: 30px">
+                Ask Data phone number:
+                <select name="ask_data_phone_number" alt="Ask data phone number from new users">
+                    <option value="No">No</option>
+                    <option value="Yes">Yes</option>
+                </select>
+            </li>
+            <li style="width: 30px">
+                Ask birthday:
+                <select name="ask_birthday" alt="Ask birthday from new users">
+                    <option value="No">No</option>
+                    <option value="Yes">Yes</option>
+                </select>
+            </li>
+            <li style="width: 30px">
+                Use aliases:
+                <select name="use_alias" alt="Ask alias from new users">
+                    <option value="Ask">Ask</option>
+                    <option value="No">No</option>
+                    <option value="Yes">Yes</option>
+                </select>
+            </li>
+            <li style="width: 30px">
+                Ask sex:
+                <select name="ask_sex" alt="Ask sex from new users">
+                    <option value="No">No</option>
+                    <option value="Yes">Yes</option>
+                </select>
+            </li>
+            <li style="width: 30px">
+                Ansi graphics:
+                <select name="ansi_graphics" alt="Ask ANSI from new users / never use ANSI / always use ANSI">
+                    <option value="Yes">Yes</option>
+                    <option value="No">no</option>
+                </select>
+            </li>
+            <li style="width: 30px">
+                Mail check:
+                <select name="mail_check" alt="Ask mail check from new users / never use mailcheck / always use mailcheck">
+                    <option value="Ask">Ask</option>
+                    <option value="No">No</option>
+                    <option value="Yes">Yes</option>
+                </select>
+            </li>
+            <li style="width: 30px">
+                File check:
+                <select name="file_check" alt="Ask file check from new users / never use filecheck / always use filecheck">
+                    <option value="Ask">Ask</option>
+                    <option value="No">No</option>
+                    <option value="Yes">Yes</option>
+                </select>
+            </li>
+            <li style="width: 30px">
+                Full screen editor:
+                <select name="full_screen_editor" alt="Ask full screen editor from user / never use / always use">
+                    <option value="Yes">Yes</option>
+                    <option value="No">no</option>
+                </select>
+            </li>
+            <li style="width: 30px">
+                Full screen viewer:
+                <select name="full_screen_viewer" alt="Ask fullscreen viewer from user / never use / always use">
+                    <option value="Yes">Ask</option>
+                    <option value="No">no</option>
+                    <option value="Yes">yes</option>
+                </select>
+            </li>
+            <li style="width: 40px;left: 70px;top: 18px">
+                More prompts:
+                <select name="more_prompts"
+                        alt="Ask page pausing from user / never use page pausing / always use page pausing">
+                    <option value="No">no</option>
+                    <option value="Yes">yes</option>
+                </select>
+            </li>
+            <li style="width: 40px;left: 70px;top: 19px">
+                Screen clears:
+                <select name="screen_clears"
+                        alt="Ask screne clears from user / never use screen clears / always use screen clears">
+                    <option value="Yes">Ask</option>
+                    <option value="No">no</option>
+                </select>
+            </li>
+            <li style="width: 40px;left: 70px;top: 20px">
+                Hotkeys:
+                <select name="hotkeys" alt="Ask hotkeys from user / never use hotkeys / always use hotkeys">
+                    <option value="Ask">ask</option>
+                    <option value="No">no</option>
+                    <option value="Yes">yes</option>
+                </select>
+            </li>
+            <li style="width: 40px;left: 70px;top: 21px">
+                Days until expiration:
+                <input type="text" width="5" value="5" name="days_until_expiration" alt="Days before EXPIRED is executed">
+            </li>
+            <li style="width: 40px;left: 70px;top: 22px">
+                Times to show rules:
+                <input type="text" width="2" value="2" name="times_to_show_rules"
+                       alt="How many times RULES are shown to new users (0 = don't show ever)">
+            </li>
+            <li style="width: 40px;left: 70px;top: 23px">
+                New user password:
+                <input type="text" width="2" value="20" name="new_user_password"
+                       alt="The password required from new users">
+            </li>
+            <li style="width: 40px;left: 70px;top: 24px">
+                New user password verification:
+                <input type="text" width="20" value="2" name="new_user_password" alt="Verification of password (required)">
+            </li>
+            <li style="width: 40px;left: 70px;top: 25px">
+                Page Sysop on user's password fail:
+                <select name="page_sysop_on_pw_fail" alt="Page user when user fails to enter his own password">
+                    <option value="Ask">Ask</option>
+                    <option value="No">No</option>
+                    <option value="Yes">Yes</option>
+                </select>
+            </li>
+            <li style="width: 40px;left: 70px;top: 26px">
+                Page Sysop on new user password fail:
+                <select name="page_sysop_on_new_users_pw_fail" alt="Page Sysop when new user password not matched">
+                    <option value="Ask">Ask</option>
+                    <option value="No">No</option>
+                    <option value="Yes">Yes</option>
+                </select>
+            </li>
+        </ul>
+    </div>
+    
+    <div class="settings" id="other-general-options" style="display:none;height:10px;width:70%;top:12px;left:15%;border:2px;border-color:purple;">
+        <span style="top:12px;left:40%;color:cyan">General options</span>
+        <ul style="position: relative;left: 1px;">
+            <li style="width: 35px;">
+                Inactivity time (Seconds):
+                <input type="text" width="3" value="120" alt="Seconds the users are allowed to be without doing anything before hangup">
+            </li>
+            <li style="width: 35px;">
+                Menu border color (0-7):
+                <input type="text" width="1" alt="The menuborder color, 0 = disabled">
+            </li>
+            <li style="width: 35px;">
+                Max. password tries:
+                <input type="text" width="1" value="3" alt="How many times users are allowed to try to type in a correct password">
+            </li>
+            <li style="width: 35px;">
+                Page bell width:
+                <input type="text" width="2" value="30" alt="Page width in seconds">
+            </li>
+            <li style="width: 35px;">
+                Entry color (0-15):
+                <input type="text" width="2" value="14" alt="Color for the user input">
+            </li>
+            <li style="width: 35px;">
+                Age graph starting age:
+                <input type="text" width="2" value="12" alt="Age graph start age (start = 12 -> end = 33, start = 13 -> end = 34 etc.">
+            </li>
+            <li style="width: 35px;">
+                Birthday verify after X calls:
+                <input type="text" width="2" value="0" alt="After how many calls users birthda is verified (0 = no verify)">
+            </li>
+            <li style="width: 35px;left:70px; top:13px;">
+                Max. Logon time (Minutes):
+                <input type="text" width="3" value="10">
+            </li>
+            <li style="width: 35px;left:70px; top:14px;">
+                Entry field color (0-7):
+                <input type="text" width="3" value="1" alt="Logon time limit">
+            </li>
+            <li style="width: 35px;left:70px; top:15px;">
+                Max. Pages per call:
+                <input type="text" width="1" value="3" alt="Maximum SysOp page times per one call">
+            </li>
+            <li style="width: 35px;left:70px; top:16px;">
+                SysOp security level:
+                <input type="text" width="5" value="32000" alt="SysOps security level">
+            </li>
+            <li style="width: 35px;left:70px; top:17px;">
+                Max. minutes in bank:
+                <input type="text" width="3" value="100" alt="Max. time (in minutes) the users may have in the time bank">
+            </li>
+            <li style="width: 35px;left:70px; top:18px;">
+                Seconds before screen blanking:
+                <input type="text" width="3" value="0" alt="Seconds before screen is blanked in the bare-foot mode (0 = disable blanking)">
+            </li>
+            <li style="width: 35px;left:70px; top:19px;">
+                Password character:
+                <input type="text" width="1" value="*" alt="The character shown instead a letter in password protected question">
+            </li>
+            <li style="width: 35px;position: relative;top: 1px;">
+                Logon info strs:
+                <select name="logon_info_str">
+                    <option value="System">System</option>
+                    <option value="SysOp">SysOp</option>
+                    <option value="Both">Both</option>
+                </select>
+            </li>
+            <li style="width: 35px;left: 70px;top: 21px;">
+                First menu in system:
+                <input type="text" width="20" name="first_menu" value=".MNU" alt="First menu in your BBS (without extension), if blank then TOP menu is used">
+            </li>
+        </ul>
+    </div>
+    
+    <div class="settings" id="on-off-options" style="display:none;height:7px;width:70%;top:12px;left:15%;border:2px;border-color:purple;">
+        <span style="top:12px;left:40%;color:cyan">On/off options</span>
+        <ul style="position: relative;left: 1px;">
+            <li style="width: 30px;">
+                Allow SysOp remotely:
+                <select name="allow_sysop_remotely" alt="Allow SsOp to logon remotely">
+                    <option value="no">No</option>
+                    <option value="yes">Yes</option>
+                </select>
+            </li>
+            <li style="width: 30px;">
+                Logon pwds to SysOp:
+                <select name="logon_pwds_to_sysop" alt="Show users password on the status line at logon">
+                    <option value="no">No</option>
+                    <option value="yes">Yes</option>
+                </select>
+            </li>
+            <li style="width: 30px;">
+                Run system in mono mode:
+                <select name="run_in_mono" alt="Do you want to run it as if you had a monochrome monitor?">
+                    <option value="no">No</option>
+                    <option value="yes">Yes</option>
+                </select>
+            </li>
+            <li style="width: 30px;">
+                Allow one word names:
+                <select name="allow_one_word_names" alt="Allow one word user names">
+                    <option value="no">No</option>
+                    <option value="yes">Yes</option>
+                </select>
+            </li>
+            <li style="width: 30px;">
+                Allow multi word names
+                <select name="allow_multi_word_names" alt="Allow multi word user names">
+                    <option value="no">No</option>
+                    <option value="yes">Yes</option>
+                </select>
+            </li>
+            <li style="width: 30px;">
+                Exclude SysOp:
+                <select name="exclude_sysop" alt="Exclude SysOp from all the lists">
+                    <option value="no">No</option>
+                    <option value="yes">Yes</option>
+                </select>
+            </li>
+            <li style="width: 30px;left: 70px;top: 13px;">
+                Capitalize city:
+                <select name="capitalize_city" alt="Capitalize users city">
+                    <option value="no">No</option>
+                    <option value="yes">Yes</option>
+                </select>
+            </li>
+            <li style="width: 30px;left: 70px;top: 14px;">
+                Page reason to subject:
+                <select name="page_reason_to_subject"
+                        alt="Insert page reason to mesasge subject when user posts a msg after page">
+                    <option value="no">No</option>
+                    <option value="yes">Yes</option>
+                </select>
+            </li>
+            <li style="width: 30px;left: 70px;top: 15px;">
+                Capture chat log:
+                <select name="birthday_verify_after_x_calls" alt="Always open automatically capture file when a chat is executed">
+                    <option value="no">No</option>
+                    <option value="yes">Yes</option>
+                </select>
+            </li>
+            <li style="width: 30px;left: 70px;top: 16px;">
+                SysOp fast logon:
+                <select name="sysop_fast_logon">
+                    <option value="no">No</option>
+                    <option value="yes">Yes</option>
+                </select>
+            </li>
+            <li style="width: 30px;left: 70px;top: 17px;">
+                Give chat time back:
+                <select name="give_chat_time_back" alt="Give back to user the time spent in chat with SysOp">
+                    <option value="no">No</option>
+                    <option value="yes">Yes</option>
+                </select>
+            </li>
+            <li style="width: 30px;left: 70px;top: 18px;">
+                Logon city verify:
+                <select name="logon_city_verify" alt="Verify users city at logon">
+                    <option value="no">No</option>
+                    <option value="yes">Yes</option>
+                </select>
+            </li>
+        </ul>
+    </div>
+    
+    <div class="settings" id="restrictions" style="display:none;height:13px;width:70%;top:12px;left:15%;border:2px;border-color:purple;">
+        <span style="top:12px;left:40%;color:cyan">Restrictions</span>
+        <ul style="position: relative;left:10px">
+            <li style="width: 30px">
+                Downloading time window:
+                <input name="download_start_time" type="time" width="5" value="00:00" alt="Start of downloading time">
+                <span> </span><span>to </span>
+                <input name="download_end_time" type="time" width="5" value="23:59" alt="End of downloading time">
+            </li>
+            <li style="width: 30px">
+                Min. security to logon:
+                <input type="text" width="5" value="0" name="minimum_security2logon" alt="Minimum security level required to logon">
+            </li>
+            <li style="width: 30px">
+                Minimum age to logon:
+                <input type="text" width="2" value="0" name="minumum_age" alt="Minimum age required to logon">
+            </li>
+            <li style="width: 30px">
+                Password to logon:
+                <input type="password" width="12" value="" name="password_to_logon" alt="Password required to logon, if empty no password is required">
+            </li>
+            <li style="width: 30px">
+                Password repetition to logon:
+                <input type="password" width="12" value="" alt="Please verify your password here">
+            </li>
+            <li style="width: 30px">
+                Sysop page times Sunday:
+                <input name="page_start_sunday" type="time" width="5" value="00:00" alt="Paging start time">
+                <span> </span><span>to </span>
+                <input name="page_end_sunday" type="time" width="5" value="23:59" alt="Paging end time">
+            </li>
+            <li style="width: 30px">
+                Sysop page times Monday:
+                <input name="page_start_monday" type="time" width="5" value="00:00" alt="Paging start time">
+                <span> </span><span>to </span>
+                <input name="page_end_monday" type="time" width="5" value="23:59" alt="Paging end time">
+            </li>
+            <li style="width: 30px">
+                Sysop page times Tuesday:
+                <input name="page_start_tuesday" type="time" width="5" value="00:00" alt="Paging start time">
+                <span> </span><span>to </span>
+                <input name="page_end_tuesday" type="time" width="5" value="23:59" alt="Paging end time">
+            </li>
+            <li style="width: 30px">
+                Sysop page times Wednesday:
+                <input name="page_start_wednesday" type="time" width="5" value="00:00" alt="Paging start time">
+                <span> </span><span>to </span>
+                <input name="page_end_wednesday" type="time" width="5" value="23:59" alt="Paging end time">
+            </li>
+            <li style="width: 30px">
+                Sysop page times Thursday:
+                <input name="page_start_thursday" type="time" width="5" value="00:00" alt="Paging start time">
+                <span> </span><span>to </span>
+                <input name="page_end_thursday" type="time" width="5" value="23:59" alt="Paging end time">
+            </li>
+            <li style="width: 30px">
+                Sysop page times Friday:
+                <input name="page_start_friday" type="time" width="5" value="00:00" alt="Paging start time">
+                <span> </span><span>to </span>
+                <input name="page_end_friday" type="time" width="5" value="23:59" alt="Paging end time">
+            </li>
+            <li style="width: 30px">
+                Sysop page times Saturday:
+                <input name="page_start_saturday" type="time" width="5" value="00:00" alt="Paging start time">
+                <span> </span><span>to </span>
+                <input name="page_end_saturday" type="time" width="5" value="23:59" alt="Paging end time">
+            </li>
+    
+        </ul>
+    </div>
+    
+    <div class="settings" id="ctrl-1-9-keys" alt="String to show or type in" style="display:none;height:10px;width:70%;top:12px;left:15%;border:2px;border-color:purple;">
+        <span style="top:12px;left:40%;color:cyan">CTRL + 1-9 keys</span>
+        <ul style="position: relative;left: 1px;">
+            <li>CTRL-1:<input name="ctrl1" type="text" width="50" value=""></li>
+            <li>CTRL-2:<input name="ctrl2" type="text" width="50" value=""></li>
+            <li>CTRL-3:<input name="ctrl3" type="text" width="50" value=""></li>
+            <li>CTRL-4:<input name="ctrl4" type="text" width="50" value=""></li>
+            <li>CTRL-5:<input name="ctrl5" type="text" width="50" value=""></li>
+            <li>CTRL-6:<input name="ctrl6" type="text" width="50" value=""></li>
+            <li>CTRL-7:<input name="ctrl7" type="text" width="50" value=""></li>
+            <li>CTRL-8:<input name="ctrl8" type="text" width="50" value=""></li>
+            <li>CTRL-9:<input name="ctrl9" type="text" width="50" value=""></li>
+        </ul>
+    </div>
+    
+    <div class="settings" id="define-keyboard-password" style="display:none;height:2px;width:70%;top:12px;left:15%;border:2px;border-color:purple;">
+        <span style="color:gray">Keyboard password: <input type="text" width="10" value=""></span>
+    </div>
+    
+    <div class="color-settings" id="messagebase-filebase-colors" style="display:none;height:14px;width:70%;top:9px;left:15%;border:2px;border-color:purple;">
+        <span style="top:9px;left:40%;color:yellow">COLOR CONFIGURATION (Page 1)</span>
+        <ul style="position: relative;left: 1px;">
+            <li style="color:purple;"><input type="button" value='1. Message #1 "AsciiConfig" (Public)' data-color="purple"></li>
+            <li style="color:yellow;"><input type="button" value='2. From: Oliver Bachmann' data-color="yellow"></li>
+            <li style="color:green;"><input type="button" value='3. To: Oliver Bachmann' data-color="green"></li>
+            <li style="color:purple;"><input type="button" value='4. Subject: Bla Bla' data-color="purple"></li>
+            <li style="color:cyan;"><input type="button" value='5. Subject: Bla Bla' data-color="cyan"></li>
+            <li style="color:yellow;"><input type="button" value='6. (A)gain, (N)ext, (B)ack, (R)eply, (S)top' data-color="yellow"></li>
+            <li style="color:white;position: relative;left: 5px;top:1px">
+                <span style="width: 25px">7.</span>
+                <span style="width: 25px">8.</span>
+                <span style="width: 25px">9.</span>
+                <span style="width: 25px">0.</span>
+            </li>
+            <li style="color:yellow;">
+                <span style="width: 1px"><input type="button" value='THISISSOMEFILENAME.ZIP' data-color="yellow"></span>
+                <span style="width: 25px"><input type="button" value='8600KB' data-color="yellow"></span>
+                <span style="width: 25px"><input type="button" value='28-06-15' data-color="yellow"></span>
+                <span style="width: 25px"><input type="button" value='This is the ulimate description' data-color="yellow"></span>
+            </li>
+            <li style="color:white;position: relative;top: 1px;">Press 0-9 to select field and arrow keys to change color</li>
+            <li style="color:white;">Press (ESC) to exit or (D) for default colors</li>
+        </ul>
+    </div>
+    
+    <div class="settings" id="general-colors" style="display:none;height:18px;width:70%;top:9px;left:15%;border:2px;border-color:purple;">
+        <span style="top:9px;left:40%;color:yellow">COLOR CONFIGURATION (Page 2)</span>
+        <ul style="position: relative;left: 1px;">
+            <li style="color:white;">
+                <span>(1)</span>
+                <span>(2)</span>
+            </li>
+            <li style="color:yellow;">
+                <span>1 </span>
+                <span style="color:purple;">Support area</span>
+            </li>
+            <li style="color:yellow;">
+                <span>2 </span>
+                <span style="color:purple;">General area</span>
+            </li>
+            <li style="position: relative;top: 1px;">
+                <span style="color:white;">(3)</span>
+                <span style="color:green;">Choose filearea:</span>
+            </li>
+            <li style="position: relative;top: 1px;">
+                <span style="color:white;">(4)</span>
+                <span style="color:blue;">Press &lt;ENTER&gt; to continue:</span>
+            </li>
+            <li style="position: relative;top: 1px;">
+                <span style="color:white;">(5)</span>
+                <span style="color:yellow;">SysOps text color in fullscreen chat</span>
+            </li>
+            <li>
+                <span style="color:white;">(6)</span>
+                <span style="color:cyan;"> User text color in fullscreen chat</span>
+            </li>
+            <li style="color:cyan;background-color:blue;width:111px;position: relative;top: 1px;left:-1px">
+                (7) Statusline foreground color
+            </li>
+            <li style="color:cyan;background-color:blue;width:111px;position: relative;left:-1px;">
+                (8) Statusline background color
+            </li>
+            <li style="position: relative;top: 1px;">Press 1-8 to select field and arrow keys to changeolor</li>
+            <li>Press (ESC) to exit or (D) for default colors</li>
+        </ul>
+    </div>
+    
+    <div class="settings" id="msg-reader-colors" style="display:none;height:18px;width:70%;top:9px;left:15%;border:2px;border-color:purple;">
+        <span style="top:9px;left:40%;color:yellow">COLOR CONFIGURATION (Page 3)</span>
+        <ul>
+            <li style="width:111px;color:black;background-color:gray;">"private message" (Private)</li>
+            <li>
+                <span style="color:yellow;">Date:</span>
+                <span style="color:green;">19-Mar-15 10:27 pm (Received on 19-Mar-15 11:00pm)</span>
+            </li>
+            <li>
+                <span style="color:yellow;">From:</span>
+                <span style="color:green;">Oliver Bachmann</span>
+            </li>
+            <li>
+                <span style="color:yellow;">To:</span>
+                <span style="color:light-cyan;">Oliver Bachmann</span>
+            </li>
+            <li>
+                <span style="color:yellow;">Subj:</span>
+                <span style="color:green;">Asciibox</span>
+            </li>
+            <li style="color:white;background-color:blue;width:111px;">#3655 <= => #3657</li>
+            <li style="color:gray;">RV> This is quoted text</li>
+            <li style="color:cyan;position: relative;top: 1px;">This is message text</li>
+            <li style="color:yellow;position: relative;top: 2px;"><-> Previous reply</li>
+            <li style="color:yellow;">(A)gain, (N)ext, (B)ack, (J)ump, (R)eply, (W)rite,(D)elete, (K)eep, (C)opy</li>
+            <li style="color:yellow;">(X)port, (E)dit, (P)vt/Pub, (U)pdate user, (S)top ?</li>
+            <li style="position: relative;top: 1px;">Press 1-9,:,; or < to select field and arrow keys to change color</li>
+            <li>Press (ESC) to exit or (D) for default colors
+            </li>
+        </ul>
+    </div>
+    
+    <div class="settings" id="paths" style="display:none;height:4px;width:70%;top:5px;left:15%;border:2px;border-color:purple;">
+        <span style="top:5px;left:40%;color:cyan">Paths</span>
+        <ul style="position: relative;left: 1px;">
+            <li style="width: 30px;">
+                Text path:
+                <input type="text" name="text_path" value="">
+            </li>
+            <li style="width: 30px;">
+                Menu path:
+                <input type="text" name="text_path" value="">
+            </li>
+            <li style="width: 30px;">
+                MsgBase path:
+                <input type="text" name="text_path" value="">
+            </li>
+        </ul>
+    </div>
+
+    <div class="settings" id="limits" style="display:none;height:9px;width:70%;top:5px;left:15%;border:2px;border-color:purple;">
+        <span style="top:5px;left:40%;color:cyan">Security level editor:</span>
+        <ul style="position: relative;left: 1px;">
+            <li style="width: 30px;">
+                Security level:
+                <input type="text" value="0">
+            </li>
+            <li style="width: 30px;">
+                Download limit per day (MB):
+                <input type="text" width="6" value="250">
+            </li>
+            <li style="width: 30px;">
+                Total download limit (MB):
+                <input type="text" width="6" value="2000">
+            </li>
+            <li style="width: 30px;">
+                Time limit (minutes):
+                <input type="text" width="4" value="60">
+            </li>
+            <li style="width: 30px;">
+                Calls allowed per day:
+                <input type="text" width="3" value="50">
+            </li>
+            <li style="width: 30px;">
+                Download/Upload ratio (Kb):
+                <input type="text" width="3" value="1">
+            </li>
+            <li style="width: 30px;">
+                Calls allowed per day:
+                <input type="text" width="3" value="50">
+            </li>
+            <li style="width: 30px;">
+                Description:
+                <input type="text" width="50" value="test user">
+            </li>
+        </ul>
+    </div>
+    
+    <div class="settings" id="confirm-save-limits" style="display:none;position:relative;top:5px;left:50%;width:80px;margin-left:-40px;border:2px;border-color:purple;">
+        <span style=" color:yellow;">Limit changes not saved. Save? (Y/n)</span>
+    </div>
+</div>
+<script src="scripts/init.js"></script>
+</body>
+</html>

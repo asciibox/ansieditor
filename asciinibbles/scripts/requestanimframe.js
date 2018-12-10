@@ -217,7 +217,8 @@ function updatePlayer(player) {
     if (colorEquals(grid[nibbleY][nibbleX], yellow)) {
 		var effectID=Math.floor(Math.random()*4)+1;
 		console.log(effectID);	
-		soundManager.play('effect'+effectID);
+
+		if (soundManager) soundManager.play('effect'+effectID);
         players[player].totalStones++;
         players[player].playerLength = players[player].playerLength + players[player].totalStones * 2;
         drawStones(); // -> action.js

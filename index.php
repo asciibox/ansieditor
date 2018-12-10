@@ -15,8 +15,8 @@ switch (@parse_url($_SERVER['REQUEST_URI'])['path']) {
     case '/asciiss':
         require 'asciiss/index.html';
 	break;
-    case '/asciiss/bbsdemo.html':
-        require 'asciiss/bbsdemo.html';
+    case '/asciiss/bbsconfig.html':
+        require 'asciiss/bbsdconfig.html';
 	break;
     default:
         http_response_code(404);

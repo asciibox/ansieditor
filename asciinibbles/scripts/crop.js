@@ -31,7 +31,7 @@ var imageCropper = {
 
     initCanvas: function(image) {
         this.image = new Image();
-        this.image.src = "canvas.png";
+        this.image.src = "image/canvas.png";
         this.image.onload = function() {
             this.ctx.canvas.width = this.image.width;
             this.ctx.canvas.height = this.image.height;

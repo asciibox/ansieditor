@@ -44,6 +44,9 @@ handlers:
 - url: /asciinibbles/asciirocks/css
   static_dir: asciinibbles/asciirocks/css
 
+- url: /asciinibbles/image
+  static_dir: asciinibbles/image
+
 - url: /(.+\.php)$
   script: auto
 

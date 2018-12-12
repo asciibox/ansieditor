@@ -2,11 +2,11 @@
 switch (@parse_url($_SERVER['REQUEST_URI'])['path']) {
     case '/':
         ?>
-<p><a href="asciirocks/index.php">ASCII.ROCKS EDITOR</a></p>
-<p><a href="asciiss/index.html">ASCIISS DEMO (HTML for ASCII)</a></p>
-<p><a href="asciinibbles/index.html">Ascii Nibbles</a></p>
-<p><a href="asciiss/bbsconfig.html">How to use HTML with Ascii for setup</a></p>
-<p><a href="mobiledemo/index.html">Mobile test</a></p>
+<a href="asciirocks/index.php">ASCII.ROCKS EDITOR</a>
+<a href="asciiss/index.html">ASCIISS DEMO (HTML for ASCII)</a>
+<a href="asciinibbles/index.html">Ascii Nibbles</a>
+<a href="asciiss/bbsconfig.html">How to use HTML with Ascii for setup</a>
+<a href="mobiledemo/index.html">Mobile test</a>
 <?php
         break;
     case '/asciirocks/index.php':

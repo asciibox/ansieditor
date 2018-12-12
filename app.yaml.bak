@@ -56,6 +56,7 @@ handlers:
 - url: /mobiledemo/example
   static_dir: mobiledemo/example
 
+
 - url: /(.+\.php)$
   script: auto
 

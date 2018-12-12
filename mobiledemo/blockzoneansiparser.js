@@ -55,14 +55,11 @@ var blockZone = {
 				document.getElementById('main').style.fontSize = pct+'%';
 				var len = this.getWidth();
 
-				let innerWidth = window.innerWidth-50;
-				let innerHeight = window.innerHeight-50;
-
 				console.log('document.getElementById(main).offsetHeight:'+document.getElementById('main').offsetHeight);
 				console.log('window.innerHeight:'+window.innerHeight);
-				if ( (len>innerWidth) || (document.getElementById('main').offsetHeight>innerHeight) )
+				if ( (len>window.innerWidth) || (document.getElementById('main').offsetHeight>window.innerHeight) )
 				{
-					document.getElementById('main').style.fontSize = (pct-20)+'%';
+					document.getElementById('main').style.fontSize = (pct-10)+'%';
 					break;
 				}
 			}
